@@ -14,4 +14,5 @@ See [TODO.md](TODO.md).
 ## References
 
 <a id="1">[1]</a>
-Robins, J. M., & Gill, R. D. (1997). Non‐response models for the analysis of non‐monotone ignorable missing data. Statistics in medicine, 16(1), 39-56.
+Robins, J. M., & Gill, R. D. (1997). Non‐response models for the analysis of 
+non‐monotone ignorable missing data. Statistics in medicine, 16(1), 39-56.

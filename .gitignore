@@ -1,0 +1,7 @@
+Notes/*
+!Notes/*.tex
+!Notes/*.pdf
+Presentations/*
+!Presentations/*.tex
+!Presentations/*.bib
+!Presentations/*.pdf
