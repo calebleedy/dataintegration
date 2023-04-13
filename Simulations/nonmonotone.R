@@ -461,17 +461,17 @@ registerDoParallel(clust)
 
 B <- 2000
 true_mean <- 0
-cor_y1y2 <- 0.5
+cor_y1y2 <- 0
 
 mc_theta <- foreach(b = 1:B, 
                   #.options.RNG = 1,
                   .packages = c("dplyr")) %dorng% {
 
   # Parameters
-  n_sim <- 1000
+  n_sim <- 2000
 
   df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
-                    r_ind_y = FALSE, miss_out = TRUE)
+                    r_ind_y = FALSE, miss_out = FALSE)
 
   # Estimation
   # We want to compute:
@@ -505,11 +505,9 @@ mc_theta %>%
   tidyr::pivot_longer(cols = everything(),
                names_to = c(".value", "algorithm"),
                names_pattern = "(.*)_(.*)") %>%
-  mutate(pval = pt(-abs(tstat), df = B)) 
-
-%>%
+  mutate(pval = pt(-abs(tstat), df = B)) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
    caption = paste0("True Value is ", true_mean, ". Cor(Y1, Y2) = ", cor_y1y2)) %>%
-  cat(., file = paste0("../Tables/nonmonomar_t" , true_mean, "cy1y2", cor_y1y2, ".tex"))
+  cat(., file = paste0("../Tables/nonmonocmar_t" , true_mean, "cy1y2", cor_y1y2, ".tex"))
   
 

@@ -86,7 +86,7 @@ related to nonmonotone missing data.
     variables $X$, $Y_1$, and $Y_2$. Unlike the monotone MAR case, the
     nonmonotone MAR includes observations with $Y_2$ observed and $Y_1$ missing.
     
-    \item \textbf{Analyzed simulation from monotone MAR}:
+  \item \textbf{Simulation 1 with Monotone MAR}:
     Following the algorithm described in the monotone MAR simulation bullet, 
     we first generate data from the following distributions:
     \begin{align*}
@@ -121,7 +121,7 @@ related to nonmonotone missing data.
     \end{itemize}
 
     We run this simulation with different values of $\theta$, sample size of
-    1000, and 1000 Monte Carlo replications. Each algorithm for each replication
+    2000, and 2000 Monte Carlo replications. Each algorithm for each replication
     generates $\hat \theta$. In the subsequent tables, we compute the bias,
     standard deviation (sd), t-statistic (where we test for a significant
     difference between the Monte Carlo mean $\hat \theta$ and the true $\theta$)
@@ -142,54 +142,12 @@ related to nonmonotone missing data.
 
     \newpage 
     
-    \item \textbf{Analyzed simulation from nonmonotone MAR}:
-    Like the monotone simulation, we generate data using:
-    \begin{align*}
-        X_i &\stackrel{iid}{\sim} N(0, 1) \\
-        Y_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
-        Y_{2i} &\stackrel{iid}{\sim} N(\theta, 1)
-    \end{align*}
+    \item \textbf{Simulation 1 with Nonmonotone MAR}:
 
-    However, because we have nonmonotone data, our ``Stage 1'' probabilities are
-    different. We compute the true Stage 1 probabilities being proportional to
-    the following values:
-    
-    \begin{align*}
-        p_0 &\propto |x - 2|\\
-        p_1 &\propto |x|\\
-        p_2 &\propto |x + 2|.
-    \end{align*}
-    
-   However, we keep the same structure for the Stage 2 probabilities with:
-   $p_{12} = \logistic(y_1)$ and $p_{21} = \logistic(y_2)$. The goal remains to
-   estimate $\theta$. We continue to use the Oracle algorithm and the IPW-Oracle
-   algorithm. Since we have nonmonotone MAR data, we use the ``Proposed''
-   algorithm that is described on Slide 25 (Equation 12) of Dr. Kim's
-   presentation. The response models and outcome models were estimated using
-   logistic regression and OLS and correctly specified. This yields the
-   following results:
-   
-    \input{Tables/nonmonomar_t-5.tex}
-    \input{Tables/nonmonomar_t0.tex}
-    \input{Tables/nonmonomar_t5.tex}
-
-    \newpage
-    
-    While most of these numbers are to be expected, the proposed algorithm
-    exhibits considerable bias with the true value of $\theta = -5$. Why does
-    this happen? When $\theta = -5$, $p_{21} = \logistic(y_2)$ is very small
-    ($\logistic(-5) = 0.007$). This means that in many replications every single
-    observation that is initially selected to have $R_2 = 1$ chooses to have
-    $R_1 = 0$. I think that this is causing the problem, but I am not totally
-    sure how to check.
-
-    \item \textbf{Simulation 2 with Nonmonotone MAR}:
-    We also want to simulate data that is correlated. For this simulation, we
-    focus on $\Cov(Y_1, Y_2)$. While the probabilities are generated the same as
-    the previous simulation the data generating process is 
+    We generate variables $(X, Y_1, Y_2)$ using the following setup:
 
     \[\begin{bmatrix}
-    X_i \\ Y_{1i} \\ Y_{2i}
+    X_i \\ \varepsilon_{1i} \\ \varepsilon_{2i}
     \end{bmatrix} \stackrel{iid}{\sim}
     N\left(
     \begin{bmatrix}
@@ -202,27 +160,100 @@ related to nonmonotone missing data.
     \end{bmatrix}
     \right).\]
 
-    We are still interested in $\bar Y_2$ and we still run 1000 simulation with
-    1000 observations. In all of the next simulations the true value of $\theta
-    = 0$. The results are the following:
+    Then, 
 
-    \input{Tables/nonmonomar_t0cy1y20.1.tex}
-    \input{Tables/nonmonomar_t0cy1y20.5.tex}
-    \input{Tables/nonmonomar_t0cy1y20.9.tex}
+    \[y_{1i} = x_i + \varepsilon_{1i} \text{ and } 
+    y_{2i} = x_i + \varepsilon_{2i}.\]
+
+    Since we have nonmonotone data, our ``Stage 1'' probabilities are
+    different. We compute the true Stage 1 probabilities being proportional to
+    the following values:
+    
+    \begin{align*}
+        p_0 &= 0.2 \\
+        p_1 &= 0.4 \\
+        p_2 &= 0.4 \\
+    \end{align*}
+    
+   However, we keep the same structure for the Stage 2 probabilities with:
+   $p_{12} = \logistic(y_1)$ and $p_{21} = \logistic(y_2)$. The goal remains to
+   estimate $\theta$. We continue to use the Oracle algorithm and the IPW-Oracle
+   algorithm. Since we have nonmonotone MAR data, we use the ``Proposed''
+   algorithm that is described on Slide 25 (Equation 12) of Dr. Kim's
+   presentation. The response models and outcome models were estimated using
+   logistic regression and OLS and correctly specified. This yields the
+   following results:
+   
+    \input{Tables/nonmonocmar_t-5cy1y20.tex}
+    \input{Tables/nonmonocmar_t0cy1y20.tex}
+    \input{Tables/nonmonocmar_t5cy1y20.tex}
+
+    \newpage
+    
+    \item \textbf{Simulation 2 with Nonmonotone MAR}:
+    We also want to simulate data that is correlated. For this simulation, we
+    focus on $\Cov(Y_1, Y_2)$. The data generating process now has $\sigma_{yy}
+    \neq 0$. We are still interested in $\bar Y_2$ and we still run 2000
+    simulation with 2000 observations. In all of the next simulations the true
+    value of $\theta = 0$. The results are the following:
+
+    \input{Tables/nonmonocmar_t0cy1y20.1.tex}
+    \input{Tables/nonmonocmar_t0cy1y20.5.tex}
+    \input{Tables/nonmonocmar_t0cy1y20.9.tex}
 
     \newpage
 
-    While a small correlation (0.1) in Table 7 (also see Table 5 for no
-    correlation), shows that the proposed algorithm with an insignificant level
-    of bias, with a stronger correlation the bias increases.
+  \item \textbf{Simulation 3 with Nonmonotone MAR}:
+    This simulation aims to see if the proposed algorithm is doubly robust.
+    First, we check with a misspecified outcome model. In this case the data
+    generating procedure is the following:
+
+    \[\begin{bmatrix}
+    X_i \\ \varepsilon_{1i} \\ \varepsilon_{2i}
+    \end{bmatrix} \stackrel{iid}{\sim}
+    N\left(
+    \begin{bmatrix}
+        0 \\ 0 \\ \theta
+    \end{bmatrix},
+    \begin{bmatrix}
+        1 & 0 & 0 \\
+        0 & 1 & \sigma_{yy}\\
+        0 & \sigma_{yy} & 1
+    \end{bmatrix}
+    \right).\]
+
+    Then, 
+
+    \[y_{1i} = x_i + x_i^2 \varepsilon_{1i} \text{ and } 
+    y_{2i} = -x_i + x_i^3 + \varepsilon_{2i}.\]
+
+    This procedure causes $X$ to influence both $Y_1$ and $Y_2$ and we still
+    have correlation in the error terms of $Y_1$ and $Y_2$. However, since
+    neither $Y_1$ nor $Y_2$ are linear in $X$, the model will be misspecified.
+    The response mechanisms are first generated MCAR with a probability of
+    either $Y_1$ or $Y_2$ being the first variable observed to be $0.4$. (There
+    is a $0.2$ probability neither is observed.) Then the probability of the
+    other variable being observed is proportional to $\logistic(y_k)$ where
+    $y_k$ is the $y$ that has been observed. To ensure that the proposed method
+    has the correct propensity score we use the oracle probabilites instead of
+    estimating them. This yields the following:
+
+    \input{Tables/nmonocmar_t0cy1y20.tex}
+    \input{Tables/nmonocmar_t0cy1y20.1.tex}
+    \input{Tables/nmonocmar_t0cy1y20.5.tex}
+
+    \newpage
+
+    Clearly, the proposed method is unbiased with a misspecified outcome model.
+    When the response model is misspecified as in Simulation 1, the procedure
+    still works.
+
 \end{itemize}
 
 
 {\bf Commments from JK}
 \begin{itemize}
     \item Three variables $(X, Y_1, Y_2)$ should be correlated. 
-    \item I think the proposed method is doubly robust. So, you may make a
-      simulation setup testing DR property. I will explain it further. 
 \end{itemize}
 
 \newpage
