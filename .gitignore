@@ -5,3 +5,4 @@ Presentations/*
 !Presentations/*.tex
 !Presentations/*.bib
 !Presentations/*.pdf
+!Presentations/*.md
