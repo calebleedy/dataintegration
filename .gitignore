@@ -1,8 +1,8 @@
 Notes/*
 !Notes/*.tex
 !Notes/*.pdf
+!Notes/*.md
 Presentations/*
 !Presentations/*.tex
 !Presentations/*.bib
 !Presentations/*.pdf
-!Presentations/*.md
