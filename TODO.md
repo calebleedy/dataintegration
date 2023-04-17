@@ -3,12 +3,12 @@
 
 ## April 11, 2023
 
-* [ ] Write up doubly robust estimator
+* [X] Write up doubly robust estimator
 * [ ] Write up estimator with $\Pr(R_1 | X, Y_2)$
-* [ ] Read data integration papers:
-  * [ ] Yang and Kim (2020)
+* [o] Read data integration papers:
+  * [X] Yang and Kim (2020)
   * [ ] Kim et al. (2020) (JRSSA)
-  * [ ] Chen, Yang, Kim (2022)
+  * [X] Chen, Yang, Kim (2022)
 
 ## April 4, 2023
 

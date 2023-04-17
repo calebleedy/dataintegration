@@ -40,7 +40,8 @@
 The goal of this project is to outperform existing techniques in the literature
 related to nonmonotone missing data.
 
-\section*{Completed:}
+\section*{Initial Simulations:}
+% Tables generated from Simulations/nonmonotone.R
 
 \begin{itemize}
   \item \textbf{Implemented simulation of monotone MAR data}: This is 
@@ -180,13 +181,14 @@ related to nonmonotone missing data.
    estimate $\theta$. We continue to use the Oracle algorithm and the IPW-Oracle
    algorithm. Since we have nonmonotone MAR data, we use the ``Proposed''
    algorithm that is described on Slide 25 (Equation 12) of Dr. Kim's
-   presentation. The response models and outcome models were estimated using
-   logistic regression and OLS and correctly specified. This yields the
+   presentation. The outcome models were estimated using
+   logistic regression and OLS and correctly specified. The response model used
+   the oracle estimates of the probabilites. This yields the
    following results:
    
-    \input{Tables/nonmonocmar_t-5cy1y20.tex}
-    \input{Tables/nonmonocmar_t0cy1y20.tex}
-    \input{Tables/nonmonocmar_t5cy1y20.tex}
+    \input{Tables/nonmonosim1m-5.tex}
+    \input{Tables/nonmonosim1m0.tex}
+    \input{Tables/nonmonosim1m5.tex}
 
     \newpage
     
@@ -197,9 +199,9 @@ related to nonmonotone missing data.
     simulation with 2000 observations. In all of the next simulations the true
     value of $\theta = 0$. The results are the following:
 
-    \input{Tables/nonmonocmar_t0cy1y20.1.tex}
-    \input{Tables/nonmonocmar_t0cy1y20.5.tex}
-    \input{Tables/nonmonocmar_t0cy1y20.9.tex}
+    \input{Tables/nonmonosim2c0.1.tex}
+    \input{Tables/nonmonosim2c0.5.tex}
+    \input{Tables/nonmonosim2c0.9.tex}
 
     \newpage
 
@@ -238,22 +240,37 @@ related to nonmonotone missing data.
     has the correct propensity score we use the oracle probabilites instead of
     estimating them. This yields the following:
 
-    \input{Tables/nmonocmar_t0cy1y20.tex}
-    \input{Tables/nmonocmar_t0cy1y20.1.tex}
-    \input{Tables/nmonocmar_t0cy1y20.5.tex}
+    \input{Tables/nonmonosim3c0.tex}
+    \input{Tables/nonmonosim3c0.1.tex}
+    \input{Tables/nonmonosim3c0.5.tex}
 
     \newpage
 
-    Clearly, the proposed method is unbiased with a misspecified outcome model.
-    When the response model is misspecified as in Simulation 1, the procedure
-    still works.
+    Thus, the proposed method is unbiased with a misspecified outcome model.
+    We now show a simulation where the outcome model is correctly specified but
+    the response model is not.
+
+  \item \textbf{Simulation 4 with Nonmonotone MAR}:
+    Continuing to test if the proposed algorithm is doubly robust, this
+    simulation checks a misspecified response model. Instead of using oracle
+    weights as in Simulation 3, we estimate the weights for the proposed method.
+    The algorithms to which we compare still use the oracle weights.
+
+    \input{Tables/nonmonosim4c0.tex}
+    \input{Tables/nonmonosim4c0.1.tex}
+    \input{Tables/nonmonosim4c0.5.tex}
+
+    This is clear evidence that the proposed method is doubly robust.
 
 \end{itemize}
 
+\newpage
 
-{\bf Commments from JK}
+\section*{Full Nonmonotone Estimator}
+
 \begin{itemize}
-    \item Three variables $(X, Y_1, Y_2)$ should be correlated. 
+  \item 
+  
 \end{itemize}
 
 \newpage

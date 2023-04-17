@@ -456,58 +456,171 @@ twophase_reg <- function(df) {
 # * Run Simulation: Nonmonotone Missingness *
 # *******************************************
 
-clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
-registerDoParallel(clust)
+run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
+                          miss_out, oracle, seed) {
 
-B <- 2000
-true_mean <- 0
-cor_y1y2 <- 0
 
-mc_theta <- foreach(b = 1:B, 
-                  #.options.RNG = 1,
-                  .packages = c("dplyr")) %dorng% {
+  clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+  registerDoParallel(clust)
 
-  # Parameters
-  n_sim <- 2000
+  mc_theta <- 
+    foreach(b = 1:B, 
+            .options.RNG = seed,
+            .export = c("nonmono_mar", "ipw_cc_oracle", "est_nonmono", "expit"),
+            .packages = c("dplyr")) %dorng% {
 
-  df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
-                    r_ind_y = FALSE, miss_out = FALSE)
+    # Parameters
+    df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
+                      r_ind_y = FALSE, miss_out = miss_out)
 
-  # Estimation
-  # We want to compute:
-  # 1. Oracle estimate
-  # 2. pi_11 estimate (ipw using fully observed cases)
-  # 3. New estimate
+    # Estimation
+    # We want to compute:
+    # 1. Oracle estimate
+    # 2. pi_11 estimate (ipw using fully observed cases)
+    # 3. New estimate
 
-  tibble(oracle = mean(df$y2),
-         ipworacle = ipw_cc_oracle(df),
-         proposed = est_nonmono(df, oracle = TRUE))
+    tibble(oracle = mean(df$y2),
+           ipworacle = ipw_cc_oracle(df),
+           proposed = est_nonmono(df, oracle = oracle))
 
-} %>% bind_rows()
+  } %>% bind_rows()
 
-stopCluster(clust)
+  stopCluster(clust)
 
-# ****************
-# * Analyze Data *
-# ****************
+  # ****************
+  # * Analyze Data *
+  # ****************
 
-mc_theta %>%
- summarize(
-   bias_oracle = mean(oracle) - true_mean,
-   bias_ipworacle = mean(ipworacle) - true_mean,
-   bias_proposed = mean(proposed) - true_mean,
-   sd_oracle = sd(oracle),
-   sd_ipworacle = sd(ipworacle),
-   sd_proposed = sd(proposed),
-   tstat_oracle = (mean(oracle) - true_mean) / sqrt(var(oracle) / B),
-   tstat_ipworacle = (mean(ipworacle) - true_mean) / sqrt(var(ipworacle) / B),
-   tstat_proposed = (mean(proposed) - true_mean) / sqrt(var(proposed) / B)) %>%
-  tidyr::pivot_longer(cols = everything(),
-               names_to = c(".value", "algorithm"),
-               names_pattern = "(.*)_(.*)") %>%
-  mutate(pval = pt(-abs(tstat), df = B)) %>%
+  mc_theta %>%
+   summarize(
+     bias_oracle = mean(oracle) - true_mean,
+     bias_ipworacle = mean(ipworacle) - true_mean,
+     bias_proposed = mean(proposed) - true_mean,
+     sd_oracle = sd(oracle),
+     sd_ipworacle = sd(ipworacle),
+     sd_proposed = sd(proposed),
+     tstat_oracle = (mean(oracle) - true_mean) / sqrt(var(oracle) / B),
+     tstat_ipworacle = (mean(ipworacle) - true_mean) / sqrt(var(ipworacle) / B),
+     tstat_proposed = (mean(proposed) - true_mean) / sqrt(var(proposed) / B))%>%
+    tidyr::pivot_longer(cols = everything(),
+                 names_to = c(".value", "algorithm"),
+                 names_pattern = "(.*)_(.*)") %>%
+    mutate(pval = pt(-abs(tstat), df = B)) 
+
+}
+
+# **********************************
+# * Simulations: Sim 1 Nonmonotone *
+# **********************************
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = -5, cor_y1y2 = 0,
+              miss_out = FALSE, oracle = TRUE, seed = 1) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
-   caption = paste0("True Value is ", true_mean, ". Cor(Y1, Y2) = ", cor_y1y2)) %>%
-  cat(., file = paste0("../Tables/nonmonocmar_t" , true_mean, "cy1y2", cor_y1y2, ".tex"))
+  caption = "True Value is -5. Cor(Y1, Y2) = 0") %>%
+  cat(., file = paste0("../Tables/nonmonosim1" , "m-5", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0,
+              miss_out = FALSE, oracle = TRUE, seed = 1) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
+  cat(., file = paste0("../Tables/nonmonosim1" , "m0", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 5, cor_y1y2 = 0,
+              miss_out = FALSE, oracle = TRUE, seed = 1) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 5. Cor(Y1, Y2) = 0") %>%
+  cat(., file = paste0("../Tables/nonmonosim1" , "m5", ".tex"))
+
+# **********************************
+# * Simulations: Sim 2 Nonmonotone *
+# **********************************
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.1,
+              miss_out = FALSE, oracle = TRUE, seed = 2) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
+  cat(., file = paste0("../Tables/nonmonosim2" , "c0.1", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.5,
+              miss_out = FALSE, oracle = TRUE, seed = 2) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
+  cat(., file = paste0("../Tables/nonmonosim2" , "c0.5", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.9,
+              miss_out = FALSE, oracle = TRUE, seed = 2) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.9") %>%
+  cat(., file = paste0("../Tables/nonmonosim2" , "c0.9", ".tex"))
+
+# **********************************
+# * Simulations: Sim 3 Nonmonotone *
+# **********************************
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0,
+              miss_out = TRUE, oracle = TRUE, seed = 3) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
+  cat(., file = paste0("../Tables/nonmonosim3" , "c0", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.1,
+              miss_out = TRUE, oracle = TRUE, seed = 3) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
+  cat(., file = paste0("../Tables/nonmonosim3" , "c0.1", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.5,
+              miss_out = TRUE, oracle = TRUE, seed = 3) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
+  cat(., file = paste0("../Tables/nonmonosim3" , "c0.5", ".tex"))
+
+# **********************************
+# * Simulations: Sim 4 Nonmonotone *
+# **********************************
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0,
+              miss_out = FALSE, oracle = FALSE, seed = 4) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
+  cat(., file = paste0("../Tables/nonmonosim4" , "c0", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.1,
+              miss_out = FALSE, oracle = FALSE, seed = 4) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
+  cat(., file = paste0("../Tables/nonmonosim4" , "c0.1", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.5,
+              miss_out = FALSE, oracle = FALSE, seed = 4) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
+  cat(., file = paste0("../Tables/nonmonosim4" , "c0.5", ".tex"))
+
+# %>%
+#   knitr::kable("latex", booktabs = TRUE, digits = 3,
+#   caption = paste0("True Value is ", true_mean, ". Cor(Y1, Y2) = ", cor_y1y2)) %>%
+#   cat(., file = paste0("../Tables/nonmonocmar_t" , true_mean,
+#                        "cy1y2", cor_y1y2, ".tex"))
   
+
+
+# ****************
+# * Clean Tables *
+# ****************
+# The tables look better if they have the [h!] attribute, so we correct them.
+# To be run from Simulations/
+source("clean_tables.R")
 
