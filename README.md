@@ -6,6 +6,8 @@ sets with a probability sample and still have valid estimates for the joint
 distributions of the variables. We use the non-monotone framework of Robins and
 Gill [[1]](#1) to create a method for incorporating different data sets.
 
+For now, we are going to focus on the nonmonotone missingness theory because we
+want to also apply this methodology to the NRI imputation procedure.
 
 ## Tasks
 
