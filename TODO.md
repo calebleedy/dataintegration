@@ -1,10 +1,21 @@
 
 # TODO
 
+## April 18, 2023
+
+* [ ] Compute bias of $\hat \theta_{eff}$. (We want to understand double
+      robustness of estimator.)
+* [ ] Fix $a_2$ (It needs to be $E[Y_2 \mid X]$)
+* [ ] What is the best choice of $a_2$ and $b_2$? (Find optimal.)
+
+## April 12, 2023
+
+* [X] Simulation study with modified estimator.
+
 ## April 11, 2023
 
 * [X] Write up doubly robust estimator
-* [ ] Write up estimator with $\Pr(R_1 | X, Y_2)$
+* [X] Write up estimator with $\Pr(R_1 \mid X, Y_2)$
 * [o] Read data integration papers:
   * [X] Yang and Kim (2020)
   * [ ] Kim et al. (2020) (JRSSA)
@@ -16,7 +27,7 @@
 * [X] Nonmonotone: use $R_1, R_2 | X$. The goal is to decide $a_2$ and
       $b_2$.
 * [ ] Try using both $\theta_k = E[Y_k]$.
-* [ ] Try adding two-phase regression estimator.
+~~* [ ] Try adding two-phase regression estimator.~~
 * [X] Test double robustness of proposed estimator.
 
 ## April 3, 2023

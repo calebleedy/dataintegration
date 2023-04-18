@@ -183,7 +183,7 @@ related to nonmonotone missing data.
    algorithm that is described on Slide 25 (Equation 12) of Dr. Kim's
    presentation. The outcome models were estimated using
    logistic regression and OLS and correctly specified. The response model used
-   the oracle estimates of the probabilites. This yields the
+   the oracle estimates of the probabilities. This yields the
    following results:
    
     \input{Tables/nonmonosim1m-5.tex}
@@ -237,7 +237,7 @@ related to nonmonotone missing data.
     is a $0.2$ probability neither is observed.) Then the probability of the
     other variable being observed is proportional to $\logistic(y_k)$ where
     $y_k$ is the $y$ that has been observed. To ensure that the proposed method
-    has the correct propensity score we use the oracle probabilites instead of
+    has the correct propensity score we use the oracle probabilities instead of
     estimating them. This yields the following:
 
     \input{Tables/nonmonosim3c0.tex}
@@ -260,17 +260,135 @@ related to nonmonotone missing data.
     \input{Tables/nonmonosim4c0.1.tex}
     \input{Tables/nonmonosim4c0.5.tex}
 
-    This is clear evidence that the proposed method is doubly robust.
+    Thus, there is strong evidence that the proposed method is \textit{not}
+    doubly robust. If we have a misspecified response model, then it seems like
+    we induce bias. I will explore this more in the next section.
 
 \end{itemize}
 
 \newpage
 
-\section*{Full Nonmonotone Estimator}
+\section*{Estimating the Response Model}
 
 \begin{itemize}
-  \item 
+  \item In most (critically \textit{not} Simulation 4) of the simulations of the
+    previous section, we used the oracle weights when estimating our proposed
+    method. The reasoning for this was straightforward{--}we wanted to ensure
+    that the response model was correctly specified and the best case scenario
+    is to use the oracle weights which we did.
+    
+  \item This section focuses more on estimating these response weights. Instead
+    of focusing on the proposed method, we will actually be working on
+    estimation of the complete case IPW estimator. This model is less complex
+    and will thus make it easier to understand where we are making mistakes.
+
+  \item We use the following simulation study:
+    \begin{align*}
+      x_i &\stackrel{iid}{\sim} N(0, 1)\\
+      \varepsilon_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
+      \varepsilon_{2i} &\stackrel{iid}{\sim} N(0, 1)\\
+      y_{1i} &= x_i + \varepsilon_{1i} \\
+      y_{2i} &= x_i + \varepsilon_{2i} \\
+    \end{align*}
+
+    To select a missingness pattern for each $i$, we have sequence: first, we
+    select the first variable to observe (or neither), then we either select the
+    second variable or we do not. In the first step, we select $R_{1i} = 1$ with
+    probability $0.4$, $R_{2i} = 1$ with probability $0.4$ and neither variable
+    with probability $0.2$. For the second step, we have the probability of
+    observing the other variable be $\logistic(x_i)$. This yields the following:
+
+    \input{Tables/ipwsim.tex}
+    % TODO: estimate IPW with \pi_{2|1} and \pi_{1|2}.
+
+    The problem with this is that our estimate is biased. For one particular
+    realization of the simulation, here is the distribution of the difference
+    between the estimated and true probabilities of $\pi_{11}$:
+
+    \includegraphics[width = 0.7\linewidth]{diffhist.png}
   
+\end{itemize}
+
+\newpage
+
+\section*{Proposal: Full Nonmonotone Estimator}
+
+\begin{itemize}
+
+  \item When constructing
+    estimates of the response model, we estimate $\pi_{11}$ using
+    $\pi_{A_2 = 1|A_1 = 1}$ and we never include information about $\pi_{A_1 =
+    1|A_2 = 1}$. I would like to create a full estimator where we are able to
+    use this information.
+
+  \item The current estimator is the following (See Slide 24 of Non-monotone
+    Presentation):
+
+    \begin{align*}
+      \hat \theta_{eff} &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] \\
+      &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i}}{\pi_{1+}(X_i)} (b_2(X_i, Y_{1i}) - 
+      E[g_i \mid X_i]) \\
+      &+ n^{-1} \sum_{i = 1}^n \frac{R_{2i}}{\pi_{2+}(X_i)} (a_2(X_i, Y_{2i}) -
+      E[g_i \mid X_i]) \\
+      &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_{11}(X_1, Y_{1i})}(g_i 
+      - b_2(X_i, Y_{1i}) - a_2(X_i, Y_{2i}) + E[g_i \mid X_i])
+    \end{align*}
+
+  \item The problem with this is that we assume $\pi_{11}(X, Y_{1}) =
+    \pi_{2|1} (X, Y_{1}) \pi_{1+}(X)$ when we could have $\pi_{11}(X, Y_2) =
+    \pi_{1|2} (X, Y_2) \pi_{2+}(X)$. In other words, the previous result
+    implicitly assumes that $\pi_{11}$ is a function of $X$ and $Y_1$ when it
+    could be a function of $X$ and $Y_2$ as well. 
+
+  \item I think that we could use the
+    following (small modification) instead,
+
+    \[\pi_{11}(X, Y_1, Y_2) = \alpha \pi_{1|2} \pi_{2+} + (1 - \alpha) \pi_{2|1}
+    \pi_{1+}\]
+
+    for some $\alpha \in [0, 1]$.
+    
+  \item The reasoning behind this is two-fold. First, it allows us to think of
+    the nonmonotone missingness case as a linear combination of two monotone
+    cases, which I think is useful. Second, we can make explicit our choice of
+    $\alpha$, which in the existing estimator is simply $\alpha = 0$.
+
+  \item The problem with adding another parameter $\alpha$ is that it makes the
+    overall model unidentifiable. We cannot estimate $\alpha$ and the
+    conditional and marginal distributions that we have without additional
+    assumptions. So for now, I think that we should just assume that $\alpha$ is
+    known and then we apply this method to a data integration problem we can
+    review what $\alpha$ makes sense or figure out an additional assumption that
+    can help us estimate $\alpha$ (for example if there is a variable correlated
+    with $1|2$ versus $2|1$).
+
+  \item This is not just a pure Bayes' rule.
+    Formally, let $L = (X, Y_1, Y_2)$. By Bayes' rule we have
+
+    \begin{align*}
+      \Pr(R_1 &= 1 \mid R_2 = 1, L) \Pr(R_2 = 1 \mid L) \\
+      &= \Pr(R_1 = 1, R_2 = 1 \mid L) \\
+      & = \Pr(R_2 = 1 \mid R_1 = 1, L) \Pr(R_1 = 1 \mid L).
+    \end{align*}
+
+    Yet to estimate this model, we need to assume something like the following:
+    \begin{align*}
+      \Pr(R_1 &= 1 \mid R_2 = 1, X, Y_2) \Pr(R_2 = 1 \mid X, Y_2)\\
+      &= \Pr(R_1 = 1, R_2 = 1 \mid L) \\
+      &= \Pr(R_2 = 1 \mid R_1 = 1, X, Y_1) \Pr(R_1 = 1 \mid X, Y_1)
+    \end{align*}
+
+    in which case the two sides are clearly different.
+
+    \item Unfortunately, early simulation results are not promising because we
+      cannot distinguish points that should have $\pi_{11}$ conditional on $Y_1$
+      and points that should be conditional on $Y_2$.
+
+      \input{Tables/alphasim.tex}
+
+    \item Dr. Kim, please let me know what you think about this idea and if it
+      is worth pursuing more.
+
 \end{itemize}
 
 \newpage
