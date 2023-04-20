@@ -3,9 +3,9 @@
 
 ## April 20, 2023
 
-* [ ] Add papers from `references.bib` to the `Reference/` directory
+* [X] Add papers from `references.bib` to the `Reference/` directory
 * [ ] Go through proof in Chen, Yang, Kim (2022)
-* [ ] Simulation study of Kim et al. (2020) 
+* [X] Simulation study of Kim et al. (2020) 
 * [ ] Proof of Kim et al. (2020)
 
 ## April 18, 2023
