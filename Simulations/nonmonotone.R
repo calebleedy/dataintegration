@@ -494,7 +494,7 @@ twophase_reg <- function(df) {
 # instead it is a parameter for est_nonmono. This should be changed to something
 # like est_weights.
 run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
-                          miss_out, miss_resp, seed) {
+                          miss_out, miss_resp, seed, r_ind_y = FALSE) {
 
 
   clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
@@ -508,7 +508,7 @@ run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
 
     # Parameters
     df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
-                      r_ind_y = FALSE, miss_out = miss_out)
+                      r_ind_y = r_ind_y, miss_out = miss_out)
 
     # Estimation
     # We want to compute:
@@ -627,24 +627,49 @@ run_init_sims(n_sim = 2000, B = 2000,
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+              miss_out = FALSE, miss_resp = TRUE, seed = 4, r_ind_y = TRUE) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim4" , "c0", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.1,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+              miss_out = FALSE, miss_resp = TRUE, seed = 4, r_ind_y = TRUE) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
   cat(., file = paste0("../Tables/nonmonosim4" , "c0.1", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.5,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+              miss_out = FALSE, miss_resp = TRUE, seed = 4, r_ind_y = TRUE) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
   cat(., file = paste0("../Tables/nonmonosim4" , "c0.5", ".tex"))
+
+# **********************************
+# * Simulations: Sim 5 Nonmonotone *
+# **********************************
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0,
+              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
+  cat(., file = paste0("../Tables/nonmonosim5" , "c0", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.1,
+              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
+  cat(., file = paste0("../Tables/nonmonosim5" , "c0.1", ".tex"))
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.5,
+              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
+  cat(., file = paste0("../Tables/nonmonosim5" , "c0.5", ".tex"))
 
 # %>%
 #   knitr::kable("latex", booktabs = TRUE, digits = 3,
@@ -683,6 +708,7 @@ run_resp_sims <- function(n_sim, B, true_mean, cor_y1y2,
 
     tibble(oracle = mean(df$y2),
            ipw.or = ipw_cc_oracle(df),
+           prop.0 = est_nonmono(df, oracle = FALSE, alpha = 0),
            ipw.0 = ipw_cc_est(df, oracle = FALSE, alpha = 0),
            ipw.half = ipw_cc_est(df, oracle = FALSE, alpha = 0.5),
            ipw.1 = ipw_cc_est(df, oracle = FALSE, alpha = 1))
@@ -699,16 +725,19 @@ run_resp_sims <- function(n_sim, B, true_mean, cor_y1y2,
    summarize(
      bias_oracle = mean(oracle) - true_mean,
      bias_ipw.or= mean(ipw.or) - true_mean,
+     bias_prop.0 = mean(prop.0) - true_mean,
      bias_ipw.0 = mean(ipw.0) - true_mean,
      bias_ipw.half = mean(ipw.half) - true_mean,
      bias_ipw.1 = mean(ipw.1) - true_mean,
      sd_oracle = sd(oracle),
      sd_ipw.or = sd(ipw.or),
+     sd_prop.0 = sd(prop.0),
      sd_ipw.0 = sd(ipw.0),
      sd_ipw.half = sd(ipw.half),
      sd_ipw.1 = sd(ipw.1),
      tstat_oracle = (mean(oracle) - true_mean) / sqrt(var(oracle) / B),
      tstat_ipw.or= (mean(ipw.or) - true_mean) / sqrt(var(ipw.or) / B),
+     tstat_prop.0 = (mean(prop.0) - true_mean) / sqrt(var(prop.0) / B),
      tstat_ipw.0 = (mean(ipw.0) - true_mean) / sqrt(var(ipw.0) / B),
      tstat_ipw.half = (mean(ipw.half) - true_mean) / sqrt(var(ipw.half) / B),
      tstat_ipw.1 = (mean(ipw.1) - true_mean) / sqrt(var(ipw.1) / B)) %>%
@@ -723,7 +752,10 @@ run_resp_sims <- function(n_sim, B, true_mean, cor_y1y2,
 run_resp_sims(n_sim = 2000, B = 2000,
              true_mean = 0, cor_y1y2 = 0,
              miss_out = FALSE, r_ind_y = TRUE, seed = 4) %>%
-  filter(algorithm %in% c("oracle", "ipw.or", "ipw.0")) %>%
+  filter(algorithm %in% c("oracle", "ipw.or", "ipw.0", "prop.0")) 
+
+
+%>%
   knitr::kable("latex", booktabs = TRUE,
                digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
