@@ -13,7 +13,7 @@
 * [X] Compute bias of $\hat \theta_{eff}$. (We want to understand double
       robustness of estimator.) It is unbiased if either model is correct.
 * [X] Fix $a_2$ (It needs to be $E[Y_2 \mid X]$)
-* [ ] What is the best choice of $a_2$ and $b_2$? (Find optimal.)
+* [X] What is the best choice of $a_2$ and $b_2$? (Find optimal.)
 
 ## April 12, 2023
 

@@ -1,0 +1,79 @@
+\section*{Proposal: Full Nonmonotone Estimator}
+
+\begin{itemize}
+
+  \item When constructing
+    estimates of the response model, we estimate $\pi_{11}$ using
+    $\pi_{A_2 = 1|A_1 = 1}$ and we never include information about $\pi_{A_1 =
+    1|A_2 = 1}$. I would like to create a full estimator where we are able to
+    use this information.
+
+  \item The current estimator is the following (See Slide 24 of Non-monotone
+    Presentation):
+
+    \begin{align*}
+      \hat \theta_{eff} &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] \\
+      &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i}}{\pi_{1+}(X_i)} (b_2(X_i, Y_{1i}) - 
+      E[g_i \mid X_i]) \\
+      &+ n^{-1} \sum_{i = 1}^n \frac{R_{2i}}{\pi_{2+}(X_i)} (a_2(X_i, Y_{2i}) -
+      E[g_i \mid X_i]) \\
+      &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_{11}(X_1, Y_{1i})}(g_i 
+      - b_2(X_i, Y_{1i}) - a_2(X_i, Y_{2i}) + E[g_i \mid X_i])
+    \end{align*}
+
+  \item The problem with this is that we assume $\pi_{11}(X, Y_{1}) =
+    \pi_{2|1} (X, Y_{1}) \pi_{1+}(X)$ when we could have $\pi_{11}(X, Y_2) =
+    \pi_{1|2} (X, Y_2) \pi_{2+}(X)$. In other words, the previous result
+    implicitly assumes that $\pi_{11}$ is a function of $X$ and $Y_1$ when it
+    could be a function of $X$ and $Y_2$ as well. 
+
+  \item I think that we could use the
+    following (small modification) instead,
+
+    \[\pi_{11}(X, Y_1, Y_2) = \alpha \pi_{1|2} \pi_{2+} + (1 - \alpha) \pi_{2|1}
+    \pi_{1+}\]
+
+    for some $\alpha \in [0, 1]$.
+    
+  \item The reasoning behind this is two-fold. First, it allows us to think of
+    the nonmonotone missingness case as a linear combination of two monotone
+    cases, which I think is useful. Second, we can make explicit our choice of
+    $\alpha$, which in the existing estimator is simply $\alpha = 0$.
+
+  \item The problem with adding another parameter $\alpha$ is that it makes the
+    overall model unidentifiable. We cannot estimate $\alpha$ and the
+    conditional and marginal distributions that we have without additional
+    assumptions. So for now, I think that we should just assume that $\alpha$ is
+    known and then we apply this method to a data integration problem we can
+    review what $\alpha$ makes sense or figure out an additional assumption that
+    can help us estimate $\alpha$ (for example if there is a variable correlated
+    with $1|2$ versus $2|1$).
+
+  \item This is not just a pure Bayes' rule.
+    Formally, let $L = (X, Y_1, Y_2)$. By Bayes' rule we have
+
+    \begin{align*}
+      \Pr(R_1 &= 1 \mid R_2 = 1, L) \Pr(R_2 = 1 \mid L) \\
+      &= \Pr(R_1 = 1, R_2 = 1 \mid L) \\
+      & = \Pr(R_2 = 1 \mid R_1 = 1, L) \Pr(R_1 = 1 \mid L).
+    \end{align*}
+
+    Yet to estimate this model, we need to assume something like the following:
+    \begin{align*}
+      \Pr(R_1 &= 1 \mid R_2 = 1, X, Y_2) \Pr(R_2 = 1 \mid X, Y_2)\\
+      &= \Pr(R_1 = 1, R_2 = 1 \mid L) \\
+      &= \Pr(R_2 = 1 \mid R_1 = 1, X, Y_1) \Pr(R_1 = 1 \mid X, Y_1)
+    \end{align*}
+
+    in which case the two sides are clearly different.
+
+    \item Unfortunately, early simulation results are not promising because we
+      cannot distinguish points that should have $\pi_{11}$ conditional on $Y_1$
+      and points that should be conditional on $Y_2$.
+
+      \input{Tables/alphasim.tex}
+
+    \item Dr. Kim, please let me know what you think about this idea and if it
+      is worth pursuing more.
+
+\end{itemize}
