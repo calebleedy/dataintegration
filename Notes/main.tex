@@ -45,10 +45,9 @@ related to nonmonotone missing data.
 % Tables generated from Simulations/nonmonotone.R
 
 \begin{itemize}
-  \item \textbf{Implemented simulation of monotone MAR data}: This is 
-  correspondingly easier
-  than the subsequent nonmonotone MAR simulation. For this simulation we use the 
-  following approach:
+  \item \textbf{Implemented simulation of monotone MAR data}: 
+    This is correspondingly easier than the subsequent nonmonotone MAR
+    simulation. For this simulation we use the following approach:
   \begin{enumerate}
       \item Generate $X$, $Y_1$, and $Y_2$ for elements $i = 1, \dots, n$.
       \item Using the covariate $X$, determine the probability $p_1$ of $Y_1$
@@ -58,17 +57,16 @@ related to nonmonotone missing data.
         $Y_1$, determine the probability $p_{12}$.
       \item Based on $p_{12}$ determine if $R_2 = 1$.
   \end{enumerate}
-  At the end of the algorithm, we have determined the values of binary variables
-    $R_1$ and $R_2$ for each $i$ and if either of them are equal to 1, the
-    corresponding level of $Y_{k}$. As is common in this literature, the values
-    of $R_1$ and $R_2$ determine if the corresponding variable $Y_1$ or $Y_2$ is
-    missing or observed with $R = 1$ indicating $Y$ being observed.
+    At the end of the algorithm, we have determined the values of binary
+    variables $R_1$ and $R_2$ for each $i$ and if either of them are equal to 1,
+    the corresponding level of $Y_{k}$. As is common in this literature, the
+    values of $R_1$ and $R_2$ determine if the corresponding variable $Y_1$ or
+    $Y_2$ is missing or observed with $R = 1$ indicating $Y$ being observed.
   
   \item \textbf{Implemented simulation of nonmonotone MAR data}: 
-  Following the approach
-    of \cite{robins1997non}, I construct a nonmonotone MAR simulation with two 
-    response variables $Y_1$ and $Y_2$ and one covariate $X$. The algorithm to
-    generate the data is the following:
+    Following the approach of \cite{robins1997non}, I construct a nonmonotone
+    MAR simulation with two response variables $Y_1$ and $Y_2$ and one covariate
+    $X$. The algorithm to generate the data is the following:
     \begin{enumerate}
         \item Generate $X$, $Y_1$, and $Y_2$ for elements $i = 1, \dots, n$.
         \item Using the covariate $X_i$, generate probabilities for each element
@@ -225,7 +223,7 @@ related to nonmonotone missing data.
     \end{bmatrix}
     \right).\]
 
-    Then, 
+    Then, the true outcome model is,
 
     \[y_{1i} = x_i + x_i^2 \varepsilon_{1i} \text{ and } 
     y_{2i} = -x_i + x_i^3 + \varepsilon_{2i}.\]
@@ -257,20 +255,44 @@ related to nonmonotone missing data.
     weights as in Simulation 3, we estimate the weights for the proposed method.
     However, unlike the true probabilities of being proportional to
     $\logistic(y_k)$, this simulation has the true probabilities being
-    proportional to $\logistic(x_i)$.
+    proportional to $\logistic(x_i)$. Thus, the true response model is the
+    following:
+
+    \begin{enumerate}
+      \item (Stage 1) Choose a variable observe. We choose $Y_1$ with
+        probability $0.4$, $Y_2$ with probability $0.4$ and neither with
+        probability $0.2$. If neither, $R_1 = 0$ and $R_2 = 0$. Otherwise,
+        continue to Step 2.
+      \item (Stage 2) With probability $p_i \propto \logistic(x_i)$, choose to
+        observed the other $Y$ variable. 
+    \end{enumerate}
+
+    This sequence generates the missingness indicators $R_1$ and $R_2$. Since,
+    the Stage 1 probabilities are fixed and known and the Stage 2 probabilities
+    only depend on $x_i$, the missingness is MAR and only a function of $x_i$.
     The algorithms to which we compare still use the oracle weights.
 
     \input{Tables/nonmonosim4c0.tex}
     \input{Tables/nonmonosim4c0.1.tex}
     \input{Tables/nonmonosim4c0.5.tex}
 
-    Thus, there is strong evidence that the proposed method is 
-    doubly robust. Previously, we did not get this result and the reason is 
-    the way that the selection probabilities work. When they were proportional
-    to $\logistic(y_k)$, the estimator is biased (see the next section);
-    however, when the probabilities are proportional to $\logistic(x_i)$ then it
-    works.
+    The previous version of this simulation used the Stage 2 probability $p_i
+    \propto \logistic(y_i)$ where $y_i$ was the observed $Y$ value in Stage 1.
+    However, under this setup, our method is biased. This is because
 
+    \[ E\left[E\left[\frac{R_1 R_2}{\pi_{11}(X, Y_1)} Y_1 \mid X\right]\right] 
+    \neq
+    E\left[\frac{E[Y_1 \mid X]}{\pi_{11}(X, Y_1)} E[R_1 R_2 \mid X]\right] \]
+
+    but
+
+    \[ E\left[E\left[\frac{R_1 R_2}{\pi_{11}(X)} Y_1 \mid X\right]\right] 
+    =
+    E\left[\frac{E[Y_1 \mid X]}{\pi_{11}(X)} E[R_1 R_2 \mid X]\right].\]
+
+    Thus, there is strong evidence that the proposed method is 
+    doubly robust because it is robust to both misspecification in the outcome
+    and response model.
 \end{itemize}
 
 \newpage
@@ -340,48 +362,7 @@ related to nonmonotone missing data.
 
 \newpage
 
-\section*{Estimating the Response Model}
-
-\begin{itemize}
-  \item In most (critically \textit{not} Simulation 4) of the simulations of the
-    previous section, we used the oracle weights when estimating our proposed
-    method. The reasoning for this was straightforward{--}we wanted to ensure
-    that the response model was correctly specified and the best case scenario
-    is to use the oracle weights which we did.
-    
-  \item This section focuses more on estimating these response weights. Instead
-    of focusing on the proposed method, we will actually be working on
-    estimation of the complete case IPW estimator. This model is less complex
-    and will thus make it easier to understand where we are making mistakes.
-
-  \item We use the following simulation study:
-    \begin{align*}
-      x_i &\stackrel{iid}{\sim} N(0, 1)\\
-      \varepsilon_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
-      \varepsilon_{2i} &\stackrel{iid}{\sim} N(0, 1)\\
-      y_{1i} &= x_i + \varepsilon_{1i} \\
-      y_{2i} &= x_i + \varepsilon_{2i} \\
-    \end{align*}
-
-    To select a missingness pattern for each $i$, we have sequence: first, we
-    select the first variable to observe (or neither), then we either select the
-    second variable or we do not. In the first step, we select $R_{1i} = 1$ with
-    probability $0.4$, $R_{2i} = 1$ with probability $0.4$ and neither variable
-    with probability $0.2$. For the second step, we have the probability of
-    observing the other variable be $\logistic(x_i)$. This yields the following:
-
-    \input{Tables/ipwsim.tex}
-    % TODO: estimate IPW with \pi_{2|1} and \pi_{1|2}.
-
-    The problem with this is that our estimate is biased. For one particular
-    realization of the simulation, here is the distribution of the difference
-    between the estimated and true probabilities of $\pi_{11}$:
-
-    \includegraphics[width = 0.7\linewidth]{diffhist.png}
-  
-\end{itemize}
-
-\newpage
+% \input{estimating_response_mod.tex}
 
 \section*{Minimizing the Variance}
 

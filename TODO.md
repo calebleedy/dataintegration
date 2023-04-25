@@ -1,6 +1,10 @@
 
 # TODO
 
+## April 25, 2023
+
+* [ ] Fix simulation explanation
+
 ## April 20, 2023
 
 * [X] Add papers from `references.bib` to the `Reference/` directory

@@ -1,0 +1,43 @@
+\section*{Estimating the Response Model}
+
+\begin{itemize}
+  \item In most (critically \textit{not} Simulation 4) of the simulations of the
+    previous section, we used the oracle weights when estimating our proposed
+    method. The reasoning for this was straightforward{--}we wanted to ensure
+    that the response model was correctly specified and the best case scenario
+    is to use the oracle weights which we did.
+    
+  \item This section focuses more on estimating these response weights. Instead
+    of focusing on the proposed method, we will actually be working on
+    estimation of the complete case IPW estimator. This model is less complex
+    and will thus make it easier to understand where we are making mistakes.
+
+  \item We use the following simulation study:
+    \begin{align*}
+      x_i &\stackrel{iid}{\sim} N(0, 1)\\
+      \varepsilon_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
+      \varepsilon_{2i} &\stackrel{iid}{\sim} N(0, 1)\\
+      y_{1i} &= x_i + \varepsilon_{1i} \\
+      y_{2i} &= x_i + \varepsilon_{2i} \\
+    \end{align*}
+
+    To select a missingness pattern for each $i$, we have sequence: first, we
+    select the first variable to observe (or neither), then we either select the
+    second variable or we do not. In the first step, we select $R_{1i} = 1$ with
+    probability $0.4$, $R_{2i} = 1$ with probability $0.4$ and neither variable
+    with probability $0.2$. For the second step, we have the probability of
+    observing the other variable be $\logistic(x_i)$. This yields the following:
+
+    \input{Tables/ipwsim.tex}
+    % TODO: estimate IPW with \pi_{2|1} and \pi_{1|2}.
+
+    The problem with this is that our estimate is biased. For one particular
+    realization of the simulation, here is the distribution of the difference
+    between the estimated and true probabilities of $\pi_{11}$:
+
+    \includegraphics[width = 0.7\linewidth]{diffhist.png}
+  
+\end{itemize}
+
+\newpage
+

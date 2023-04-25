@@ -469,15 +469,13 @@ ipw_cc_est <- function(df, oracle = FALSE, alpha = NA) {
 
 }
 
-png("diffhist.png")
-filter(df, r1 == 1, r2 == 1) %>%
-  dplyr::select(-p0, -p1, -p2, -p12, -p21) %>%
-  mutate(diff = pi_11 - true_pi11) %>%
-  pull(diff) %>% 
-  hist(main = "Histogram of Estimated - True") 
-dev.off()
-
-  
+# png("diffhist.png")
+# filter(df, r1 == 1, r2 == 1) %>%
+#   dplyr::select(-p0, -p1, -p2, -p12, -p21) %>%
+#   mutate(diff = pi_11 - true_pi11) %>%
+#   pull(diff) %>% 
+#   hist(main = "Histogram of Estimated - True") 
+# dev.off()
 
 twophase_reg <- function(df) {
 
