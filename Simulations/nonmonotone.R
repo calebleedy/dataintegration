@@ -117,11 +117,8 @@ mc_theta %>%
 # * Run Simulation: Nonmonotone Missingness *
 # *******************************************
 
-# FIXME: miss_resp is misleading. This should be a parameter of nonmono_mar
-# instead it is a parameter for est_nonmono. This should be changed to something
-# like est_weights.
 run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
-                          miss_out, miss_resp, seed, r_ind_y = FALSE) {
+                          miss_out, est_weights, seed, r_ind_y = FALSE) {
 
 
   clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
@@ -145,7 +142,7 @@ run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
 
     tibble(oracle = mean(df$y2),
            ipworacle = ipw_cc_oracle(df),
-           proposed = est_nonmono(df, oracle = !miss_resp))
+           proposed = est_nonmono(df, oracle = !est_weights))
 
   } %>% bind_rows()
 
@@ -179,21 +176,21 @@ run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = -5, cor_y1y2 = 0,
-              miss_out = FALSE, miss_resp = FALSE, seed = 1) %>%
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is -5. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim1" , "m-5", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0,
-              miss_out = FALSE, miss_resp = FALSE, seed = 1) %>%
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim1" , "m0", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 5, cor_y1y2 = 0,
-              miss_out = FALSE, miss_resp = FALSE, seed = 1) %>%
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 5. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim1" , "m5", ".tex"))
@@ -204,21 +201,21 @@ run_init_sims(n_sim = 2000, B = 2000,
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.1,
-              miss_out = FALSE, miss_resp = FALSE, seed = 2) %>%
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
   cat(., file = paste0("../Tables/nonmonosim2" , "c0.1", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.5,
-              miss_out = FALSE, miss_resp = FALSE, seed = 2) %>%
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
   cat(., file = paste0("../Tables/nonmonosim2" , "c0.5", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.9,
-              miss_out = FALSE, miss_resp = FALSE, seed = 2) %>%
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.9") %>%
   cat(., file = paste0("../Tables/nonmonosim2" , "c0.9", ".tex"))
@@ -229,21 +226,21 @@ run_init_sims(n_sim = 2000, B = 2000,
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0,
-              miss_out = TRUE, miss_resp = FALSE, seed = 3) %>%
+              miss_out = TRUE, est_weights = FALSE, seed = 3) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim3" , "c0", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.1,
-              miss_out = TRUE, miss_resp = FALSE, seed = 3) %>%
+              miss_out = TRUE, est_weights = FALSE, seed = 3) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
   cat(., file = paste0("../Tables/nonmonosim3" , "c0.1", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.5,
-              miss_out = TRUE, miss_resp = FALSE, seed = 3) %>%
+              miss_out = TRUE, est_weights = FALSE, seed = 3) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
   cat(., file = paste0("../Tables/nonmonosim3" , "c0.5", ".tex"))
@@ -254,21 +251,21 @@ run_init_sims(n_sim = 2000, B = 2000,
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4, r_ind_y = TRUE) %>%
+              miss_out = FALSE, est_weights = TRUE, seed = 4, r_ind_y = TRUE)%>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim4" , "c0", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.1,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4, r_ind_y = TRUE) %>%
+              miss_out = FALSE, est_weights = TRUE, seed = 4, r_ind_y = TRUE)%>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
   cat(., file = paste0("../Tables/nonmonosim4" , "c0.1", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.5,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4, r_ind_y = TRUE) %>%
+              miss_out = FALSE, est_weights = TRUE, seed = 4, r_ind_y = TRUE)%>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
   cat(., file = paste0("../Tables/nonmonosim4" , "c0.5", ".tex"))
@@ -279,21 +276,21 @@ run_init_sims(n_sim = 2000, B = 2000,
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+              miss_out = FALSE, est_weights = TRUE, seed = 4) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0") %>%
   cat(., file = paste0("../Tables/nonmonosim5" , "c0", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.1,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+              miss_out = FALSE, est_weights = TRUE, seed = 4) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.1") %>%
   cat(., file = paste0("../Tables/nonmonosim5" , "c0.1", ".tex"))
 
 run_init_sims(n_sim = 2000, B = 2000,
               true_mean = 0, cor_y1y2 = 0.5,
-              miss_out = FALSE, miss_resp = TRUE, seed = 4) %>%
+              miss_out = FALSE, est_weights = TRUE, seed = 4) %>%
   knitr::kable("latex", booktabs = TRUE, digits = 3,
   caption = "True Value is 0. Cor(Y1, Y2) = 0.5") %>%
   cat(., file = paste0("../Tables/nonmonosim5" , "c0.5", ".tex"))
@@ -325,7 +322,7 @@ run_resp_sims <- function(n_sim, B, true_mean, cor_y1y2,
     # Parameters
     df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
                       r_ind_y = r_ind_y, miss_out = miss_out,
-                      miss_resp = FALSE, mcar = TRUE)
+                      est_weights = FALSE, mcar = TRUE)
 
     # Estimation
     # We want to compute:

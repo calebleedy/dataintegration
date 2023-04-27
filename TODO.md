@@ -6,7 +6,7 @@
 * [X] Fix simulation explanation
 * [ ] Efficiency comparison with existing method (compare with two-phase
       sampling) of sampling problem
-* [ ] Compare with calibration
+* [X] Compare with calibration
 * [X] Write up calibration idea
 
 ## April 20, 2023
