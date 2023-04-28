@@ -1,0 +1,157 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, mathrsfs, fancyhdr}
+\usepackage{syntonly, lastpage, hyperref, enumitem, graphicx}
+\usepackage{biblatex}
+\usepackage{booktabs}
+\usepackage{float}
+
+\addbibresource{references.bib}
+
+\hypersetup{colorlinks = true, urlcolor = black}
+
+\headheight     15pt
+\topmargin      -1.5cm   % read Lamport p.163
+\oddsidemargin  -0.04cm  % read Lamport p.163
+\evensidemargin -0.04cm  % same as oddsidemargin but for left-hand pages
+\textwidth      16.59cm
+\textheight     23.94cm
+\parskip         7.2pt   % sets spacing between paragraphs
+\parindent         0pt   % sets leading space for paragraphs
+\pagestyle{empty}        % Uncomment if don't want page numbers
+\pagestyle{fancyplain}
+
+\newcommand{\MAP}{{\text{MAP}}}
+\newcommand{\argmax}{{\text{argmax}}}
+\newcommand{\argmin}{{\text{argmin}}}
+\newcommand{\Cov}{{\text{Cov}}}
+\newcommand{\Var}{{\text{Var}}}
+\newcommand{\logistic}{{\text{logistic}}}
+
+\begin{document}
+
+%\lhead{Caleb Leedy}
+\chead{Nonmonotone Missingness}
+%\chead{STAT 615 - Advanced Bayesian Methods}
+%\rhead{Page \thepage\ of \pageref{LastPage}}
+\rhead{April 28, 2023}
+
+\section*{Annotated Bibliography}
+
+\subsection*{Merkouris et al. (2023)}
+
+\begin{description}
+  \item[Title:] Combining National Surveys with Composite Calibration to Improve
+    the Precision of Estimates from the United Kingdom's Living Costs and Food
+    Supply
+
+  \item[Authors:] Takis Merkouris, Paul A. Smith, Andy Fallows
+
+  \item[Journal (Year):] JSSAM (2023)
+
+  \item[Summary:] In some sense this is the application of ideas from Merkouris
+    (2004) and Merkouris (2010) to combine information from the Living Costs and
+    Food Survey (LCF) and the Labour Force Survey (LFS) in the United Kingdom.
+    The overall approach is to use a linear combination of regression estimators
+    from each survey:
+
+    \[\hat Z^{CR} = B \hat Z_1^R + (I - B) Z_2^R\]
+
+    where $B$ is a matrix, $Z_1^R$ is the regression estimator from the first
+    survey and $Z_2^R$ is the regression estimator from the second survey. Like
+    Merkouris (2004), they choose the optimal $B$ that minimizes the variance of
+    the estimator while still having the estimation of $\hat Z$ be the same for
+    each survey. To incorporate results from Merkouris (2010), they also control
+    totals at the regional level (a small-area estimation problem). (More
+    details regarding the derivation of the optimal $B$ is left to the summary
+    of Merkouris (2004) and Merkouris (2010).) 
+
+    Methodologically, the biggest innovation is the jackknife variance
+    estimation that they use. However, even this seems relatively
+    straightforward. I think that the main contribution of this paper is to show
+    a dramatic reduction in the variance of regression estimates due to data
+    integration.
+
+  \item[Limitations:]\;
+    \begin{itemize}
+      \item They only integrate two surveys.
+      \item They do not consider informative sampling. % FIXME
+    \end{itemize}
+  \item[Extensions:]\;
+    \begin{itemize}
+      \item I think that it would be interesting if the supports of several
+        control variables were not the same. This would be evidence of selection
+        bias and we would need to account for it.
+    \end{itemize}
+\end{description}
+
+\subsection*{Merkouris (2004)}
+
+\begin{description}
+  \item[Title:] Combining Independent Regression Estimators from Multiple
+    Surveys 
+
+  \item[Author:] Takis Merkouris
+
+  \item[Journal (Year):] JASA (2004)
+  \item[Summary:] This paper develops the methodology to combine regression
+    estimators from multiple surveys. Given two surveys the paper suggests
+    combining the regression estimators as,
+
+    \[\hat Z^{CR} = B\hat Z_1^R + (I - B) \hat Z_2^R\]
+
+    where $B = \phi Z_2' L_2 Z_2 ((1 - \phi) Z_1'L_1 Z_1 + \phi Z_2'L_2
+    Z_2)^{-1}$, $\phi = \frac{n_1 / d_1}{n_1 / d_1 + n_2 / d_2}$, $n_i$ is the
+    sample size from survey $i$, $d_i$ is the design effects from survey $i$ of
+    $z$, $Z_i$ is a matrix of common columns between the two surveys, 
+    $L_i = I - X_i (X_i' X_i)^{-1} X_i'$, and $X_i$ are additional covariates
+    that we have information to calibrate. In this way, the combined regression
+    estimator can have minimal variance while having the estimates of $Z$ from
+    each survey match. The weights also adjust for sample size and the strength
+    of the correlation between $Z$ and $X$. This is the main method used in
+    Merkouris (2023) except that Merkouris (2023) also adjusts for regional
+    totals as developed in Merkouris (2010).
+
+\end{description}
+
+\subsection*{Merkouris (2010)}
+
+\begin{description}
+  \item[Title:] Combining information from multiple surveys by using regression
+    for efficient small domain estimation
+
+  \item[Author:] Takis Merkouris
+
+  \item[Journal (Year):] JRSSB (2010)
+  \item[Summary:] The bulk of this paper compares three estimators: the
+    population control $\hat Y_d^R \equiv \hat Y_d + \hat \beta_d' (t_x - \hat
+    X)$ where $\hat \beta = (X_s' \Lambda_s X_s)^{-1} X_s'\Lambda_s Y_{s_d}$,
+    the domain control $\check Y_d^R \equiv \hat Y_d + \check \beta_d' (t_{x_d}
+    - \hat X_d)$ where $\check \beta_d = (X_{s_d}' \Lambda_{s_d} X_{s_d})^{-1}
+    X_{s_d}' \Lambda_{s_d} Y_{s_d}$, and the domain size control $\tilde Y_d^R
+    \equiv \hat Y_d^R + \tilde \beta_d' (N_d - \hat N_d^R)$ where $\tilde
+    \beta_d = (1_{s_d}' L_s 1_{s_d})^{-1} 1_{s_d}' L_s Y_{s_d}$. Notice that the
+    last estimator is based off of the population control $\hat Y_d^R$ instead
+    of the HT-estimator $\hat Y_d$. Since this model incorporates both the
+    population variables and the domain indicators, the corresponding regression
+    estimator can be thought of as an application of the augmented regression in 
+    Merkouris (2004).
+
+\end{description}
+
+% \begin{description}
+%   \item[Title:]
+%   \item[Author:]
+%   \item[Journal (Year):]
+%   \item[Summary:]
+%   \item[Limitations:]\;
+%     \begin{itemize}
+%       \item
+%     \end{itemize}
+%   \item[Extensions:]\;
+%     \begin{itemize}
+%       \item
+%     \end{itemize}
+% \end{description}
+
+\end{document}
