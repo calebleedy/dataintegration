@@ -4,7 +4,7 @@
 ## April 25, 2023
 
 * [X] Fix simulation explanation
-* [ ] Efficiency comparison with existing method (compare with two-phase
+* [X] Efficiency comparison with existing method (compare with two-phase
       sampling) of sampling problem
 * [X] Compare with calibration
 * [X] Write up calibration idea

@@ -14,11 +14,13 @@
 # A. Monotone estimators
 #   1. est_mono -- Classical monotone estimator
 #   2. ipw_mono_est -- IPW estimator with estimated weights
+#   3. mono_est_weights -- Calibration estimator
 # B. Nonmonotone estimators
 #   1. est_nonmono -- The proposed estimator in the nonmonotone setting
 #   2. ipw_cc_oracle -- IPW estimator with oracle weights
 #   3. ipw_cc_est -- IPW estimator with weights estimated
 #   4. twophase_reg -- Unfinished
+#   5. nonmono_est_weights -- Calibration estimator 
 
 # ------------------------------------------------------------------------------
 
@@ -99,6 +101,53 @@ ipw_mono_est <- function(df, est = FALSE) {
 
 }
 
+mono_est_weights <- function(df) {
+
+  # Steps:
+  # 1. Calibrate with w1 weights on Y_1
+  # 2. Calibrate with w2 weights on Y_2 using w1 weights on Y_1.
+
+  # 1. Calibrate with w1 weights on Y_1
+  n1 <- sum(df$r1)
+  w1 <- Variable(n1)
+  objective <- Minimize(sum_squares(w1))
+  Tx <- mean(df$x)
+  xr1_vec <-
+    filter(df, r1 == 1) %>%
+    pull(x)
+  constraints <- 
+    list(t(w1) %*% matrix(xr1_vec, ncol = 1) == Tx,
+         w1 >= 0,
+         t(w1) %*% matrix(rep(1, n1), ncol = 1) == 1)
+  p1 <- Problem(objective, constraints)
+  res1 <- solve(p1)
+
+  df$w1 <- 0
+  df$w1[df$r1 == 1] <- res1$getValue(w1)
+
+  # 2. Calibrate with w2 weights on Y_2 using w1 weights on Y_1.
+  n2 <- sum(df$r2) # Only works because of monotone.
+  w2 <- Variable(n2)
+  objective <- Minimize(sum_squares(w2))
+  Exw <- sum(df$w1 * df$x)
+  Ey1w <- sum(df$w1 * df$y1)
+  xr2_vec <- filter(df, r2 == 1) %>% pull(x)
+  y1r2_vec <- filter(df, r2 == 1) %>% pull(y1)
+  constraints <-
+    list(w2 >= 0,
+         t(w2) %*% matrix(rep(1, n2), ncol = 1) == 1,
+         t(w2) %*% matrix(xr2_vec, ncol = 1) == Exw,
+         t(w2) %*% matrix(y1r2_vec, ncol = 1) == Ey1w)
+  p2 <- Problem(objective, constraints)
+  res2 <- solve(p2)
+
+  df$w2 <- 0
+  df$w2[df$r2 == 1] <- res2$getValue(w2)
+
+  # Objective is E[g] = E[y_2]
+  sum(df$w2 * df$y2)
+
+}
 # **************************************
 # * Estimating Nonmonotone Missingness *
 # **************************************
@@ -238,10 +287,161 @@ ipw_cc_est <- function(df, oracle = FALSE, alpha = NA) {
 #   hist(main = "Histogram of Estimated - True") 
 # dev.off()
 
-twophase_reg <- function(df) {
+twophase_reg <- function(df, reg_on_y1 = TRUE) {
 
   gfun <- "y2"
 
+  # Steps:
+  # 1. Get weights
+  # 2. Estimate beta in complete case
+  # 3. Impute missing values
+
+  # Get weights
+  pi_11 <- df$p12 * df$p1 + df$p21 * df$p2
+  df$w <- 1 / pi_11
+
+  if (reg_on_y1) {
+    df_11 <- filter(df, r1 == 1, r2 == 1)
+    mod <- 
+      lm(as.formula(paste0(gfun, " ~ x + y1")), weights = w, data = df_11)
+
+    df_1 <- filter(df, r1 == 1)
+
+    return(mean(predict(mod, newdata = df_1)))
+
+  } else {
+    df_11 <- filter(df, r1 == 1, r2 == 1)
+    mod <- lm(as.formula(paste0(gfun, " ~ x")), weights = w, data = df_11)
+
+    return(mean(predict(mod, newdata = df)))
+
+  }
+}
+
+threephase_reg <- function(df) {
+
+  gfun <- "y2"
+
+  # Steps:
+  # 1. Get weights
+  # 2. Estimate beta in complete case
+  # 3. Estimate missing y1 values
+  # 4. Impute missing values
+
+  # Get weights
+  pi_11 <- df$p12 * df$p1 + df$p21 * df$p2
+  df$w <- 1 / pi_11
+
+  # Estimate beta
+  df_11 <- filter(df, r1 == 1, r2 == 1)
+  mean_y2 <- sum(df_11$w * df_11$y2) / sum(df_11$w)
+  mean_x2 <- sum(df_11$w * df_11$x) / sum(df_11$w)
+  mean_y1 <- sum(df_11$w * df_11$y1) / sum(df_11$w)
+
+  df_11[[gfun]] <- df_11[[gfun]] - mean_y2
+  df_11$x <- df_11$x - mean_x2
+  df_11$y1 <- df_11$y1 - mean_y1
+
+  mod <- lm(as.formula(paste0(gfun, " ~ x + y1")), weights = w, data = df_11)
+
+  df_1 <- 
+    filter(df, r1 == 1) %>%
+    mutate(w_y1 = 1 / p1) 
+
+  mean_x1 <- sum(df_1$x * df_1$w_y1) / sum(df_1$w_y1)
+  mean_y11 <- sum(df_1$y1 * df_1$w_y1) / sum(df_1$w_y1)
+
+  df_1$x <- df_1$x - mean_x1
+  df_1$y1 <- df_1$y1 - mean_y11
+
+  mod_y1 <- lm(y1 ~ x, weights = w_y1, data = df_1)
+
+  # 1. [X] Change estimate of \hat \beta_3 to be centered at 0.
+  # 2. [X] Construct three phase estimator according to (3.3.38).
+  #   * Need \bar y_2, \bar x_1, \bar x_2, \bar \hat y_1, \bar y_1
+  bar_x1 <- sum(1 / df$p1 * df$x) / sum(1 / df$p1)
+  bar_est_y1 <- mean(predict(mod_y1, newdata = df))
+
+  mean_y2 + (bar_x1 - mean_x2) * mod$coefficients[2] + 
+    (bar_est_y1 - mean_y1) * mod$coefficients[3]
 
 }
+
+nonmono_est_weights <- function(df) {
+
+  gfun <- "y2"
+
+  # Steps:
+  # 1. Compute w1--the weights between U and A1.
+  # 2. Compute w2--the weights between U and A2.
+  # 3. Compute wc--the weights between A1, A2, U, and the core points.
+
+  # 1. Compute w1--the weights between U and A1.
+  #   a. Estimate E[g_i \mid X_i].
+  #   b. Compute weights on A1.
+  Eg_mod <- lm(as.formula(paste0(gfun, " ~ x")), data = df)
+  df$Egx <- predict(Eg_mod)
+
+  Mgx <- mean(df$Egx)
+  n1 <- sum(df$r1)
+  w1 <- Variable(n1)
+  Egx_r1 <- filter(df, r1 == 1) %>% pull(Egx)
+  const <- list(w1 >= 0,
+                t(w1) %*% matrix(rep(1, n1), ncol = 1) == 1,
+                t(w1) %*% matrix(Egx_r1, ncol = 1) == Mgx)
+
+  p1 <- Problem(Minimize(sum_squares(w1)), const)
+  res1 <- solve(p1)
+
+  df$w1 <- 0
+  df$w1[df$r1 == 1] <- res1$getValue(w1)
+
+  # 2. Compute w2--the weights between U and A2.
+  #   a. Compute weights on A2.
+  n2 <- sum(df$r2)
+  w2 <- Variable(n2)
+  Egx_r2 <- filter(df, r2 == 1) %>% pull(Egx)
+  const <- list(w2 >= 0,
+                t(w2) %*% matrix(rep(1, n2), ncol = 1) == 1,
+                t(w2) %*% matrix(Egx_r2, ncol = 1) == Mgx)
+
+  p2 <- Problem(Minimize(sum_squares(w2)), const)
+  res2 <- solve(p2)
+
+  df$w2 <- 0
+  df$w2[df$r2 == 1] <- res2$getValue(w2)
+
+  # 3. Compute wc--the weights between A1, A2, U, and the core points.
+  #   a. Estimate E[g_i \mid X_i, Y_{1i}].
+  #   b. Estimate E[g_i \mid X_i, Y_{2i}].
+  #   c. Compute core weights on each part simultaneously.
+  df_1 <- filter(df, r1 == 1)
+  Eg1_mod <- lm(as.formula(paste0(gfun, " ~ x + y1")), data = df_1)
+  df$Eg1 <- 0
+  df$Eg1[df$r1 == 1] <- predict(Eg1_mod)
+
+  # E[y_2 | y_2 ] = y_2
+  # df_2 <- filter(df, r2 == 1)
+  # Eg2_mod <- lm(as.formula(paste0(gfun, " ~ x + y2")), data = df_2)
+
+  df_11 <- filter(df, r1 == 1, r2 == 1)
+  n_11 <- nrow(df_11)
+  wc <- Variable(n_11)
+
+  G1 <- sum(df$w1 * df$Eg1)
+  G2 <- sum(df$w2 * df$y2)
+  G3 <- mean(df$Egx)
+  const <- list(wc >= 0,
+                t(wc) %*% matrix(rep(1, n_11), ncol = 1) == 1,
+                t(wc) %*% matrix(df_11$Eg1, ncol = 1) == G1,
+                t(wc) %*% matrix(df_11$y2, ncol = 1) == G2,
+                t(wc) %*% matrix(df_11$Egx, ncol = 1) == G3)
+
+  p3 <- Problem(Minimize(sum_squares(wc)), const)
+  res3 <- solve(p3)
+
+  sum(df[[gfun]][df$r1 == 1 & df$r2 == 1] * res3$getValue(wc))
+
+}
+
 

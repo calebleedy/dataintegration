@@ -54,6 +54,11 @@ mono_mar <- function(n, mean_y2 = 0) {
 
   # 3. Reveal hidden variables.
   tibble(x = x_vec, y1 = y1, y2 = y2, r1 = r1, r2 = r2) %>%
+    mutate(p1 = expit(x_vec)) %>%
+    mutate(p12 = expit(y1)) %>%
+    mutate(p21 = 0) %>%
+    mutate(p2 = 0) %>%
+    mutate(pi_11 = p1 * p12) %>%
     mutate(r2 = ifelse(r1 == 0, 0, r2))
 
 }

@@ -72,8 +72,8 @@ related to nonmonotone missing data.
         \item Using the covariate $X_i$, generate probabilities for each element
           $i$ $p_0$, $p_1$, and $p_2$ such that $p_0 + p_1 + p_2 = 1$. 
         \item Select one option based on the three probabilities for each
-          element $i$. If 0 is selected: $R_1 = 0$ and $R_2 = 0$. If 1 is
-          selected $R_1 = 1$. If 2 is selected, $R_2 = 1$.
+          element $i$. If 0 is selected: $R_1 = 0$ and $R_2 = 0$; if 1 is
+          selected $R_1 = 1$; if 2 is selected, $R_2 = 1$.
         \item We take the next step in multiple cases. If 0 was selected, we are
           done. If 1 was selected, we generate probabilities $p_{12}$ based on
           $X$ and $Y_1$. Then based on this probability, we determine if $R_2 =
@@ -133,7 +133,7 @@ related to nonmonotone missing data.
     \input{Tables/monomar_t0.tex}
     \input{Tables/monomar_t5.tex}
 
-    Overall, these results are mostly what I would have expected. All of the
+    Overall, these results are mostly what I would have expected. All the
     algorithms estimate the true value of $\theta$ correctly in each case, with
     the oracle estimate having the smallest variance followed by the
     semiparametric algorithm. If there is anything surprising it is that the IPW
@@ -195,7 +195,7 @@ related to nonmonotone missing data.
     We also want to simulate data that is correlated. For this simulation, we
     focus on $\Cov(Y_1, Y_2)$. The data generating process now has $\sigma_{yy}
     \neq 0$. We are still interested in $\bar Y_2$ and we still run 2000
-    simulation with 2000 observations. In all of the next simulations the true
+    simulation with 2000 observations. In all the next simulations the true
     value of $\theta = 0$. The results are the following:
 
     \input{Tables/nonmonosim2c0.1.tex}
@@ -246,7 +246,7 @@ related to nonmonotone missing data.
     \newpage
 
     Thus, the proposed method is unbiased with a misspecified outcome model.
-    We now show a simulation where the outcome model is correctly specified but
+    We now show a simulation where the outcome model is correctly specified, but
     the response model is not.
 
   \item \textbf{Simulation 4 with Nonmonotone MAR}:
@@ -264,7 +264,7 @@ related to nonmonotone missing data.
         probability $0.2$. If neither, $R_1 = 0$ and $R_2 = 0$. Otherwise,
         continue to Step 2.
       \item (Stage 2) With probability $p_i \propto \logistic(x_i)$, choose to
-        observed the other $Y$ variable. 
+        observe the other $Y$ variable. 
     \end{enumerate}
 
     This sequence generates the missingness indicators $R_1$ and $R_2$. Since,
@@ -341,7 +341,7 @@ related to nonmonotone missing data.
     that $\hat \theta_{eff}$ is also unbiased. This means that $\hat
     \theta_{eff}$ is doubly robust.
 
-  \item However, one of the key steps is that \textit{all} of the response
+  \item However, one of the key steps is that \textit{all} the response
     models are free of $Y$. In a previous iteration of Simulation 4, we had
     adopted the framework of \cite{robins1997non} where we first to observe the
     first variable and see if we observe the second variable. In this case, the
@@ -389,7 +389,7 @@ related to nonmonotone missing data.
     of $X$ (i.e. we write $\pi_{11}$ instead of $\pi_{11}(X)$).
   
   \item To compute the variance, we first solve for each covariance combination.
-    Basically, all these computations rely of the following ideas. First, we
+    Basically, all these computations rely on the following ideas. First, we
     assume that the response model is correctly specified. Consequently,
     $E[A] = E[B] = E[C] = E[D] = 0$ and things work out better. This helps when
     we take the covariance conditional on $X$ because the inner expectations are
@@ -399,7 +399,7 @@ related to nonmonotone missing data.
     specified, we have $E[R_1 \mid X] = \pi_{1+}$, $E[R_2 \mid X] = \pi_{2+}$,
     and $E[R_1, R_2 \mid X] = \pi_{11}$.
 
-    The overall approach to each of this computations is the following:
+    The overall approach to each of these computations is the following:
     (1) take conditional expectations with respect to $X$ (the $\Cov(E[\cdot])$
     term is zero), (2) expand the covariance to $E[XY] - E[X]E[Y]$ (the second
     term is also zero), (3) by the MAR assumption $g, a_2, b_2$ are independent
@@ -583,19 +583,22 @@ related to nonmonotone missing data.
 
 \end{itemize}
 
-\textbf{Questions for Dr. Kim}
-\begin{itemize}
-  \item Where do we go from here?
-  \item This is a functional expectation that I need to calibrate. Should I use
-    some sort of basis spline to try to estimate these expectations and then set
-    them equal to zero? I don't think that I have worked with this kind of
-    constraint before.
-\end{itemize}
+%\textbf{Questions for Dr. Kim}
+%\begin{itemize}
+%  \item Where do we go from here?
+%  \item This is a functional expectation that I need to calibrate. Should I use
+%    some sort of basis spline to try to estimate these expectations and then set
+%    them equal to zero? I don't think that I have worked with this kind of
+%    constraint before.
+%\end{itemize}
+
 %\input{prop_full_nonmonoest.tex}
 
 \newpage
 
 \input{calibration_comparison.tex}
+
+\input{efficiency_twophase.tex}
 
 \printbibliography
 

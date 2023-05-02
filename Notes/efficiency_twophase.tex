@@ -1,0 +1,152 @@
+
+\section*{Efficiency of Proposed Estimator}
+
+One of our main goals is to show that we have an efficient estimator. We
+want to ensure that our estimator is more efficient (lower MSE or really zero
+bias and a smaller variance) than other competing estimators. We have already
+demonstrated superior performance compared to the IPW estimator with known
+weights. Now, we want to compare our estimator with two-phase and three-phase 
+regression estimators.
+
+\subsection*{Two and Three Phase Regression Estimators}
+
+\begin{itemize}
+  \item The simulation setup that we have been running generates monotone and
+    nonmonotone missing patterns because we always observe $X$, yet we observe
+    $Y_1$ and $Y_2$ with missingness. This creates the need to extend the
+    traditional two-phase estimator to become a three-phase estimator. The
+    two-phase regression estimator is really just a regression estimator with
+    the ``finite population'' being Phase 1 of the sample. Thus, a valid
+    two-phase estimator for $\theta = E[Y_2]$ is
+
+    \[\hat \theta = \bar y_2 + (\bar x_1 - \bar x_2) \hat \beta\]
+
+    where $\bar y_2 = n_2^{-1} \sum_{i \in U} I(i \in A_2) y_2$ and $\bar x_k =
+    n_k^{-1} \sum_{i \in U} I(i \in A_k) x_i$ where $n_k$ is the number of
+    elements in $A_k$ where $A_k$ is the Phase $k$ sample. In this case, $\hat
+    \beta$ solves the following equation for $\beta_0$ and $\beta_1$,
+
+    \[\sum_{i \in A_2} (y_{2i} - \beta_0 - \beta_1 x_i)^2 = 0.\]
+
+  \item Notice that the previous construction of the two-phase estimator ignored
+    the variable $Y_1$. We can incorporate this into the model using a 
+    three-phase estimator. From \cite{fuller2009sampling}, the three-phase
+    estimator is 
+
+    \begin{align*}
+      \bar y_{2, 2p} &= \bar y_2 + (\bar x_0 - \bar x_{2}) \hat \beta_1 + 
+      (\bar y_{1, reg} - \bar y_{1, 2p}) \hat \beta_2
+    \end{align*}
+
+    where 
+    \begin{align*}
+      \bar x_0 &= n^{-1} \sum_{i \in U} x_i \\
+      \bar x_1 &= \left(\sum_{i \in A_1} \pi_{1i}^{-1}\right)^{-1} 
+                  \sum_{i \in A_1} \pi_{1i}^{-1} x_i\\
+      \bar x_2 &= \left(\sum_{i \in A_2} \pi_{2i}^{-1}\right)^{-1} 
+                  \sum_{i \in A_2} \pi_{2i}^{-1} x_i\\
+      \bar y_{1, reg} &= \bar y_{1, 1p} + (\bar x_0 - \bar x_1)\hat \beta_{1p}\\
+      \bar y_{1, 1p} &= \left(\sum_{i \in A_1} \pi_{1i}^{-1}\right)^{-1} 
+                        \sum_{i \in A_1} \pi_{1i}^{-1} y_{1i}\\
+      \bar y_{1, 2p} &= \left(\sum_{i \in A_2} \pi_{2i}^{-1}\right)^{-1} 
+                        \sum_{i \in A_2} \pi_{2i}^{-1} y_{1i}\\
+      \hat \beta_{1p} &= \left(\sum_{i \in A_1} (x_i - \bar x_1)^2
+      \pi_{1i}^{-1}\right)^{-1} \sum_{i \in A_1} (x_i - \bar x_1)\pi_{1i}^{-1}
+      (y_{1i} - \bar y_{1, 1p})\\
+      \hat \beta_1 &= \left(\sum_{i \in A_2} (x_i - \bar x_2, y_{1i} - \bar
+      y_{1, 2p})' \pi_{2i}^{-1} (x_i - \bar x_2, y_{1i} - \bar y_{1,
+      2p})\right)^{-1} \sum_{i \in A_2} (x_i - \bar x_2) \pi_{2i}^{-1} (y_{2i} -
+      \bar y_2)\\
+      \hat \beta_2 &= \left(\sum_{i \in A_2} (x_i - \bar x_2, y_{1i} - \bar
+      y_{1, 2p})' \pi_{2i}^{-1} (x_i - \bar x_2, y_{1i} - \bar y_{1,
+      2p})\right)^{-1} \sum_{i \in A_2} (y_{1i} - \bar y_{1, 2p}) \pi_{2i}^{-1} 
+      (y_{2i} - \bar y_2)\\
+    \end{align*}
+
+  \item Notice that the three-phase estimator implicitly assumes a monotone 
+    missingness model. It ignores the values of $y_2$ that have an unobserved
+    $y_1$.
+
+\end{itemize}
+
+\subsection*{Monotone Results}
+
+\begin{itemize}
+  \item First, we test the two-phase and three-phase regression estimators with
+    a monotone simulation. Like the previous monotone simulations,
+    we first generate data from the following distributions:
+    \begin{align*}
+        X_i &\stackrel{iid}{\sim} N(0, 1) \\
+        Y_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
+        Y_{2i} &\stackrel{iid}{\sim} N(\theta, 1)
+    \end{align*}
+
+    Then, we create the probabilities $p_1 = \logistic(x_i)$ and 
+    $p_{12} = \logistic(y_{1i})$. Including the calibration estimator from the
+    previous section (note, these are the same as the previous monotone tables)
+    this yields,
+
+    \input{Tables/calimono_t-5.tex}
+    \input{Tables/calimono_t0.tex}
+    \input{Tables/calimono_t5.tex}
+
+  \item The proposed semiparametric estimator and the calibration estimator
+    seem to both outperform the regression estimators. With smaller bias and
+    smaller variance our estimators do better.
+
+  \item It may be puzzling to see that the three-phase estimator does worse than
+    the two-phase; however, I think that there is a good reason for this. In the
+    simulation, $y_2 = x + \varepsilon$. This is the regression from the
+    two-phase estimator. However, the three-phase estimator measures $y_2 \sim x
+    + y_1 + \varepsilon$, which just adds noise. This is why I think the
+    standard deviation of the three-phase regression estimator is larger.
+  
+\end{itemize}
+
+\subsection*{Nonmonotone Results}
+
+\begin{itemize}
+  \item Similar to the monotone results, we also use the same simulation as the
+    nonmonotone calibration estimators. Repeating the simulation outline, we are
+    trying to estimate $\theta = E[y_2]$ and we have
+
+    \begin{enumerate}
+      \item Generate $X_i$, $\varepsilon_{1i}$, and $\varepsilon_{2i}$ from the
+        following distributions:
+
+        \begin{align*}
+          x_i &\stackrel{iid}{\sim} N(0, 1)\\
+          \varepsilon_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
+          \varepsilon_{2i} &\stackrel{iid}{\sim} N(\theta, 1)\\
+        \end{align*}
+
+        Then we have
+        \[y_{1i} = x_i + \varepsilon_{1i} \text{ and } y_{2i} = x_i +
+        \varepsilon_{2i}.\]
+
+      \item Then we have to select the variables to observe. We always observe
+        $X_i$. Then we choose to either observe $Y_1$ with probability $0.4$,
+        $Y_2$ with probability $0.4$ or neither with probability $0.2$.
+
+      \item If neither then $R_{1i} = 0$ and $R_{2i} = 0$. Otherwise, if we 
+        observe $Y_1$ then $R_1 = 1$ and if we observe $Y_2$ then $R_2 = 1$.
+
+      \item If we observe either $Y_1$ or $Y_2$ then with probability $p \propto
+        \logistic(Y_k)$ where $Y_k$ is the observed $Y$ variable we choose to
+        observe the other $Y$ variable.
+
+      \item If the other $Y$ variable is observed then the corresponding $R_k =
+        1$. Otherwise, $R_k = 0$.
+    \end{enumerate}
+
+    \input{Tables/calinonmono1m-5.tex}
+    \input{Tables/calinonmono1m0.tex}
+    \input{Tables/calinonmono1m5.tex}
+
+  \item Overall, it seems that the proposed estimator and calibration estimator
+    outperform the two regression estimators. The regression estimators display
+    slight bias (perhaps because of the nonmonotonicity).
+
+\end{itemize}
+
+\newpage
