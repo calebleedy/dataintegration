@@ -1,0 +1,24 @@
+
+\section*{Multiphase Estimators}
+
+\begin{itemize}
+  \item The three-phase regression estimator of $\theta$:
+  \begin{eqnarray*} 
+    \hat{\theta}_{\rm reg} &=& \frac{1}{n} \sum_{i \in A_2}\frac{1}{ \pi_{2i}
+    }\left\{ y_{i}  - \hat{E} ( Y \mid x_i, z_{i} ) \right\} \\
+    &+& \frac{1}{n} \sum_{i \in A_1}\frac{1}{ \pi_{1i}  }\left\{ \hat{E} ( Y
+    \mid x_i, z_{i} ) - \hat{E} ( Y \mid x_i ) \right\} + \frac{1}{n} \sum_{i
+    \in U} \hat{E} ( Y \mid x_i ) \\
+    &=& \bar{x}_0' \hat{\beta} + \left( \bar{x}_1' \hat{\gamma}_x + \bar{z}_1'
+    \hat{\gamma}_z - \bar{x}_1' \hat{\beta} \right) + \{ \bar{y}_2- (\bar{x}_2'
+    \hat{\gamma}_x + \bar{z}_2' \hat{\gamma}_z ) \} \\
+    &=& \bar{y}_2 + \{ \bar{x}_1' \hat{\gamma}_x + \bar{z}_1' \hat{\gamma}_z  -
+    (\bar{x}_2' \hat{\gamma}_x + \bar{z}_2' \hat{\gamma}_z ) \} +\left(
+    \bar{x}_0' \hat{\beta} - \bar{x}_1' \hat{\beta} \right) 
+  \end{eqnarray*} 
+  \item We can view the above three-phase regression estimator as a projection
+    (= mass imputation) estimator of Kim and Rao (2012, Biometrika).
+  
+\end{itemize}
+
+\newpage

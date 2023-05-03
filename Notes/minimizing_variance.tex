@@ -1,0 +1,230 @@
+
+\section*{Minimizing the Variance}
+
+\begin{itemize}
+  \item The goal of this section is to find optimal values of $b_2(X, Y_1)$ and
+    $a_2(X, Y_2)$ such that the variance of $\hat \theta_{eff}$ is minimized.
+
+  \item Recall:
+
+    \begin{align*}
+      \hat \theta_{eff} - \hat \theta_n 
+      &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] \left(1 - \frac{R_{1i}}{\pi_{1+}}
+      - \frac{R_{2i}}{\pi_{2+}} + \frac{R_{1i}R_{2i}}{\pi_{11}}\right) \\
+      &+ n^{-1} \sum_{i = 1}^n b_2(X_i, Y_{1i}) \left(\frac{R_{1i}}{\pi_{1+}} -
+      \frac{R_{1i}R_{2i}}{\pi_{11}}\right)\\
+      &+ n^{-1} \sum_{i = 1}^n a_2(X_i, Y_{2i}) \left(\frac{R_{2i}}{\pi_{2+}} -
+      \frac{R_{1i}R_{2i}}{\pi_{11}}\right)\\
+      &+ n^{-1} \sum_{i = 1}^n g_i \left(\frac{R_{1i}R_{2i}}{\pi_{11}} -
+      1\right) \\
+      &\equiv A + B + C + D.
+    \end{align*}
+
+  \item Notice that we will suppress the fact that response models are functions
+    of $X$ (i.e. we write $\pi_{11}$ instead of $\pi_{11}(X)$).
+  
+  \item To compute the variance, we first solve for each covariance combination.
+    Basically, all these computations rely on the following ideas. First, we
+    assume that the response model is correctly specified. Consequently,
+    $E[A] = E[B] = E[C] = E[D] = 0$ and things work out better. This helps when
+    we take the covariance conditional on $X$ because the inner expectations are
+    zero. The second key insight it to notice that $E[R_{j}^k] = E[R_j]$ for $j
+    \in \{1, 2\}$ and $k \in \mathbb{N}$. This is because $R$ is a binary
+    variable. Third, since we assume that the response models are correctly
+    specified, we have $E[R_1 \mid X] = \pi_{1+}$, $E[R_2 \mid X] = \pi_{2+}$,
+    and $E[R_1, R_2 \mid X] = \pi_{11}$.
+
+    The overall approach to each of these computations is the following:
+    (1) take conditional expectations with respect to $X$ (the $\Cov(E[\cdot])$
+    term is zero), (2) expand the covariance to $E[XY] - E[X]E[Y]$ (the second
+    term is also zero), (3) by the MAR assumption $g, a_2, b_2$ are independent
+    of $R_1$ and $R_2$ and we can take the latter out of the expectation, (4)
+    evaluate and simplify expressions involving $E[R]$.
+  
+    \begin{align*}
+      \Cov(A, B) &= n^{-2} \sum_{i = 1}^n E\left[\Cov\left(E[g_i \mid X] \left(1
+      - \frac{R_{1i}}{\pi_{1+}} - \frac{R_{2i}}{\pi_{2+}} +
+      \frac{R_{1i}R_{2i}}{\pi_{11}}\right) \mid X_i,\right. \right.\\
+      &\qquad \qquad \qquad \qquad b_2(X_i, Y_{1i}) \left. \left.
+      \left(\frac{R_{1i}}{\pi_{1+}} - \frac{R_{1i}R_{2i}}{\pi_{11}}\right) \mid
+      X_i\right)\right]\\
+      &= n^{-1} E\left[E\left[E[g \mid X] \left(1 - \frac{R_{1i}}{\pi_{1+}} -
+      \frac{R_{2i}}{\pi_{2+}} + \frac{R_{1i}R_{2i}}{\pi_{11}}\right)
+      b_2(X_i, Y_{1i}) \left(\frac{R_{1i}}{\pi_{1+}} -
+      \frac{R_{1i}R_{2i}}{\pi_{11}}\right) \mid X \right]\right] \\
+      &= n^{-1} E\left[E[g \mid X] E[b_2(X, Y_1) \mid X]
+      \left(\frac{1}{\pi_{1+}} + \frac{1}{\pi_{2+}} - \frac{1}{\pi_{11}} -
+      \frac{\pi_{11}}{\pi_{1+} \pi_{2+}}\right)\right].
+    \end{align*}
+
+    By symmetry,
+    \begin{align*}
+      \Cov(A, C) 
+      &= n^{-1} E\left[E[g \mid X] E[a_2(X, Y_2) \mid X]
+      \left(\frac{1}{\pi_{1+}} + \frac{1}{\pi_{2+}} - \frac{1}{\pi_{11}} -
+      \frac{\pi_{11}}{\pi_{1+} \pi_{2+}}\right)\right].
+    \end{align*}
+
+    \begin{align*}
+      \Cov(A, D) &= n^{-1} E\left[E\left[E[g \mid X] \left(1 -
+      \frac{R_{1i}}{\pi_{1+}} - \frac{R_{2i}}{\pi_{2+}} +
+      \frac{R_{1i}R_{2i}}{\pi_{11}}\right) g \left(\frac{R_1 R_2}{\pi_{11}} -
+      1\right) \mid X\right] \right]\\
+      &= n^{-1} E\left[E[g \mid X]^2 \left(\frac{-1}{\pi_{1+}} -
+      \frac{1}{\pi_{2+}} + 2\right)\right].
+    \end{align*}
+
+    \begin{align*}
+      \Cov(B, C) &= n^{-1} E\left[E[b_2(X, Y_1) \mid X] E[a_2(X, Y_2) \mid X]
+      E\left[\left(\frac{R_1}{\pi_{1+}} - \frac{R_1 R_2}{\pi_{11}}\right)
+      \left(\frac{R_2}{\pi_{2+}} - \frac{R_1 R_2}{\pi_{11}}\right) \mid
+      X\right]\right]\\
+      &= n^{-1} E\left[E[b_2(X, Y_1) \mid X] E[a_2(X, Y_2) \mid X]
+      \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} - \frac{1}{\pi_{1+}} -
+      \frac{1}{\pi_{2+}} + \frac{1}{\pi_{11}}\right)\right].
+    \end{align*}
+
+    \begin{align*}
+      \Cov(B, D) &= n^{-1} E\left[ E[b_2(X, Y_1) \mid X] E[g \mid X]
+      E\left[\left(\frac{R_1}{\pi_{1+}} - \frac{R_1 R_2}{\pi_{11}}\right)
+      \left(\frac{R_1 R_2}{\pi_{11}} - 1\right) \mid X\right] \right]\\
+      &= n^{-1} E\left[ E[b_2(X, Y_1) \mid X] E[g \mid X]
+      \left(\frac{1}{\pi_{1+}} - \frac{1}{\pi_{11}}\right)\right].
+    \end{align*}
+
+    By symmetry,
+    \begin{align*}
+      \Cov(C, D) 
+      &= n^{-1} E\left[ E[a_2(X, Y_2) \mid X] E[g \mid X]
+      \left(\frac{1}{\pi_{2+}} - \frac{1}{\pi_{11}}\right)\right].
+    \end{align*}
+
+    We also compute the variance terms,
+
+    \begin{align*}
+      \Cov(A, A) &= n^{-1} E\left[ E\left[ E[g \mid X]^2 \left(1
+      - \frac{R_{1i}}{\pi_{1+}} - \frac{R_{2i}}{\pi_{2+}} +
+      \frac{R_{1i}R_{2i}}{\pi_{11}}\right)^2 \mid X\right] \right]\\
+      &= n^{-1} E \left[ E[g \mid X]^2 \left(-1 + \frac{2 \pi_{11}}{\pi_{1+}
+      \pi_{2+}} - \frac{1}{\pi_{1+}} - \frac{1}{\pi_{2+}} +
+      \frac{1}{\pi_{11}}\right)\right].
+    \end{align*}
+
+    \begin{align*}
+      \Cov(B, B) &= n^{-1} E\left[ E\left[b(X, Y_1)^2 \left(\frac{R_1}{\pi_{1+}}
+      - \frac{R_1 R_2}{\pi_{11}}\right)^2 \mid X\right] \right]\\
+      &= n^{-1} E\left[ E[b_2(X, Y_1)^2 \mid X] \left(\frac{-1}{\pi_{1+}} +
+      \frac{1}{\pi_{11}}\right)\right].
+    \end{align*}
+    
+    \begin{align*}
+      \Cov(C, C) &= n^{-1} E\left[ E[a_2(X, Y_2)^2 \mid X]
+      \left(\frac{-1}{\pi_{2+}} + \frac{1}{\pi_{11}}\right) \right].
+    \end{align*}
+
+    \begin{align*}
+      \Cov(D, D) &= n^{-1} E\left[ E\left[g_i^2 \left(\frac{R_1 R_2}{\pi_{11}} -
+      1\right)^2 \mid X\right] \right]\\
+      &= n^{-1} E\left[ E[g^2 \mid X] \left(\frac{1}{\pi_{11}} -
+      1\right)\right].
+    \end{align*}
+
+    This means that
+    \begin{align*}
+      \Var(\hat \theta_{eff} - \hat \theta_n) 
+      &= \Cov(A, A) + 2 \Cov(A, B) + 2 \Cov(A, C) + 2 \Cov(A, D) + \Cov(B, B) \\
+      &+ 2 \Cov(B, C) + 2 \Cov(B, D) + \Cov(C, C) + 2 \Cov(C, D) + \Cov(D, D) \\
+      &= n^{-1} E \left[ E[g \mid X]^2 \left(-1 + \frac{2 \pi_{11}}{\pi_{1+}
+      \pi_{2+}} - \frac{1}{\pi_{1+}} - \frac{1}{\pi_{2+}} +
+      \frac{1}{\pi_{11}}\right)\right] \\
+      &+ 2 n^{-1} E\left[E[g \mid X] E[b_2(X, Y_1) \mid X]
+      \left(\frac{1}{\pi_{1+}} + \frac{1}{\pi_{2+}} - \frac{1}{\pi_{11}} -
+      \frac{\pi_{11}}{\pi_{1+} \pi_{2+}}\right)\right]\\
+      &+ 2 n^{-1} E\left[E[g \mid X] E[a_2(X, Y_2) \mid X]
+      \left(\frac{1}{\pi_{1+}} + \frac{1}{\pi_{2+}} - \frac{1}{\pi_{11}} -
+      \frac{\pi_{11}}{\pi_{1+} \pi_{2+}}\right)\right]\\
+      &+ 2 n^{-1} E\left[E[g \mid X]^2 \left(\frac{-1}{\pi_{1+}} -
+      \frac{1}{\pi_{2+}} + 2\right)\right]\\
+      &+ n^{-1} E\left[ E[b_2(X, Y_1)^2 \mid X] \left(\frac{-1}{\pi_{1+}} +
+      \frac{1}{\pi_{11}}\right)\right]\\
+      &+ 2 n^{-1} E\left[E[b_2(X, Y_1) \mid X] E[a_2(X, Y_2) \mid X]
+      \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} - \frac{1}{\pi_{1+}} -
+      \frac{1}{\pi_{2+}} + \frac{1}{\pi_{11}}\right)\right]\\
+      &+ 2 n^{-1} E\left[ E[b_2(X, Y_1) \mid X] E[g \mid X]
+      \left(\frac{1}{\pi_{1+}} - \frac{1}{\pi_{11}}\right)\right]\\
+      &+  n^{-1} E\left[ E[a_2(X, Y_2)^2 \mid X]
+      \left(\frac{-1}{\pi_{2+}} + \frac{1}{\pi_{11}}\right) \right]\\
+      &+ 2 n^{-1} E\left[ E[a_2(X, Y_2) \mid X] E[g \mid X]
+      \left(\frac{1}{\pi_{2+}} - \frac{1}{\pi_{11}}\right)\right]\\
+      &+ n^{-1} E\left[ E[g^2 \mid X] \left(\frac{1}{\pi_{11}} -
+      1\right)\right].
+    \end{align*}
+
+    Differentiating yields:
+
+    \begin{align*}
+      \frac{\partial}{\partial a_2} \Var(\hat \theta_{eff} - \hat \theta_n)
+      &= E\left[E[g \mid X] \left(\frac{1}{\pi_{1+}} + \frac{2}{\pi_{2+}} -
+      \frac{2}{\pi_{11}} - \frac{\pi_{11}}{\pi_{1+} \pi_{2+}}\right)\right] \\
+      &+ E\left[E[b_2(X, Y_1) \mid X] \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} -
+      \frac{1}{\pi_{1+}} - \frac{1}{\pi_{2+}} +
+      \frac{1}{\pi_{11}}\right)\right]\\
+      &+ E\left[ E[a_2(X, Y_2) \mid X] \left(\frac{-1}{\pi_{2+}} +
+      \frac{1}{\pi_{11}}\right)\right]\\
+      &\equiv 0, \text{ and }\\
+      \frac{\partial}{\partial b_2} \Var(\hat \theta_{eff} - \hat \theta_n)
+      &= E\left[E[g \mid X] \left(\frac{2}{\pi_{1+}} + \frac{1}{\pi_{2+}} -
+      \frac{2}{\pi_{11}} - \frac{\pi_{11}}{\pi_{1+}\pi_{2+}}\right)\right]\\
+      &+ E\left[E[a_2(X, Y_2) \mid X] \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} -
+      \frac{1}{\pi_{1+}} - \frac{1}{\pi_{2+}} +
+      \frac{1}{\pi_{11}}\right)\right]\\
+      &+ E\left[ E[b_2(X, Y_2) \mid X] \left(\frac{-1}{\pi_{1+}} +
+      \frac{1}{\pi_{11}}\right)\right]\\
+      &\equiv 0. 
+    \end{align*}
+
+
+    Substitution shows that these constraints are equivalent to:
+
+    \begin{align*}
+      E&\left[E[g \mid X] \left(\frac{-1}{\pi_{1+}} +
+    \frac{1}{\pi_{2+}}\right)\right] + E\left[ E[b_2(X, Y_1) \mid X]
+    \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} -\frac{1}{\pi_{2+}}\right)\right]\\
+      &- E\left[E[a_2(X, Y_2) \mid X] \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} - 
+    \frac{1}{\pi_{1+}}\right)\right] \equiv 0
+    \end{align*}
+
+    where is the same as,
+
+    \begin{align*}
+      E&\left[ E[b_2(X, Y_1) \mid X] \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} -
+    \frac{1}{\pi_{2+}}\right) \right] + E\left[E[g \mid X]
+      \left(\frac{1}{\pi_{2+}}\right)\right] \\
+      &=
+    E\left[ E[a_2(X, Y_2) \mid X] \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}} -
+    \frac{1}{\pi_{1+}}\right) \right] + E\left[E[g \mid X]
+    \left(\frac{1}{\pi_{1+}}\right)\right].
+    \end{align*}
+
+  \item These constraints can be satisfied (this is sufficient but maybe not
+    necessary) if 
+
+    \begin{align*}
+      E&\left[(E[b_2(X, Y_1) \mid X] - E[a_2(X, Y_2) \mid X])
+      \left(\frac{\pi_{11}}{\pi_{1+} \pi_{2+}}\right) \right] = 0\\
+      E&\left[\left(\frac{1}{\pi_{1+}} - \frac{1}{\pi_{2+}}\right)(E[a_2(X, Y_2)
+      \mid X] + E[b_2(X, Y_1) \mid X] - 2E[g \mid X])\right] = 0.
+    \end{align*}
+
+\end{itemize}
+
+%\textbf{Questions for Dr. Kim}
+%\begin{itemize}
+%  \item Where do we go from here?
+%  \item This is a functional expectation that I need to calibrate. Should I use
+%    some sort of basis spline to try to estimate these expectations and then set
+%    them equal to zero? I don't think that I have worked with this kind of
+%    constraint before.
+%\end{itemize}
+
+\newpage

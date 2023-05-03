@@ -1,6 +1,29 @@
 
 # TODO
 
+## May 2, 2023
+
+* [ ] Look at differences between different three-phase estimators
+* [ ] Recap Kim and Rao (2012, Biometrika). We could extend it to three phases
+      or two step calibration.
+* [ ] Recap Chen and Kim (2014)
+* [X] Recap Lohr and Raghunathan (2017)
+* [ ] Fill in Section 2 and 3 on `project1.tex`
+  * [ ] Section 2:
+    * [ ] Write up notation
+    * [ ] Explain non-nested multiphase sampling
+    * [ ] Write up the goal (integrate data from multiple probability samples).
+    * [ ] Summarize existing methods
+    * [ ] Connect existing methods to current approach
+  * [ ] Section 3:
+    * [ ] Introduce semiparametric theory
+    * [ ] Connect semiparametric theory to survey sampling
+    * [ ] Introduce model-assisted class of estimators for non-nested sampling
+    * [ ] Find model-optimal design consistent estimator
+    * [ ] Show basic statistical properties:
+      * [ ] Convergence in probability
+      * [ ] CLT
+
 ## April 25, 2023
 
 * [X] Fix simulation explanation
