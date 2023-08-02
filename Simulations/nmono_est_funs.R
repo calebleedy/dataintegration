@@ -28,7 +28,25 @@
 # * Required Libraries *
 # **********************
 
-require(dplyr)
+library(dplyr)
+library(CVXR)
+
+# ************************
+# * Additional Functions *
+# ************************
+
+#' Thanks Hengfang Wang for this matrix inversion function!
+hw_inv = function(X, eps = 1e-12) {
+  eig.X = eigen(X, symmetric = TRUE)
+  P = eig.X[[2]] 
+  lambda = eig.X[[1]] 
+  ind = lambda > eps
+  lambda[ind] = 1 / lambda[ind] 
+  lambda[!ind] = 0
+  ans = P %*% diag(lambda) %*% t(P)
+  return(ans)
+}
+
 
 # ------------------------------------------------------------------------------
 
@@ -148,6 +166,7 @@ mono_est_weights <- function(df) {
   sum(df$w2 * df$y2)
 
 }
+
 # **************************************
 # * Estimating Nonmonotone Missingness *
 # **************************************
@@ -444,4 +463,45 @@ nonmono_est_weights <- function(df) {
 
 }
 
+f3p_cali <- function(df) {
 
+  # Steps
+  # 1. Construct vectors / matrices.
+  # 2. Run calibration
+
+  # Do I need different steps if the data is monotone vs nonmonotone? No.
+  pi_11 <- df$p12 * df$p1 + df$p21 * df$p2
+  df$w <- 1 / pi_11
+  df_11 <- filter(df, r1 == 1, r2 == 1)
+  df_1 <- filter(df, r1 == 1)
+  df_1$w_1 <- 1 / df_1$p1
+
+  # tot_y2 <- sum(df_11$w * df_11$y2)
+  tot_x <- sum(df$x)
+  tot_z <- sum(df_1$w_1 * df_1$y1) 
+
+  n2 <- nrow(df_11)
+
+  # 1. Construct vectors / matrices.
+  w_vec <- matrix(df_11$w, ncol = 1)
+  L_mat <- base::diag(df_11$w)
+  L_inv <- base::diag(1 / df_11$w)
+  x_vec <- df_11$x
+  z_vec <- df_11$y1
+  c_vec <- Variable(n2)
+
+  # 2. Run calibration
+  const <- 
+    list(c_vec >= 0,
+         t(c_vec) %*% matrix(rep(1, n2), ncol = 1) == n2, # We estimate totals
+         t(c_vec) %*% matrix(df_11$x, ncol = 1) == tot_x,
+         t(c_vec) %*% matrix(df_11$y1, ncol = 1) == tot_z)
+
+  prob <- Problem(Minimize(quad_form(c_vec - w_vec, L_inv)), const)
+  res <- solve(prob)
+
+  c_opt <- res$getValue(c_vec)
+
+  return(mean(c_opt * df_11$y2))
+
+}

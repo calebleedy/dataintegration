@@ -1,0 +1,65 @@
+
+\section*{Missingness Mechanism}
+
+\begin{itemize}
+  \item First I am going to reproduce the proof of double robustness that we
+    talked about during our last meeting. I think it is insightful for future
+    comments:
+
+    \begin{align*}
+      E[\hat \theta_{eff} - \theta_n] 
+      &= E\left[n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] - g_i\right]\\
+      &\quad+ E\left[n^{-1} \sum_{i = 1}^n \frac{R_{1i}}{\pi_{1+}(X_i)}
+      (b_2(X_i, Y_{1i}) - E[g_i \mid X_i])\right]\\
+      &\quad+ E\left[n^{-1} \sum_{i = 1}^n \frac{R_{2i}}{\pi_{2+}(X_i)}
+      (a_2(X_i, Y_{2i}) - E[g_i \mid X_i])\right]\\
+      &\quad+ E\left[n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_{11}(X_i)} 
+      (g_i - a_2(X_i, Y_{2i}) - b_2(X_i, Y_{1i}) + E[g_i \mid X_i])\right]\\
+      &= n^{-1} \sum_{i = 1}^n (E[E[g_i \mid X_i]] - E[g_i])\\
+      &\quad+ n^{-1} \sum_{i = 1}^n E\left[E\left[\frac{R_{1i}}{\pi_{1+}(X_i)} 
+      (b_2(X_i, Y_{1i}) - E[g_i \mid X_i]) \mid X_i\right]\right] \\ 
+      &\quad+ n^{-1} \sum_{i = 1}^n E\left[E\left[\frac{R_{2i}}{\pi_{2+}(X_i)} 
+      (a_2(X_i, Y_{2i}) - E[g_i \mid X_i]) \mid X_i\right]\right] \\
+      &\quad+ n^{-1} \sum_{i = 1}^n E\left[E\left[\frac{R_{1i}
+      R_{2i}}{\pi_{11}(X_i)} (g_i - a_2(X_i, Y_{2i}) - b_2(X_i, Y_{1i}) + E[g_i
+      \mid X_i]) \mid X_i \right]\right]\\
+      \intertext{Since $R_{1i} \perp Y_{1i} \mid X_i$, $R_{2i} \perp Y_{2i} \mid
+      X_i$, $(R_{1i}, R_{2i}) \perp (Y_{1i}, Y_{2i}) \mid X_i$ and $\pi_{1+},
+      \pi_{2+}$ and $\pi_{11}$ are all free of $Y_{1i}$ and $Y_{2i}$.}
+      &= n^{-1} \sum_{i = 1}^n E\left[\frac{R_{1i}}{\pi_{1+}(X_i)} E\left[
+        (E[g_i \mid X_i, Y_{1i}] - E[g_i \mid X_i]) \mid X_i\right]\right] \\ 
+      &\quad+ n^{-1} \sum_{i = 1}^n E\left[\frac{R_{2i}}{\pi_{2+}(X_i)} 
+      E\left[E[g_i \mid X_i, Y_{2i}] - E[g_i \mid X_i] \mid X_i\right]\right] \\
+      &\quad+ n^{-1} \sum_{i = 1}^n E\left[\frac{R_{1i}
+      R_{2i}}{\pi_{11}(X_i)} E\left[(g_i - E[g_i \mid X_i, Y_{2i}] - 
+      E[g_i \mid X_i, Y_{1i}]+ E[g_i \mid X_i]) \mid X_i \right]\right]\\
+      \intertext{Since $E[E[g_i \mid X_i, Y_{ki}] \mid X_i] = E[g_i \mid X_i] =
+      0$,}
+      &= 0.
+    \end{align*}
+
+    Thus, if the outcome models are correctly specified $\hat \theta_{eff}$ is
+    unbiased. If the response models are correctly specified it is easy to see
+    that $\hat \theta_{eff}$ is also unbiased. This means that $\hat
+    \theta_{eff}$ is doubly robust.
+
+  \item However, one of the key steps is that \textit{all} the response
+    models are free of $Y$. In a previous iteration of Simulation 4, we had
+    adopted the framework of \cite{robins1997non} where we first to observe the
+    first variable and see if we observe the second variable. In this case, the
+    second step can depend on the result of the first step and this is what we
+    did. However, this makes it the case that $\pi_11$ is a function of $X_i$
+    and $Y_1$ and $Y_2$. In this case $\hat \theta_{eff}$ is not unbiased if the
+    response model is misspecified (or even just estimated).
+
+  \item If we modify Simulation 4, such that the second step of observed the
+    second variable is proportional to $\logistic(y_k)$ then we get the same
+    result as before:
+
+    \input{Tables/nonmonosim5c0.tex}
+    \input{Tables/nonmonosim5c0.1.tex}
+    \input{Tables/nonmonosim5c0.5.tex}
+  
+\end{itemize}
+
+\newpage

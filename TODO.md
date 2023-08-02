@@ -1,13 +1,15 @@
 
 # TODO
 
-## May 2, 2023
-
+* [ ] Check to see if F3P is the calibration estimator as conjectured on pg. 35
+      of notes.
+* [ ] Understand the differences between estimators. Why do some work when
+      others do not?
+* [ ] Go through proof in Chen, Yang, Kim (2022)
 * [ ] Look at differences between different three-phase estimators
 * [ ] Recap Kim and Rao (2012, Biometrika). We could extend it to three phases
       or two step calibration.
 * [ ] Recap Chen and Kim (2014)
-* [X] Recap Lohr and Raghunathan (2017)
 * [ ] Fill in Section 2 and 3 on `project1.tex`
   * [ ] Section 2:
     * [ ] Write up notation
@@ -23,6 +25,14 @@
     * [ ] Show basic statistical properties:
       * [ ] Convergence in probability
       * [ ] CLT
+ 
+## May 4, 2023 
+
+* [X] Proof in Kim et al. (2020)
+
+## May 2, 2023
+
+* [X] Recap Lohr and Raghunathan (2017)
 
 ## April 25, 2023
 
@@ -35,9 +45,7 @@
 ## April 20, 2023
 
 * [X] Add papers from `references.bib` to the `Reference/` directory
-* [ ] Go through proof in Chen, Yang, Kim (2022)
 * [X] Simulation study of Kim et al. (2020) 
-* [ ] Proof of Kim et al. (2020)
 
 ## April 18, 2023
 

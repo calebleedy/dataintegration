@@ -21,8 +21,8 @@
 # * Required Libraries *
 # **********************
 
-require(MASS)
-require(dplyr)
+library(MASS)
+library(dplyr)
 
 # ------------------------------------------------------------------------------
 
