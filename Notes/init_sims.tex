@@ -50,7 +50,7 @@
     \begin{align*}
         X_i &\stackrel{iid}{\sim} N(0, 1) \\
         Y_{1i} &\stackrel{iid}{\sim} N(0, 1)\\
-        Y_{2i} &\stackrel{iid}{\sim} N(\theta, 1)
+        Y_{2i} &\stackrel{iid}{\sim} \theta + N(0, 1)
     \end{align*}
 
     Then, we create the probabilities $p_1 = \logistic(x_i)$ and 
@@ -109,19 +109,19 @@
     \end{bmatrix} \stackrel{iid}{\sim}
     N\left(
     \begin{bmatrix}
-        0 \\ 0 \\ \theta
+        0 \\ 0 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
         1 & 0 & 0 \\
-        0 & 1 & \sigma_{yy}\\
-        0 & \sigma_{yy} & 1
+        0 & 1 & \rho_{yy}\\
+        0 & \rho_{yy} & 1
     \end{bmatrix}
     \right).\]
 
     Then, 
 
     \[y_{1i} = x_i + \varepsilon_{1i} \text{ and } 
-    y_{2i} = x_i + \varepsilon_{2i}.\]
+    y_{2i} = \theta + x_i + \varepsilon_{2i}.\]
 
     Since we have nonmonotone data, our ``Stage 1'' probabilities are
     different. We compute the true Stage 1 probabilities being proportional to
@@ -151,7 +151,7 @@
     
     \item \textbf{Simulation 2 with Nonmonotone MAR}:
     We also want to simulate data that is correlated. For this simulation, we
-    focus on $\Cov(Y_1, Y_2)$. The data generating process now has $\sigma_{yy}
+    focus on $\Cov(\varepsilon_1, \varepsilon_2)$. The data generating process now has $\rho_{yy}
     \neq 0$. We are still interested in $\bar Y_2$ and we still run 2000
     simulation with 2000 observations. In all the next simulations the true
     value of $\theta = 0$. The results are the following:
@@ -176,15 +176,15 @@
     \end{bmatrix},
     \begin{bmatrix}
         1 & 0 & 0 \\
-        0 & 1 & \sigma_{yy}\\
-        0 & \sigma_{yy} & 1
+        0 & 1 & \rho_{yy}\\
+        0 & \rho_{yy} & 1
     \end{bmatrix}
     \right).\]
 
     Then, the true outcome model is,
 
     \[y_{1i} = x_i + x_i^2 \varepsilon_{1i} \text{ and } 
-    y_{2i} = -x_i + x_i^3 + \varepsilon_{2i}.\]
+    y_{2i} = \theta -x_i + x_i^3 + \varepsilon_{2i}.\]
 
     This procedure causes $X$ to influence both $Y_1$ and $Y_2$ and we still
     have correlation in the error terms of $Y_1$ and $Y_2$. However, since
