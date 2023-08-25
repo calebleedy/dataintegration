@@ -20,7 +20,7 @@
 #   2. ipw_cc_oracle -- IPW estimator with oracle weights
 #   3. ipw_cc_est -- IPW estimator with weights estimated
 #   4. twophase_reg -- Unfinished
-#   5. nonmono_est_weights -- Calibration estimator 
+#   5. nonmono_est_weights -- Calibration estimator
 
 # ------------------------------------------------------------------------------
 

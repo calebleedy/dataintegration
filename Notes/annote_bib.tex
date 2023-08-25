@@ -139,6 +139,90 @@
 
 \end{description}
 
+% \subsection*{Chen and Kim (2014)}
+% \begin{description}
+%   \item[Title:] Population Empirical Likelihodd for Nonparametric Inference in
+%     Survey Sampling
+%   \item[Author:] Sixia Chen and Jae Kwang Kim
+%   \item[Journal (Year):] Statistica Sinica (2014)
+%   \item[Summary:]
+%   \item[Limitations:]\;
+%     \begin{itemize}
+%       \item
+%     \end{itemize}
+%   \item[Extensions:]\;
+%     \begin{itemize}
+%       \item
+%     \end{itemize}
+% \end{description}
+
+\subsection*{Chen et al. (2022)}
+\begin{description}
+  \item[Title:] Nonparametric Mass Imputation for Data Integration
+  \item[Author:] Sixia Chen, Shu Yang, Jae Kwang Kim
+  \item[Journal (Year):] JSSM (2022)
+  \item[Summary:] This paper aims to combine data from a probability sample
+    $A$ and a non-probability sample $B$ using non-parametric methods. We 
+    assume the $X$ is observed in $A$ and $B$ but $Y$ is only available in $B$. 
+    It achieves this goal by using a kernel estimator for the outcome model
+    $m(x)$ on sample $B$ and then using this model to predict missing values of
+    $Y$ for $A$. Since the sample weights in $A$ are valid, these are used to 
+    adjust the predicted values $\hat m(x)$. Variance estimates are also given.
+  \item[Limitations:]\;
+    \begin{itemize}
+      \item The model require MAR for the response model in $B$.
+    \end{itemize}
+  \item[Extensions:]\;
+    \begin{itemize}
+      \item Can we extend this to multiple non-probability samples?
+    \end{itemize}
+\end{description}
+
+\subsection*{Hidiroglou (2001)}
+\begin{description}
+  \item[Title:] Double Sampling
+  \item[Author:] M. A. Hidiroglou
+  \item[Journal (Year):] Survey Methodology (2001)
+  \item[Summary:] This paper produces the optimal regression estimator for 
+    non-nested probability samples. This occurs when sample $A$ observes $X$ 
+    while $B$ observes $X$ and $Y$ but unlike two-phase sampling there is no
+    overlap between the observed values for $X$ in $A$ and $B$.
+
+    This paper also explores the connection between non-nested samples and 
+    calibration.
+  \item[Limitations:]\;
+    \begin{itemize}
+      \item Unclear to me which class of estimators we are optimizing within.
+    \end{itemize}
+  \item[Extensions:]\;
+    \begin{itemize}
+      \item How to extend to a third category?
+    \end{itemize}
+\end{description}
+
+\subsection*{Park and Kim (2019)}
+\begin{description}
+  \item[Title:] Mass Imputation for Two-Phase Sampling
+  \item[Author:] Seho Park and Jae Kwang Kim
+  \item[Journal (Year):] arXiv (2019)
+  \item[Summary:] This paper proposes a mass imputation estimator for 
+    estimating the total from a two-phase sample. Instead of using an
+    estimate from phase 1 data and combining it with phase 2 data, this
+    approach uses a regression model to predict the missing data in phase 
+    1. The paper shows how this result is consistent with previous 
+    estimates and they provide a variance estimator.
+  \item[Limitations:]\;
+    \begin{itemize}
+      \item What if the regression model is incorrect?
+      \item Does this account for enough uncertainty if just the predicted
+        values are used?
+    \end{itemize}
+  \item[Extensions:]\;
+    \begin{itemize}
+      \item How can this be extended to another phase.
+    \end{itemize}
+\end{description}
+
 % \begin{description}
 %   \item[Title:]
 %   \item[Author:]
