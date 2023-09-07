@@ -1,4 +1,4 @@
-# Title: Simulations/calibration_comp.R
+# Title: Comparing_Estimator_Types/calibration_comp.R
 # Author: Caleb Leedy
 # Date Created: April 25, 2023
 # Purpose: This script contains the code to compare the calibration estimators

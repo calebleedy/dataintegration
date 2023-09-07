@@ -1,6 +1,6 @@
-# Title: Simulations/multiphase_est.R
+# Title: Comparing_Estimator_Types/multiphase_est.R
 # Author: Caleb Leedy
-# Date Created: May  3, 2023
+# Date Created: May 3, 2023
 # Purpose: This document first compares the two three-phase sampling estimators:
 # F3P and K3P (see Notes/multiphase_estimators.tex or page 33 in the research
 # journal).

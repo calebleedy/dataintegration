@@ -50,64 +50,77 @@ estimator and present a simulation study.
   \item Let $U = \{1, \dots N\}$ be a finite population.
   \item Consider the random variables $(X_i, Y_{1i}, Y_{2i}, \pi_i) 
     \stackrel{\text{ind}}{\sim} F$ for some unknown $F$ for all $i \in U$.
-  \item Let $I_i \stackrel{\text{ind}}{\sim} \pi_i$ for $i \in U$ be the 
-    sample inclusion indicator.
   \item We assume that $x_i$ is observed throughout the finite population.
-  \item However, $(y_{1i}, y_{2i}, \pi_i)$ is only observed if $I_i = 1$.
+  \item Let $I_i \stackrel{\text{ind}}{\sim} \pi_i$ for $i \in U$ be the 
+    first phase sample inclusion indicator.
+  \item If $i \in \{1, \dots, N\}$ is in the first phase sample ($I_i = 1$)
+    then $\pi_i$ is observed. 
+  \item The second phase sampling indicators are $\delta_{00}$, $\delta_{01}$,
+    $\delta_{10}$, and $\delta_{11}$. These mutual exclusive variables encode 
+    the following: if both $Y_1$ and $Y_2$ are observed then $\delta_{11} = 1$;
+    if $Y_1$ is observed and $Y_2$ is missing then $\delta_{10} = 1$; if $Y_1$
+    is missing and $Y_2$ is observed then $\delta_{01} = 1$; and if both $Y_1$
+    and $Y_2$ are missing then $\delta_{00} = 1$. (For notational purposes, it
+    is sometimes convienent to write $\delta_{1} = \delta_{11} + \delta_{10}$ 
+    and $\delta_2 = \delta_{11} + \delta_{01}$. A similar notation will be 
+    used for $\pi$. We have $\pi_{1+} = \pi_{11} + \pi_{10}$ and 
+    $\pi_{2+} = \pi_{11} + \pi_{01}$.)
+  \item All of the sampling indicators were drawn via \textit{Poisson}
+    sampling. So the sample size of each category $A_{ij}$ is random. However,
+    this does ensure independence between observations.
   \item The goal is to estimate $\theta = E[g(X, Y_1, Y_2)]$ in the population.
   \item The proposed estimator is
 
   \begin{align}\label{eq:prop}
     \hat \theta_{\text{eff}} 
     &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] \nonumber \\ 
-    &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i}}{\pi_{1+}(X_i)}
+    &+ n^{-1} \sum_{i = 1}^n \frac{\delta_{1i}}{\pi_{1+}(X_i)}
       (E[g_i \mid X_i, Y_{1i}] - E[g_i \mid X_i])\nonumber  \\ 
-    &+ n^{-1} \sum_{i = 1}^n \frac{R_{2i}}{\pi_{2+}(X_i)}
+    &+ n^{-1} \sum_{i = 1}^n \frac{\delta_{2i}}{\pi_{2+}(X_i)}
       (E[g_i \mid X_i, Y_{2i}] - E[g_i \mid X_i])\nonumber  \\ 
-    &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_{11}(X_i)}
+    &+ n^{-1} \sum_{i = 1}^n \frac{\delta_{1i} \delta_{2i}}{\pi_{11}(X_i)}
       (g_i - E[g_i \mid X_i, Y_{1i}] - E[g_i \mid X_i, Y_{2i}] + E[g_i \mid X_i])
   \end{align}
   
   \item The goal is to show that this estimator is optimal within the class
     of estimators:
 
-  \begin{align*}
+    \begin{align}\label{eq:propclass}
     \hat \theta_{\text{eff}} 
-    &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] \\ 
-    &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i}}{\pi_{1+}(X_i)}
-      (b(X_i, Y_{1i}) - E[g_i \mid X_i]) \\ 
-    &+ n^{-1} \sum_{i = 1}^n \frac{R_{2i}}{\pi_{2+}(X_i)}
-      (a(X_i, Y_{2i}) - E[g_i \mid X_i]) \\ 
-    &+ n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_{11}(X_i)}
+    &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i]\nonumber \\ 
+    &+ n^{-1} \sum_{i = 1}^n \frac{\delta_{1i}}{\pi_{1+}(X_i)}
+      (b(X_i, Y_{1i}) - E[g_i \mid X_i])\nonumber \\ 
+    &+ n^{-1} \sum_{i = 1}^n \frac{\delta_{2i}}{\pi_{2+}(X_i)}
+      (a(X_i, Y_{2i}) - E[g_i \mid X_i])\nonumber \\ 
+    &+ n^{-1} \sum_{i = 1}^n \frac{\delta_{1i} \delta_{2i}}{\pi_{11}(X_i)}
       (g_i - b_i - a_i + E[g_i \mid X_i]).
-  \end{align*}
+    \end{align}
 
 \end{itemize}
 
 \section*{Results}
 
-I have done a lot to explore this area but I have several points of confusion.
-The first part recaps what Dr. Fuller and I discussed this past week.
+The first part recaps what Dr. Fuller and I discussed previously.
 
 \begin{itemize}
   \item Let $g = E[Y_2]$, and suppose that we know the distribution of $X$ and 
     the covariance structure of $[X, Y_1, Y_2, \pi]$. Then instead of modeling
     the relationship between $X$ and $Y_k$, we can use difference estimators:
-    $W_1 \equiv Y_1 - b_1 \tilde X$ and $W_2 = \equiv Y_2 - b_2 \tilde X$, where
+    $Z_1 \equiv Y_1 - b_1 \tilde X$ and $Z_2 = \equiv Y_2 - b_2 \tilde X$, where
     $\tilde X = X - E[X]$.
-    To minimize the variance of $W_k$ we can choose the optimal value of $b_k$,
+    To minimize the variance of $Z_k$ we can choose the optimal value of $b_k$,
      which is 
 
      \[b_k = \frac{\Cov(Y_k, X)}{\Var(X)}.\]
 
-    Since these values are known, $b_k$ is known. This means that we now have
-    the following table:
+    Since these covariance values are known, $b_k$ is known. This means that we
+    now have the following table:
 
     \begin{figure}[!ht]
       \centering
       \begin{tabular}{lrr}
         \toprule
-         & $W_1$ & $W_2$ \\
+         & $Z_1$ & $Z_2$ \\
          \midrule
         $A_{11}$ & \checkmark & \checkmark \\
         $A_{10}$ & \checkmark & \\
@@ -133,20 +146,20 @@ The first part recaps what Dr. Fuller and I discussed this past week.
       \end{bmatrix},
       \begin{bmatrix}
         1 & 0 & 0 \\
-        0 & \sigma_{11} & 0 \\ 
-        0 & 0 & \sigma_{22}
+        0 & \sigma_{11} & \sigma_{12} \\ 
+        0 & \sigma_{12} & \sigma_{22}
       \end{bmatrix},
       \right)
     \]
 
-    and define $y_{1i} = x_i + e_{1i}$ and $y_{2i} = x_i + e_{2i}$. Then $b_1 =
-    b_2 = 1$. We define $\bar w_k^{(ij)}$ as the mean of $y_k$ in segment
-    $A_{ij}$. This means that we have means $\bar w_1^{(11)}$, $\bar
-    w_2^{(11)}$, $\bar w_1^{(10)}$, and $\bar w_2^{(01)}$. Let 
-    $W = [\bar w_1^{(11)}, \bar w_2^{(11)}, \bar w_1^{(10)}, \bar w_2^{(01)}]'$,
-    then for $n_{ij} = |A_{ij}|$, we have
+    and define $y_{1i} = \theta_1 + x_i + e_{1i}$ and $y_{2i} = \theta_2 + x_i
+    + e_{2i}$. Then $b_1 = b_2 = 1$. We define $\bar z_k^{(ij)}$ as the mean of
+    $y_k$ in segment $A_{ij}$. This means that we have means $\bar z_1^{(11)}$,
+    $\bar z_2^{(11)}$, $\bar z_1^{(10)}$, and $\bar z_2^{(01)}$. Let $W = [\bar
+    z_1^{(11)}, \bar z_2^{(11)}, \bar z_1^{(10)}, \bar z_2^{(01)}]'$, then for
+    $n_{ij} = |A_{ij}|$, we have
 
-    \[W - M \mu \sim N(\vec 0, V)\]
+    \[Z - M \mu \sim N(\vec 0, V)\]
 
     where 
 
@@ -160,8 +173,8 @@ The first part recaps what Dr. Fuller and I discussed this past week.
       \text{ and }
       V = 
       \begin{bmatrix}
-        \frac{\sigma_{11}}{n_{11}} & 0 & 0 & 0 \\
-        0 & \frac{\sigma_{22}}{n_{11}} & 0 & 0 \\
+        \frac{\sigma_{11}}{n_{11}} & \frac{\sigma_{12}}{n_{11}} & 0 & 0 \\
+        \frac{\sigma_{12}}{n_{11}} & \frac{\sigma_{22}}{n_{11}} & 0 & 0 \\
         0 & 0 & \frac{\sigma_{11}}{n_{10}} & 0 \\
         0 & 0 & 0 & \frac{\sigma_{22}}{n_{01}} \\
       \end{bmatrix}.
@@ -169,21 +182,9 @@ The first part recaps what Dr. Fuller and I discussed this past week.
 
     Thus, the BLUE for $\mu = [\mu_1, \mu_2]'$ is 
 
-    \[ \hat \mu = (M' V^{-1} M)^{-1} M' V^{-1} W. \]
-
-  \item If we do the matrix algebra, $V^{-1} = 
-    \text{diag}\left(\frac{n_{11}}{\sigma_{11}}, \frac{n_{11}}{\sigma_{22}},
-    \frac{n_{10}}{\sigma_{11}}, \frac{n_{01}}{\sigma_{22}}\right)$ and hence,
-
-    {\renewcommand{\arraystretch}{2}
     \begin{equation}\label{eq:wls}
-    \hat \mu = 
-      \begin{bmatrix}
-        \frac{n_{11}\bar w_1^{(11)} + n_{10}\bar w_1^{(10)}}{n_{11} + n_{10}} \\
-        \frac{n_{11}\bar w_2^{(11)} + n_{01}\bar w_2^{(01)}}{n_{11} + n_{01}} \\
-      \end{bmatrix}
+    \hat \mu = (M' V^{-1} M)^{-1} M' V^{-1} W.
     \end{equation}
-    }
 
   \item Since this is the BLUE, we would expect it to be at least as good as
     the proposed estimator. And if the proposed estimator is optimal it should
@@ -200,11 +201,11 @@ The first part recaps what Dr. Fuller and I discussed this past week.
       \end{bmatrix},
       \begin{bmatrix}
         1 & 0 & 0 \\
-        0 & 1 & 0 \\ 
-        0 & 0 & 1 
+        0 & 1 & \sigma_{12} \\ 
+        0 & \sigma_{12} & 1 
       \end{bmatrix},
       \right) \text{ and }
-      y_{1i} = x_i + e_{1i}, y_{2i} = x_i + e_{2i}.
+      y_{1i} = \theta_1 + x_i + e_{1i}, y_{2i} = \theta_2 + x_i + e_{2i}.
     \]
 
     Each observation $i$ was then assigned a segment $A_{11}$, $A_{10}$,
@@ -219,71 +220,268 @@ The first part recaps what Dr. Fuller and I discussed this past week.
         observations (even when $Y_2$ is not supposed to be observed).
         \[\hat \theta = n^{-1} \sum_{i = 1}^n y_{2i}.\]
 
+      \item OracleX: This computes the average value of $Y_2 - X$ in 
+        all observations (even when $Y_2$ is not supposed to be observed.)
+        \[\hat \theta = n^{-1} \sum_{i = 1}^n (y_{2i} - x_i).\]
+
       \item CC: This computes the average value of $Y_2$ in all observations 
         in which $Y_2$ is observed.
         \[\hat \theta = \frac{\sum_{i = 1}^n \delta_{2i} y_{2i}}
           {\sum_{i = 1}^n \delta_{2i}}.\]
 
-      \item IPW: This computes the survey weighted average of $Y_2$ when both
-        $Y_1$ and $Y_2$ are observed.
-        \[\hat \theta = \frac{\sum_{i = 1}^n \delta_{1i}\delta_{2i} y_{2i}}
-        {\sum_{i = 1}^n \delta_{1i}\delta_{2i}}.\]
       \item Proposed: This is the proposed estimator from Equation~\ref{eq:prop}.
       \item WLS: This is the weighted linear estimator from Equation~\ref{eq:wls}.
-        (Note, since $g = E[Y_2]$ this only contains the second element from
-        Equation~\ref{eq:wls}.)
+        Note, since $g = E[Y_2]$ this only contains the second element from
+        Equation~\ref{eq:wls}.
     \end{itemize}
 
     The results are shown in the table below. This simulation was run with the 
     number of observations $n = 1000$ and the Monte Carlo sample size of 
-    $B = 1000$.
+    $B = 3000$.
 
     \begin{table}[ht!]
-      \centering
+      \label{tab:res}
       \caption{This table shows the estimators of $\theta = E[Y_2]$. The true 
-      value of $\theta$ is $0$. The bias column shows the average bias of the 
-      estimator and the actual value of $\theta = 0$ across the $B = 1000$ 
+        value of $\theta$ is $5$ and the true value of $\sigma_{12} = 0.5$.
+        The bias column shows the average bias of the 
+      estimator and the actual value of $\theta = 5$ across the $B = 3000$ 
       simulations. The SD column shows the average standard deviation across the 
-      $B = 1000$ simulations for each algorithm. The Tstat column displays the 
+      $B = 3000$ simulations for each algorithm. The Tstat column displays the 
       t-statistic of a t-test comparing the estimator to the actual value. 
       The value of this column is computed via $\frac{\bar{\hat{\theta}} - 
       \theta}{\sqrt{\Var{\hat \theta}/B}}$. The Pval column displays the 
       p-value of the t-statistic.}
+      \centering
       \begin{tabular}[t]{lrrrr}
         \toprule
         Algorithm & Bias & SD & Tstat & Pval\\
         \midrule
-        Oracle & -0.001 & 0.045 & -0.953 & 0.170\\
-        CC & 0.000 & 0.056 & -0.059 & 0.476\\
-        IPW & 0.000 & 0.071 & -0.183 & 0.428\\
-        Prop & 0.000 & 0.051 & -0.131 & 0.448\\
-        WLS & -0.001 & 0.042 & -0.470 & 0.319\\
+        Oracle & 0.001 & 0.044 & 1.546 & 0.061\\
+        OracleX & 0.000 & 0.032 & 0.479 & 0.316\\
+        CC & 0.002 & 0.058 & 1.549 & 0.061\\
+        WLS & 0.001 & 0.040 & 1.207 & 0.114\\
+        Prop & 0.002 & 0.051 & 1.918 & 0.028\\
         \bottomrule
       \end{tabular}
-      \label{tab:res}
     \end{table}
 
-  \item There are a couple things of note from Table~\ref{tab:res}. First, the 
-    WLS estimator has a smaller standard error than the Oracle estimator. This 
-    seems incorrect. (Please see the next section for questions.) Second, the 
-    proposed estimator did not have a similar standard error as the WLS estimator.
-    This suggests that it is not optimal.
 \end{itemize}
 
-\section*{Questions for Dr. Fuller}
+\section*{Computing the Variance by Hand}
 
-\begin{enumerate}
-  \item For the linear estimator I don't think that I am incorporating sampling
-    weights. I am a bit confused about how to do this. Should I compute the 
-    means $\bar w_{k}^{(ij)}$ using weights according to the sample weights? 
-  \item Is it ok for the linear estimator to outperform the oracle estimator?
-    This seems odd to me because the oracle estimator seems to contain more 
-    information.
-  \item On Tuesday, you asked me to compute the linear estimator in terms of 
-    means of $Y$ and estimators of $0$. I think that the WLS estimator is the 
-    estimator in terms of estimators of $0$ because $y_k - b_k x$ is an 
-    estimator of $0$. To transform the estimator into an estimator in terms of
-    $Y$, should I write the form in terms of $Y$ instead of $W$?
-\end{enumerate}
+Table~\ref{tab:res} demonstrates that the WLS estimator outperforms the 
+Oracle estiamator. I was initially confused about why this is the case, but
+realized that I could approximate the standard error of both estimators
+reasonably well. It turns out that I was able to get reasonable estimates 
+for the variance of all of the proposed estimators includeing $\hat
+\theta_{prop}$. In this part of the report, I detail my computations and show
+how the simulated results are accurate.
+
+\begin{align}\label{eq:varor}
+  \Var(\hat \theta_{Oracle}) 
+  &= \Var\left(n^{-1} \sum_{i = 1}^n y_{2i}\right) \nonumber \\
+  &= n^{-1} \Var(y_{2}) \nonumber \\
+  &= n^{-1} (1 + \sigma_{22}) & \text{because $\Var(x) = 1$.}
+\end{align}
+
+\begin{align}\label{eq:varorx}
+  \Var(\hat \theta_{OracleX}) 
+  &= \Var\left(n^{-1} \sum_{i = 1}^n y_{2i} - x_i\right) \nonumber \\
+  &= n^{-1} \Var(e_{2}) \nonumber \\
+  &= n^{-1} \sigma_{22}.
+\end{align}
+
+Using a Taylor expansion,
+
+\begin{align}\label{eq:varcc}
+  \Var(\hat \theta_{cc})
+  &= \Var\left(\theta_2 + \pi_{2+}^{-1} \left(n^{-1}\sum_{i = 1}^n \delta_{2i} y_{2i}
+  - \pi_{2+}\theta_2\right) - \frac{\theta_2 \pi_{2+}}{\pi_{2+}^2} 
+  \left(n^{-1} \sum_{i = 1}^n \delta_{2i} - \pi_{2+}\right) + o_p(1)\right)\nonumber  \\
+  &\quad (\text{I can add more steps later if necessary.})\\
+  &= \frac{1 + \sigma_{22}}{n \pi_{2+}} + o_p(1).
+\end{align}
+
+To compute the variance of $\hat \theta_{WLS}$, we have,
+
+\begin{align}\label{eq:varwls}
+  \Var(\hat \theta_{WLS})
+  &= \Var((M'V^{-1}V)^{-1}M'V^{-1}Z) \nonumber \\ 
+  &= E[\Var((M'V^{-1}V)^{-1}M'V^{-1}Z \mid n_1)]\nonumber  \\
+  &= E[(M'V^{-1}M)]\\
+\end{align}
+
+By Slutky's Theorem, $\Var(\hat \theta_{WLS}) \stackrel{P}{\to} (M'E[V]^{-1}M)^{-1}$.
+
+Finally, we compute the variance for the proposed estimator. First, we
+estimate the variance for a similar estimator $\tilde \theta_{prop}$. This
+estimator is the same as the proposed estimator except that we assume that 
+the estimates from $E[Y_{2i} \mid X, Y_1]$ and $E[Y_{2i} \mid X]$ are 
+population coefficients and independent of the rest of the sample. This
+could occur if there is a separate sample in which we can estimate these 
+expectations. Since the population coefficients of the regression 
+$Y = \beta_0 + \beta_1 X$ are
+
+\[\beta_0 = E[Y] - E[X] \Var(X)^{-1} Cov(X'Y) \text{ and } 
+\beta_1 = \Var(X)^{-1}\Cov(X, Y),\]
+
+we have that,
+
+\begin{align*}
+  E[Y_2 \mid X] &= E[Y_2] - \beta_1 E[X] + \beta_1 x = \theta_2 - x
+\end{align*}
+
+and
+
+\begin{align*}
+  E[Y_2 \mid X, Y_1] 
+  &= \beta_0 + [X, Y_1][\beta_1 \beta_2]' \\ 
+  &= E[Y_2] - E[[X, Y_1]] \Var([X, Y_1])^{-1}\Cov([X, Y_1], Y_2) + 
+  [X, Y_1]\Var([X, Y_1])^{-1} \Cov([X, Y_1], Y_2) \\ 
+  &= \theta_2 + [X, Y_1] \sigma_{11}^{-1} 
+  \begin{bmatrix}
+    1 + \sigma_{11} & -1 \\ -1 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    1 & 1 + \sigma_{12}
+  \end{bmatrix} \\
+  &= \theta_2 + x \left(\frac{\sigma_{11} - \sigma_{12}}{\sigma_{11}}\right) + 
+  y_1 \left(\frac{\sigma_{12}}{\sigma_{11}}\right)\\
+  &= \theta_2 + x(1 - \sigma_{12}) + y_1(\sigma_{12}). 
+\end{align*}
+
+This means that 
+
+\[E[Y_2 \mid X, Y_1] - E[Y_2 \mid X] = \sigma_{12}(y_1 - x) = \sigma_{12} e_1.\]
+
+Hence, whereas for $\theta = E[Y_2]$,
+
+\[\hat \theta_{prop} = n^{-1} \sum_{i = 1}^n \left\{E[Y_2 \mid X] +
+    \left(\frac{\delta_{1i}}{\pi_{1+}} - \frac{\delta_{11i}}{\pi_{11}}\right)
+    (E[Y_2 \mid X, Y_1] - E[Y_2 \mid X]) + 
+    \frac{\delta_{2i}}{\pi_{2+}}(y_{2i} - E[Y_2 \mid X])
+\right\}\]
+
+for the similar estimator we have
+
+\[\tilde \theta_{prop} = n^{-1} \sum_{i = 1}^n \left( \theta_2 + x_i + 
+    \left(\frac{\delta_{1i}}{\pi_{1+}} - \frac{\delta_{11i}}{\pi_{11}}\right)
+    \sigma_{12} e_{1i} + \frac{\delta_{2i}}{\pi_{2+}} (e_{2i}) \right)
+\]
+
+This means that 
+
+\begin{align*}
+  \Var(\tilde \theta_{prop})
+  &= n^{-1}\Var\left(x + 
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+    \sigma_{12} e_{1} + \frac{\delta_{2}}{\pi_{2+}} (e_{2}) \right)\\
+  &= n^{-1} \left(\Var(x) + \Var\left(
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+    \sigma_{12} e_{1}
+    \right) + \Var\left( \frac{\delta_{2}}{\pi_{2+}} (e_{2}) \right)\right. \\ 
+  &\qquad+ \left.2\Cov\left(
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+    \sigma_{12} e_{1},
+     \frac{\delta_{2}}{\pi_{2+}} (e_{2}) 
+    \right) \right)\\
+  &\equiv A + B + C + D.
+\end{align*}
+
+\begin{align*}
+  A &= \Var(x) = 1.
+\end{align*}
+
+\begin{align*}
+  B &= \sigma_{12}^2 \sigma_{11} \Var\left(
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+  \right)\\
+    &=  \sigma_{12}^2 \sigma_{11} \left(\Var(\delta_1 / \pi_{1+}) + 
+      \Var(\delta_{11}/\pi_{11}) - 
+      2\Cov(\delta_1 / \pi_{1+}, \delta_{11} / \pi_{11}) \right)\\
+    &= \sigma_{12}^2 \sigma_{11}(\pi_{1+}^{-1} + \pi_{11}^{-1} - 2 - 2(\pi_{11}
+    - \pi_{1+} \pi_{11}) / (\pi_{1+}\pi_{11}))\\
+    &= \sigma_{12}^2 \sigma_{11}(\pi_{11}^{-1} - \pi_{1+}^{-1}).
+\end{align*}
+
+\begin{align*}
+  C &= \Var(\delta_2 e_2 / \pi_{2+})\\
+    &= \pi_{2+}^{-2}(\Var(\delta_2)\Var(e_2) + \Var(\delta_2)E[e_2]^2 +
+    \Var(e_2)E[\delta_2]^2)\\
+    &= \pi_{2+}^{-2} (\pi_{2+}(1 - \pi_{2+}) \sigma_{22} + \sigma_{22}\pi_{2+}^2)\\
+    &= \sigma_{22} / \pi_{2+}.
+\end{align*}
+
+\begin{align*}
+  D &= 2\Cov\left(
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+    \sigma_{12} e_{1}, \frac{\delta_{2}}{\pi_{2+}} (e_{2}) \right)\\
+    &= 2E\left[
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+    \sigma_{12} e_{1} \frac{\delta_{2}}{\pi_{2+}} (e_{2}) 
+    \right] \\ 
+    &= 2E\left[
+    \left(\frac{\delta_{1}}{\pi_{1+}} - \frac{\delta_{11}}{\pi_{11}}\right)
+    \frac{\delta_{2}}{\pi_{2+}}
+    \right] \sigma_{12}^2\\
+    &= 2E\left[\frac{\delta_{11}}{\pi_{1+}\pi_{2+}} - \frac{\delta_{11}}{\pi_{2+}}
+    \right] \sigma_{12}^2\\
+    &= 2 \frac{\pi_{11}}{\pi_{2+}} (\pi_{1+}^{-1} - 1) \sigma_{12}^2.
+\end{align*}
+
+Hence,
+
+\begin{equation}\label{eq:varprop}
+\Var(\tilde \theta_{prop}) = n^{-1}(1 +
+  \sigma_{12}^2\sigma_{11}(\pi_{11}^{-1} - \pi_{1+}^{-1}) + \sigma_{22}
+  \pi_{2+}^{-1} 2\sigma_{12}^2 (\pi_{1+}^{-1} - 1) \pi_{11}/ \pi_{2+}).
+\end{equation}
+
+
+Since $\hat \beta - \beta = O(n)$ from Theorem 2.2.1 of \cite{fuller2009sampling}, 
+$\Var(\hat \theta_{prop}) \to \Var(\tilde \theta_{prop})$. (I think that 
+I also need to show that the dependency between the estimated 
+coefficients and the observed data is bounded and that this bound goes 
+to zero as the sample size increases.)
+
+These estimated variances are almost exactly in line with the estimated
+standard deviations from the simulation study. With values of $n = 1000$,
+$\sigma_{11} = 1$, $\sigma_{22} = 1$, $\sigma_{12} = 0.5$, $\theta_2 = 5$,
+$\pi_{11} = 0.4$, $\pi_{10} = 0.2$, $\pi_{01} = 0.2$, and $\pi_{00} = 0.2$
+the standard deviations from the previous calculations and from the Monte Carlo
+simulation are listed in the Table~\ref{tab:calmc}:
+
+\begin{table}[!ht]
+  \centering
+  \label{tab:calmc}
+  \caption{This table compares the calculated and estimated standard 
+  errors for each of the algorithms listed. The calculated values are 
+  computed as the square root of the variance derived in the previous 
+  section. We use Equations~\ref{eq:varor}, \ref{eq:varorx}, \ref{eq:varcc}
+  \ref{eq:varwls}, and \ref{eq:varprop} to calculate the variance of 
+  Oracle, OracleX, CC, WLS, and Prop respectively and then take the square
+  root of the answer. For the estimated standard error, we take the 
+  standard deviation of the $B$ estimators for each algorithm.}
+  \begin{tabular}{lrr}
+    \toprule
+    Algorithm & Calculated Standard Error & Estimated Standard Error \\
+    \midrule
+    Oracle  & 0.045 & 0.044 \\
+    OracleX & 0.032 & 0.032 \\
+    CC      & 0.058 & 0.058 \\
+    WLS     & 0.040 & 0.040 \\
+    Prop    & 0.056 & 0.051 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section*{Next Steps}
+
+\begin{itemize}
+  \item[1.] Since we have a way to estimate the variance, the goal is still 
+    to find the optimal $a$ and $b$ for Equation~\ref{eq:propclass}.
+\end{itemize}
+
+\printbibliography
 
 \end{document}

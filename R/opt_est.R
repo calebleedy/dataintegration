@@ -295,11 +295,9 @@ expect_g <- function(df, g, cond, pred_df, d_vec) {
 #'  - df has the following columns: X, Y1, Y2, delta_y1, delta_y2, prob_vec
 #'  - If delta_yi = 1 then we assume that Y_i is observed if delta_yi = 0 then
 #'  - we assume that Y_i is missing.
-prop_nmono_est <- function(df, oracle = TRUE) {
+prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE) {
 
-  # HACK: We only test the case where we have g(X, Y1, Y2) = Y2.
-  gfun <- "Y2"
-
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
   df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
   df_1 <- filter(df, delta_1 == 1)
   df_2 <- filter(df, delta_2 == 1)
@@ -321,11 +319,12 @@ prop_nmono_est <- function(df, oracle = TRUE) {
   # E[g | X]
   # E[g | X, Y1]
   # E[g | X, Y2] = Y2
-  eg_x <- expect_g(df, g = gfun, cond = c("X"), pred_df = df, d_vec = rep(1, nrow(df)))
+  eg_x <- 
+    expect_g(df, g = "g_i", cond = c("X"), pred_df = df, d_vec = rep(1, nrow(df)))
   eg_xy1 <-
-    expect_g(df, g = gfun, cond = c("X", "Y1"), pred_df = df_1, d_vec = df$delta_1)
+    expect_g(df, g = "g_i", cond = c("X", "Y1"), pred_df = df_1, d_vec = df$delta_1)
   eg_xy2 <-
-    expect_g(df, g = gfun, cond = c("X", "Y2"), pred_df = df_2, d_vec = df$delta_2)
+    expect_g(df, g = "g_i", cond = c("X", "Y2"), pred_df = df_2, d_vec = df$delta_2)
 
   # 3. Get estimate.
   # This is correct because eg_xyi both estimate E[g | X, Yi] using all of the 
@@ -333,86 +332,47 @@ prop_nmono_est <- function(df, oracle = TRUE) {
   mean(eg_x) + 
     mean(df$delta_1 / pi1_w * (eg_xy1 - eg_x)) +
     mean(df$delta_2 / pi2_w * (eg_xy2 - eg_x)) +
-    mean(df$delta_1 * df$delta_2 / pi11_w * (df[[gfun]] - eg_xy1 - eg_xy2 + eg_x))
-}
-
-prop2_nmono_est <- function(df, oracle = TRUE) {
-
-  # HACK: We only test the case where we have g(X, Y1, Y2) = Y2.
-  gfun <- "Y2"
-
-  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
-  df_1 <- filter(df, delta_1 == 1)
-  df_2 <- filter(df, delta_2 == 1)
-
-  # Steps:
-  # 1. Compute pi weights.
-  # 2. Compute expectations.
-  # 3. Get estimate.
-
-  # 1. Compute pi weights.
-  # pi_1+
-  # pi_2+
-  # pi_11
-  pi1_w <- df$prob_1
-  pi2_w <- df$prob_2
-  pi11_w <- df$prob_11
-
-  # 2. Compute expectations.
-  # E[g | X]
-  # E[g | X, Y1]
-  # E[g | X, Y2] = Y2
-  eg_x <- expect_g(df, g = gfun, cond = c("X"), pred_df = df, d_vec = rep(1, nrow(df)))
-  eg_xy1 <-
-    expect_g(df, g = gfun, cond = c("X", "Y1"), pred_df = df_1, d_vec = df$delta_1)
-  eg_xy2 <-
-    expect_g(df, g = gfun, cond = c("X", "Y2"), pred_df = df_2, d_vec = df$delta_2)
-
-  # 3. Get estimate.
-  # This is correct because eg_xyi both estimate E[g | X, Yi] using all of the 
-  # observed Y_i values. Not just the values in A_{01} for example.
-  mean(eg_x) + 
-    mean(df$delta_1 / pi1_w * (eg_xy1 - eg_x)) +
-    mean(df$delta_2 / pi2_w * (eg_xy2 - eg_x)) 
+    mean(df$delta_1 * df$delta_2 / pi11_w * (df[["g_i"]] - eg_xy1 - eg_xy2 + eg_x))
 }
 
 # ********************
 # * Linear Estimator *
 # ********************
 
-# FIXME: Do we need to account for survey weights?
+# Question: Do we need to account for survey weights? No.
 opt_lin_est <- function(df,
                         mean_x = 0, var_x = 1,
                         cov_xy1 = 1, cov_xy2 = 1,
-                        var_y1 = 1, var_y2 = 1) {
+                        var_y1 = 1, var_y2 = 1,
+                        cov_y1y2 = 0) {
 
   if (mean_x != 0) {
     df$X <- df$X - mean_x
   }
 
-  df$W1 <- df$Y1 - (cov_xy1 / var_x) * df$X
-  df$W2 <- df$Y2 - (cov_xy1 / var_x) * df$X
+  df$Z1 <- df$Y1 - (cov_xy1 / var_x) * df$X
+  df$Z2 <- df$Y2 - (cov_xy2 / var_x) * df$X
 
   df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
-  df_1 <- filter(df, delta_1 == 1)
-  df_2 <- filter(df, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
 
-  w_mat <- 
-    matrix(c(mean(df_11$W1), mean(df_11$W2), mean(df_1$W1), mean(df_2$W2)),
+  z_mat <- 
+    matrix(c(mean(df_11$Z1), mean(df_11$Z2), mean(df_10$Z1), mean(df_01$Z2)),
            ncol = 1)
 
   m_mat <- matrix(c(1, 0, 1, 0, 0, 1, 0, 1), ncol = 2)
-  v_mat <- diag(c(var_y1 / nrow(df_11),
-                  var_y2 / nrow(df_11),
-                  var_y1 / nrow(df_1),
-                  var_y2 / nrow(df_2)))
+  v_mat <- matrix(c(var_y1 / nrow(df_11), cov_y1y2 / nrow(df_11), 0, 0,
+                    cov_y1y2 / nrow(df_11), var_y2 / nrow(df_11), 0, 0,
+                    0, 0, var_y1 / nrow(df_10), 0,
+                    0, 0, 0, var_y2 / nrow(df_01)), nrow = 4)
 
   # WLS
   mu_hat <- 
     solve(t(m_mat) %*% solve(v_mat) %*% m_mat) %*% 
-    t(m_mat) %*% solve(v_mat) %*% w_mat
+    t(m_mat) %*% solve(v_mat) %*% z_mat
 
-  # G function is Y2
+  # g function is Y2
   return(mu_hat[2, ])
 
 }

@@ -26,16 +26,26 @@
       * [ ] Convergence in probability
       * [ ] CLT
  
-# From Meeting: August 18, 2023
+## From Meeting September 6, 2023
 
-* [ ] Optimality simulation. The idea is that we want to see if the proposed
+* [ ] Non-linear simulation
+* [ ] Use indenpendent samples
+* [ ] Email Dr. Kim results
+
+## From Meeting: August 15, 2023
+* [ ] Literature review of combining samples
+
+# Done
+
+## September 6, 2023
+* [X] Optimality simulation. The idea is that we want to see if the proposed
 estimator can recover the optimal estimator of the simulation in the case where 
 everything is normal. The compute the optimal estimator we can use the EM 
 algorithm.
-# From Meeting: August 15, 2023
-* [ ] Literature review of combining samples
-* [ ] Optimal variance estimator
-* [ ] Write up notation / rough draft / outline of paper
+## August 29, 2023
+
+* [X] Fix notation
+* [X] Compare coefficients
 
 ## August 19, 2023
 * [X] Fix notation ($\sigma_{yy} \to \rho$) and ($E[\varepsilon] = 0$)

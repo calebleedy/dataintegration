@@ -1,4 +1,4 @@
-# Title: sim_kim2021combining.R
+# Title: Paper_Replications/sim_kim2021combining.R
 # Author: Caleb Leedy
 # Date Created: April 20, 2023
 # Purpose: This document contains the code to reproduce the simulation study of

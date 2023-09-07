@@ -1,4 +1,4 @@
-# Title: regression_est.R
+# Title: Comparing_Estimator_Types/regression_est.R
 # Author: Caleb Leedy
 # Date Created: May  5, 2023
 # Purpose: This file runs some code that I use for better understanding of the
