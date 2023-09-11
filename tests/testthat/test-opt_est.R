@@ -9,6 +9,7 @@
 # *********
 
 # Test expit
+# expit has been moved to R/utilities.R
 test_that("expit works", {
   expect_equal(expit(0), 0.5)
   expect_equal(expit(Inf), 1)
@@ -35,6 +36,12 @@ test_that("expect_g works", {
   expect_equal(expect_g(df, "Y2", c("X"), df, rep(1, nrow(df))), df$Y2)
   expect_equal(expect_g(df, "Y2", c("X", "Y1"), df_1, df$delta_1), tmp1)
   expect_equal(expect_g(df, "Y2", c("X", "Y2"), df_2, df$delta_2), tmp2)
+})
+
+# Test get_v_powers
+test_that("get_v_powers works", {
+  expect_equal(get_v_powers(c("X"), 1), c("I(X)"))
+  expect_equal(get_v_powers(c("X", "Y1"), 1), c("I(X)", "I(Y1)"))
 })
 
 # Test get_cond_exp

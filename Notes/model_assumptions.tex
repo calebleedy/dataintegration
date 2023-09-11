@@ -449,7 +449,8 @@ standard deviations from the simulation study. With values of $n = 1000$,
 $\sigma_{11} = 1$, $\sigma_{22} = 1$, $\sigma_{12} = 0.5$, $\theta_2 = 5$,
 $\pi_{11} = 0.4$, $\pi_{10} = 0.2$, $\pi_{01} = 0.2$, and $\pi_{00} = 0.2$
 the standard deviations from the previous calculations and from the Monte Carlo
-simulation are listed in the Table~\ref{tab:calmc}:
+simulation are listed in Table~2:
+%Table~\ref{tab:calmc}:
 
 \begin{table}[!ht]
   \centering
@@ -475,11 +476,107 @@ simulation are listed in the Table~\ref{tab:calmc}:
   \end{tabular}
 \end{table}
 
+\newpage
+  \quad
+\newpage
+
+\section*{Non-linear Estimation}
+
+\begin{itemize}
+  \item While we have previously shown that in the case of the linear 
+    estimator, that the weighted least squares (WLS) estimator is superior 
+    to the proposed estimator. However, we also want to see if this holds 
+    for a non-linear function. Consider the estimating equation $g(X, Y_1, Y_2)
+     = Y_1^2 Y_2$. Using the same setup as the previous simulation, we have the
+     same definitions of $X$, $Y$, $n$, $\pi$, and $B$.
+
+     For the definition of each estimator we have the following algorithms:
+
+     \begin{itemize}
+      \item Oracle: This computes the average value of $Y_1^2Y_2$ in all 
+        observations (even when $Y_1$ or $Y_2$ is not supposed to be observed).
+        \[\hat \theta = n^{-1} \sum_{i = 1}^n y_{1i}^2y_{2i}.\]
+
+      \item OracleX: This computes the average value of $Y_1^2 (Y_2 - X)$ in 
+        all observations (even when $Y_1$ or $Y_2$ is not supposed to be observed.)
+        \[\hat \theta = n^{-1} \sum_{i = 1}^n y_{1i}^2(y_{2i} - x_i).\]
+
+      \item CC: This computes the average value of $Y_1^2Y_2$ in all
+        observations in which $Y_1$ and $Y_2$ are observed.
+        \[\hat \theta = \frac{\sum_{i = 1}^n \delta_{1i}\delta_{2i} y_{1i}^2y_{2i}}
+        {\sum_{i = 1}^n \delta_{1i}\delta_{2i}}.\]
+
+      \item Proposed: This is the proposed estimator from Equation~\ref{eq:prop}.
+        Note that since,
+
+        \begin{align*}
+          Y_1^2 Y_2 &= (x + e_1)^2 (\theta_2 + x + e_2) \\ 
+                    &= x^3 + x^2 (\theta_2 + 2 e_1 + e_2) 
+                    + x(2\theta_2 e_1 + 2 e_1 e_2 + e_1^2) + e_1^2 \theta_2 
+                    + e_1^2 e_2
+        \end{align*}
+
+        for the conditional expectations, we have
+        \begin{align*}
+          E[Y_1^2 Y_2 \mid X] &= x^3 + x^2 \theta_2 + x(2\sigma_{12} + 1) + \theta_2\\
+          E[Y_1^2 Y_2 \mid X, Y_1] &= Y_1^2 (x + \theta_2) \text{ and }\\
+          E[Y_1^2 Y_2 \mid X, Y_2] &= (x^2 + 1) Y_2.
+        \end{align*}
+
+      \item WLS: To derive the WLS estimator we can view the sample as 
+        consisting of four independent parts: $A_{11}, A_{10}, A_{01}$, and 
+        $A_{00}$, where $A_{ij}$ indicates the missingness levels of $Y_1$ (if 
+        i = 0) or $Y_2$ (if $j = 0$). We know that the correctly specified
+        regression model for $g$ in each of these segments is the following:
+
+        \begin{align*}
+          A_{11}&: Y_1^2 Y_2 \\
+          A_{10}&: Y_1^2  (x + \theta_2) \\
+          A_{01}&: (x^2 + 1) Y_2\\
+          A_{00}&: x^3 + x^2 \theta_2 + x(2\sigma_{12} + 1) + \theta_2
+        \end{align*}
+
+        The estimator is then to estimate $\theta_2$ using Equation~\ref{eq:wls}.
+        Then, we can plug in the estimated value of $\theta_2$ into the previous 
+        equations to get estimates of $g$. The overall estimate is the estimated 
+        variance weighted average of the mean estimate from each segment.
+
+      \item WLSTT: Since the previous estimator is biased, we use the same
+        estimation procedure with the true value of $\theta_2$ to the estimator 
+        $\hat \theta_{WLSTT}$.
+     \end{itemize}
+
+     \begin{table}[!ht]
+       \caption{True g is 10. $\Cov(e_1, e_2) = 0.5$}
+       \centering
+       \begin{tabular}[t]{lrrrr}
+         \toprule
+         Algorithm & Bias & SD & Tstat & Pval\\
+         \midrule
+         Oracle & 0.007 & 0.529 & 0.741 & 0.229\\
+         Oraclex & 0.004 & 0.475 & 0.510 & 0.305\\
+         CC & 0.023 & 0.824 & 1.518 & 0.065\\
+         WLS & -0.131 & 0.387 & -18.504 & 0.000\\
+         WLSTT & -0.132 & 0.380 & -19.007 & 0.000\\
+         Prop & 0.011 & 0.625 & 0.952 & 0.171\\
+         \bottomrule
+       \end{tabular}
+     \end{table}
+
+     In this scenario, the WLS estimator is biased. Other than the oracle 
+     estimators, the proposed estimator is the best unbiased estimator.
+
+\end{itemize}
+
 \section*{Next Steps}
 
 \begin{itemize}
-  \item[1.] Since we have a way to estimate the variance, the goal is still 
-    to find the optimal $a$ and $b$ for Equation~\ref{eq:propclass}.
+  \item I am slightly unclear about how to proceed. The proposed estimator 
+    seemed to work quite well for the non-linear experiment. However, it was 
+    easily out-performed by the WLS estimator in the linear case. The WLS 
+    estimator is a relatively intuitive estimator that is optimal in that 
+    situation. However, it seems to have worse performance in the non-linear 
+    case.
 \end{itemize}
 
 \printbibliography

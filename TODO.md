@@ -26,16 +26,16 @@
       * [ ] Convergence in probability
       * [ ] CLT
  
-## From Meeting September 6, 2023
-
-* [ ] Non-linear simulation
-* [ ] Use indenpendent samples
-* [ ] Email Dr. Kim results
 
 ## From Meeting: August 15, 2023
 * [ ] Literature review of combining samples
 
 # Done
+
+* [X] Non-linear simulation
+* [X] Use independent samples
+* [ ] Email Dr. Kim results
+## September 11, 2023
 
 ## September 6, 2023
 * [X] Optimality simulation. The idea is that we want to see if the proposed

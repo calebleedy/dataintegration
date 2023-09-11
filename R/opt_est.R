@@ -19,12 +19,6 @@
 library(dplyr)
 library(stringr)
 
-# ************************
-# * Additional Functions *
-# ************************
-
-expit <- function(x) {1 / (1 + exp(-x))}
-
 # *****************
 # * Generate Data *
 # *****************
@@ -282,6 +276,40 @@ expect_g <- function(df, g, cond, pred_df, d_vec) {
   }
 }
 
+#' This gets all of the formula terms for higher order formulas.
+#'
+#' @param str_vec - A vector of strings
+#' @param pow - An integer greater than or equal to 1
+#'
+#' @returns ret - A vector of strings
+#'
+#' @details
+#' Preconditions:
+#'  - !("" %in% str_vec)
+get_v_powers <- function(str_vec, pow = 1) {
+  v <- c(str_vec, "")
+  lst <- list(v)
+
+  if (pow == 1) {
+    res <- v
+  } else {
+
+    for (iter in 2:pow) {
+      lst[[iter]] <- v
+    }
+
+    df <- expand.grid(lst, stringsAsFactors = FALSE)
+    res <- c()
+    for (i in 1:nrow(df)) {
+      res[i] <- str_flatten(sort(as.character(df[i, ])), collapse = "*")
+    }
+  }
+
+  res <- unique(str_replace(res, "^\\*+", ""))
+  res <- res[purrr::map_lgl(res, function(s) {str_length(s) != 0})]
+  return(paste0("I(", res, ")"))
+}
+
 #' The proposed non-monotone estimator. This function gives the result based
 #' on an input data frame.
 #'
@@ -295,7 +323,7 @@ expect_g <- function(df, g, cond, pred_df, d_vec) {
 #'  - df has the following columns: X, Y1, Y2, delta_y1, delta_y2, prob_vec
 #'  - If delta_yi = 1 then we assume that Y_i is observed if delta_yi = 0 then
 #'  - we assume that Y_i is missing.
-prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE) {
+prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE, pow = 1) {
 
   df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
   df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
@@ -316,15 +344,15 @@ prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE) {
   pi11_w <- df$prob_11
 
   # 2. Compute expectations.
-  # E[g | X]
-  # E[g | X, Y1]
-  # E[g | X, Y2] = Y2
+  cond_x <- get_v_powers(c("X"), pow = pow)
+  cond_xy1 <- get_v_powers(c("X", "Y1"), pow = pow)
+  cond_xy2 <- get_v_powers(c("X", "Y2"), pow = pow)
   eg_x <- 
-    expect_g(df, g = "g_i", cond = c("X"), pred_df = df, d_vec = rep(1, nrow(df)))
+    expect_g(df, g = "g_i", cond = cond_x, pred_df = df, d_vec = rep(1, nrow(df)))
   eg_xy1 <-
-    expect_g(df, g = "g_i", cond = c("X", "Y1"), pred_df = df_1, d_vec = df$delta_1)
+    expect_g(df, g = "g_i", cond = cond_xy1, pred_df = df_1, d_vec = df$delta_1)
   eg_xy2 <-
-    expect_g(df, g = "g_i", cond = c("X", "Y2"), pred_df = df_2, d_vec = df$delta_2)
+    expect_g(df, g = "g_i", cond = cond_xy2, pred_df = df_2, d_vec = df$delta_2)
 
   # 3. Get estimate.
   # This is correct because eg_xyi both estimate E[g | X, Yi] using all of the 
@@ -341,6 +369,7 @@ prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE) {
 
 # Question: Do we need to account for survey weights? No.
 opt_lin_est <- function(df,
+                        gfun = "Y2",
                         mean_x = 0, var_x = 1,
                         cov_xy1 = 1, cov_xy2 = 1,
                         var_y1 = 1, var_y2 = 1,
@@ -373,6 +402,51 @@ opt_lin_est <- function(df,
     t(m_mat) %*% solve(v_mat) %*% z_mat
 
   # g function is Y2
-  return(mu_hat[2, ])
+  if (gfun == "Y2") {
+    return(mu_hat[2, ])
+  } else if (gfun == "Y1^2 * Y2") {
+    return(mu_hat[1, ]^2 * mu_hat[2, ])
+  }
+
+}
+
+comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
+                         mean_x = 0, cov_e1e2 = 0, theta2 = NA) {
+
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
+  df$X3 <- df$X^3
+  df$X2 <- df$X^2
+  df$Y12 <- df$Y1^2
+
+  if (mean_x != 0) {
+    df$X <- df$X - mean_x
+  }
+
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+
+  if (is.na(theta2)) {
+    theta2 = opt_lin_est(df, gfun = "Y2", mean_x = mean_x, cov_y1y2 = cov_e1e2)
+  }
+
+  est11 <- df_11$Y1^2 * df_11$Y2
+  est10 <- df_10$Y1^2 * (df_10$X + theta2)
+  est01 <- (df_01$X^2 + 1) * df_01$Y2
+  est00 <- df_00$X^3 + df_00$X^2 * theta2 + df_00$X * (2 * cov_e1e2 + 1) + theta2
+
+  v10 <- var(est10)
+  v01 <- var(est01)
+  v00 <- var(est00)
+  v11 <- var(est11)
+
+  wsum <- 1 / v10 + 1 / v01 + 1 / v00 + 1 / v11
+  w10 <- (1 / v10) / wsum
+  w01 <- (1 / v01) / wsum
+  w00 <- (1 / v00) / wsum
+  w11 <- (1 / v11) / wsum
+
+  return(w11 * mean(est11) + w10 * mean(est10) + w01 * mean(est01) + w00 * mean(est00))
 
 }
