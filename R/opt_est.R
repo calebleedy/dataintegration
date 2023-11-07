@@ -474,7 +474,7 @@ comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
 # * Optimal Semiparametric Estimator *
 # ************************************
 
-opt_semi_est <- function(df, gfun = "Y2", est = "opt", test = FALSE) {
+opt_semi_est <- function(df, gfun = "Y2", est = "opt", test = FALSE, pow = 1) {
 
   # Steps: 
   # 1. Compute E[g_i | X_i]
@@ -489,17 +489,37 @@ opt_semi_est <- function(df, gfun = "Y2", est = "opt", test = FALSE) {
   df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
   df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
 
-  # 1. Compute E[g_i | X_i]
-  mod_gx <- lm(g_i ~ X, data = df_11)
+  if (pow == 1) {
+    # 1. Compute E[g_i | X_i]
+    mod_gx <- lm(g_i ~ X, data = df_11)
 
-  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
-  #   E[E[g | X, Y1]E[g | X, Y2]]
-  exp_gx2 <- mean(predict(mod_gx)^2)
-  mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
-  exp_gy12 <- mean(predict(mod_gy1)^2)
-  mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
-  exp_gy22 <- mean(predict(mod_gy2)^2)
-  exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+    # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+    #   E[E[g | X, Y1]E[g | X, Y2]]
+    exp_gx2 <- mean(predict(mod_gx)^2)
+    mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
+    exp_gy12 <- mean(predict(mod_gy1)^2)
+    mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
+    exp_gy22 <- mean(predict(mod_gy2)^2)
+    exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+  } else if (pow == 3) {
+    # 1. Compute E[g_i | X_i]
+    mod_gx <- lm(g_i ~ X + I(X^2) + I(X^3), data = df_11)
+
+    # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+    #   E[E[g | X, Y1]E[g | X, Y2]]
+    exp_gx2 <- mean(predict(mod_gx)^2)
+    mod_gy1 <- lm(g_i ~ X + Y1 + I(X^2) + I(Y1^2) + I(X*Y1) + 
+                        I(X*X*X) + I(X*X*Y1) + I(X*Y1*Y1) + I(Y1*Y1*Y1),
+               data = df_11)
+    exp_gy12 <- mean(predict(mod_gy1)^2)
+    mod_gy2 <- lm(g_i ~ X + Y2 + I(X*X) + I(X*Y2) + I(Y2*Y2) + 
+                        I(X*X*X) + I(X*X*Y2) + I(X*Y2*Y2) + I(Y2*Y2*Y2),
+               data = df_11)
+    exp_gy22 <- mean(predict(mod_gy2)^2)
+    exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+  } else {
+    stop("We have only implemented pow = 1, and pow = 3")
+  }
 
   # 3. Compute c_i
   pi_11 <- unique(df$prob_11)
@@ -573,7 +593,7 @@ opt_semi_est <- function(df, gfun = "Y2", est = "opt", test = FALSE) {
 
 }
 
-opt_delta_c <-  function(df, gfun = "Y2", est = "opt", test = FALSE) {
+opt_delta_c <-  function(df, gfun = "Y2", est = "opt", test = FALSE, pow = 1) {
 
   # Steps: 
   # 1. Compute E[g_i | X_i]
@@ -588,17 +608,37 @@ opt_delta_c <-  function(df, gfun = "Y2", est = "opt", test = FALSE) {
   df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
   df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
 
-  # 1. Compute E[g_i | X_i]
-  mod_gx <- lm(g_i ~ X, data = df_11)
+  if (pow == 1) {
+    # 1. Compute E[g_i | X_i]
+    mod_gx <- lm(g_i ~ X, data = df_11)
 
-  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
-  #   E[E[g | X, Y1]E[g | X, Y2]]
-  exp_gx2 <- mean(predict(mod_gx)^2)
-  mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
-  exp_gy12 <- mean(predict(mod_gy1)^2)
-  mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
-  exp_gy22 <- mean(predict(mod_gy2)^2)
-  exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+    # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+    #   E[E[g | X, Y1]E[g | X, Y2]]
+    exp_gx2 <- mean(predict(mod_gx)^2)
+    mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
+    exp_gy12 <- mean(predict(mod_gy1)^2)
+    mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
+    exp_gy22 <- mean(predict(mod_gy2)^2)
+    exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+  } else if (pow == 3) {
+    # 1. Compute E[g_i | X_i]
+    mod_gx <- lm(g_i ~ X + I(X^2) + I(X^3), data = df_11)
+
+    # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+    #   E[E[g | X, Y1]E[g | X, Y2]]
+    exp_gx2 <- mean(predict(mod_gx)^2)
+    mod_gy1 <- lm(g_i ~ X + Y1 + I(X^2) + I(Y1^2) + I(X*Y1) + 
+                        I(X*X*X) + I(X*X*Y1) + I(X*Y1*Y1) + I(Y1*Y1*Y1),
+               data = df_11)
+    exp_gy12 <- mean(predict(mod_gy1)^2)
+    mod_gy2 <- lm(g_i ~ X + Y2 + I(X*X) + I(X*Y2) + I(Y2*Y2) + 
+                        I(X*X*X) + I(X*X*Y2) + I(X*Y2*Y2) + I(Y2*Y2*Y2),
+               data = df_11)
+    exp_gy22 <- mean(predict(mod_gy2)^2)
+    exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+  } else {
+    stop("We have only implemented pow = 1, and pow = 3")
+  }
 
   # 3. Compute c_i
   pi_11 <- unique(df$prob_11)
