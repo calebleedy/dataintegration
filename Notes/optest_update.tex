@@ -94,9 +94,11 @@ We know from Theorem 7.2 of \cite{tsiatis2006semiparametric} that if $\Pr(C =
 \infty \mid Z) = \pi_{11} > 0$ 
 then the semiparametric influence function has the form (see page 20 of notes):
 
-\[ \frac{I(C = \infty) g(Z)}{\varpi(\infty, Z)} + \frac{I(C =
+\begin{equation}\label{lambda2}
+ \frac{I(C = \infty) g(Z)}{\varpi(\infty, Z)} + \frac{I(C =
   \infty)}{\varpi(\infty, Z)} \left(\sum_{r \neq \infty} \varpi(r, G_r(Z))
-  L_{2r}(G_r(Z))\right) - \sum_{r \neq \infty} I(C = \infty)L_{2r}(G_r(Z))\]
+  L_{2r}(G_r(Z))\right) - \sum_{r \neq \infty} I(C = r)L_{2r}(G_r(Z))
+\end{equation}
 
 where $L_{2r}(G_r(Z))$ is an arbitrary function of $G_r(Z)$. Notice, that this
 form does not identify \textit{the} optimal estimator but a class of 
@@ -104,12 +106,12 @@ semiparametric functions. A reasonable choice of an estimator for $L_{2r}(G_r(Z)
 
 \[L_{2r}(G_r(Z)) = E[g(Z) \mid G_r(Z)].\]
 
-It turns out that $\hat \theta_{prop}$ from Equation~\ref{eq:prop} is contained within 
-the previous class of estimators with 
-
-\[L_{2r}(G_r(Z)) = \varpi(r, G_r(Z)) E[g(Z) \mid G_r(Z)].\]
-
-(See pages 81-82 of notes for proof.) \\
+%It turns out that $\hat \theta_{prop}$ from Equation~\ref{eq:prop} is contained within 
+%the previous class of estimators with 
+%
+%\[L_{2r}(G_r(Z)) = \varpi(r, G_r(Z)) E[g(Z) \mid G_r(Z)].\]
+%
+%(See pages 81-82 of notes for proof.) \\
 
 \subsection*{Linear Expectations}
 
@@ -138,7 +140,8 @@ all $L_2 \in \Lambda_2$ (see \cite{tsiatis2006semiparametric} for definition
 of $\Lambda_2$). If we can find such coefficients that the estimator $\hat
 \theta_c$ will be orthogonal to $\Lambda_2$ and hence by Theorem 10.1 of 
 \cite{tsiatis2006semiparametric} semiparametrically optimal. The good news 
-is that we know (CITEME) that any element $L_2 \in \Lambda_2$ has a form:
+is that we know (from Theorem 7.2) that any element $L_2 \in \Lambda_2$ has a
+form:
 
 \begin{align}
   L_2 &= 
@@ -179,11 +182,13 @@ $L_{21}(X, Y_1)$ and $L_{22}(X, Y_2)$:
 \end{align*}
 }
 
-\subsection*{Optimal Normal Model}
+\subsection*{Optimal Model}
 
-An alternative optimization problem is to find coefficients $c_0$, $c_1$, and
-$c_2$, that minimize the variance of $\hat \theta_c$. After expanding the 
-variance and differentiating by each $c_i$, the optimal parameters are 
+Due to the fact that I do not know how to solve the previous equations, there 
+is another way to construct an optimal model. We can find the values of 
+$c_0$, $c_1$, and $c_2$ in $\hat \theta_c$ that minimize the variance the 
+estimator. We can find these values by differentiating by $c_i$ and solving 
+for $c_i$:
 
 \begin{align*}
   \begin{bmatrix} \hat c_0 \\ \hat c_1 \\ \hat c_2 \end{bmatrix} 
@@ -211,6 +216,39 @@ where
   M_{23} &= E[E[g \mid X, Y_1]E[g \mid X, Y_2]] \left(\frac{\pi_{10}\pi_{01}}{\pi_{11}(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})}\right) \\
   M_{33} &= E[V(E[g \mid X, Y_2] \mid X)] \left(\frac{\pi_{01}}{\pi_{11}(\pi_{01} + \pi_{11})}\right)
 \end{align*}
+
+This estimator is similar to several other estimators:
+
+\begin{align}\label{thetaind}
+  \hat \theta^{ind}_c 
+  &= \frac{\delta_{11}}{\pi_{11}} g(Z) + \left(1 -
+    \left(\frac{\delta_{10}}{\pi_{10}}\right) -
+    \left(\frac{\delta_{01}}{\pi_{01}}\right) + 
+  \frac{\delta_{11}}{\pi_{11}}\right) c_0 E[g \mid X] \\ \nonumber
+  &+
+  \left(\frac{\delta_{10}}{\pi_{10}} - 
+  \frac{\delta_{11}}{\pi_{11}}\right) c_1 E[g \mid X, Y_1] +
+  \left(\frac{\delta_{01}}{\pi_{01}} - 
+  \frac{\delta_{11}}{\pi_{11}}\right) c_2 E[g \mid X, Y_2]
+\end{align}
+
+\begin{align}\label{thetadelta}
+  \hat \theta^{\delta}_c 
+  &= \frac{\delta_{11}}{\pi_{11}} g(Z) 
+  + \left(\frac{\delta_{11}}{\pi_{11}} - \frac{\delta_{00}}{\pi_{00}}\right) 
+   c_0 E[g \mid X] \\ \nonumber
+  &+
+  \left(\frac{\delta_{11}}{\pi_{11}} - 
+  \frac{\delta_{10}}{\pi_{10}}\right) c_1 E[g \mid X, Y_1] +
+  \left(\frac{\delta_{11}}{\pi_{11}} - 
+  \frac{\delta_{01}}{\pi_{01}}\right) c_2 E[g \mid X, Y_2]
+\end{align}
+
+The first expression (Equation~\ref{thetaind}) is the proposed estimator 
+with independent differences in each segment, while the second expression 
+(Equation~\ref{thetadelta}) is the optimal estimator with values of $\delta$
+such that $\hat \theta^{\delta}_c \in \Lambda_2$, which means that it has 
+the form of the semiparametric in Equation~\ref{lambda2}.
 
 \newpage 
 

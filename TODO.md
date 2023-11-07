@@ -31,6 +31,10 @@
 ## From Meeting: August 15, 2023
 * [ ] Literature review of combining samples
 
+## From Meeting: October 24, 2023
+* [ ] Compare results to normal model
+* [ ] Unpool estimates
+* [ ] Run simulation study
 # Done
 
 ## September 11, 2023

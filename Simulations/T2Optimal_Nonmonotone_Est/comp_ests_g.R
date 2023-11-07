@@ -65,6 +65,7 @@ mc_theta <-
     wlstt_est <- 
       comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2, theta2 = true_theta)
     prop_est <- prop_nmono_est(df, gfun = "Y1^2 * Y2", pow = 3)
+    semiopt_est <- opt_semi_est(df, gfun = "Y1^2 * Y2")
 
     return(tibble(oracle = oracle_est,
                   oraclex = oraclex_est,
@@ -72,7 +73,8 @@ mc_theta <-
                   ipw = ipw_est,
                   wls = wls_est,
                   wlstt = wlstt_est,
-                  prop = prop_est))
+                  prop = prop_est,
+                  semiopt = semiopt_est))
   } |> 
   bind_rows()
 
@@ -92,6 +94,7 @@ mc_theta |>
     bias_wls = mean(wls) - true_g,
     bias_wlstt = mean(wlstt) - true_g,
     bias_prop = mean(prop) - true_g,
+    bias_semiopt = mean(semiopt) - true_g,
     sd_oracle = sd(oracle),
     sd_oraclex = sd(oraclex),
     sd_cc = sd(cc),
@@ -99,19 +102,21 @@ mc_theta |>
     sd_wls = sd(wls),
     sd_wlstt = sd(wlstt),
     sd_prop = sd(prop),
+    sd_semiopt = sd(semiopt),
     tstat_oracle = (mean(oracle) - true_g) / sqrt(var(oracle) / B),
     tstat_oraclex = (mean(oraclex) - true_g) / sqrt(var(oraclex) / B),
     tstat_cc = (mean(cc) - true_g) / sqrt(var(cc) / B),
     tstat_ipw = (mean(ipw) - true_g) / sqrt(var(ipw) / B),
     tstat_wls = (mean(wls) - true_g) / sqrt(var(wls) / B),
     tstat_wlstt = (mean(wlstt) - true_g) / sqrt(var(wlstt) / B),
-    tstat_prop = (mean(prop) - true_g) / sqrt(var(prop) / B)
+    tstat_prop = (mean(prop) - true_g) / sqrt(var(prop) / B),
+    tstat_semiopt = (mean(semiopt) - true_g) / sqrt(var(semiopt) / B)
   ) |>
   tidyr::pivot_longer(cols = everything(),
                names_to = c(".value", "algorithm"),
                names_pattern = "(.*)_(.*)") |>
   mutate(pval = pt(-abs(tstat), df = B)) |>
-  knitr::kable("latex", booktabs = TRUE,
+  knitr::kable(#"latex", booktabs = TRUE,
                digits = 3,
                caption = paste0("True g is ", true_g,
                                 ". Cov_e1e2 = ", cor_e1e2 ))

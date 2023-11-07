@@ -73,7 +73,11 @@ gen_optsim_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cor_e1e2 = 0
 
   tibble(X = x_vec, Y1 = y1, Y2 = y2,
          delta_1 = delta_y1, delta_2 = delta_y2,
-         prob_11 = prob_11, prob_1 = prob_1, prob_2 = prob_2)
+         prob_11 = prob_11, prob_1 = prob_1, prob_2 = prob_2,
+         prob_10 = 0.2, prob_01 = 0.2, prob_00 = 0.2,
+         delta_11 = delta_y1 * delta_y2, delta_10 = delta_y1 * (1 - delta_y2),
+         delta_01 = (1 - delta_y1) * delta_y2,
+         delta_00 = (1 - delta_y1) * (1 - delta_y2))
 
 }
 
@@ -121,7 +125,6 @@ get_cond_exp <- function(obs_y2, mean_y1, mean_y2, sigma_mat) {
   return(t(out))
 
 }
-
 
 # The EM algorithm consists of two steps: expectation and maximization.
 # The E-Step consists of:
@@ -323,7 +326,7 @@ get_v_powers <- function(str_vec, pow = 1) {
 #'  - df has the following columns: X, Y1, Y2, delta_y1, delta_y2, prob_vec
 #'  - If delta_yi = 1 then we assume that Y_i is observed if delta_yi = 0 then
 #'  - we assume that Y_i is missing.
-prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE, pow = 1) {
+prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE, pow = 1, prop_ind = FALSE) {
 
   df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
   df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
@@ -343,24 +346,40 @@ prop_nmono_est <- function(df, gfun = "Y2", oracle = TRUE, pow = 1) {
   pi2_w <- df$prob_2
   pi11_w <- df$prob_11
 
+  pi_11 <- unique(df$prob_11)
+  pi_10 <- unique(df$prob_10)
+  pi_01 <- unique(df$prob_01)
+  pi_00 <- unique(df$prob_00)
+
   # 2. Compute expectations.
   cond_x <- get_v_powers(c("X"), pow = pow)
   cond_xy1 <- get_v_powers(c("X", "Y1"), pow = pow)
   cond_xy2 <- get_v_powers(c("X", "Y2"), pow = pow)
   eg_x <- 
-    expect_g(df, g = "g_i", cond = cond_x, pred_df = df, d_vec = rep(1, nrow(df)))
+    expect_g(df_11, g = "g_i", cond = cond_x, pred_df = df, d_vec = rep(1, nrow(df)))
   eg_xy1 <-
-    expect_g(df, g = "g_i", cond = cond_xy1, pred_df = df_1, d_vec = df$delta_1)
+    expect_g(df_11, g = "g_i", cond = cond_xy1, pred_df = df_1, d_vec = df$delta_1)
   eg_xy2 <-
-    expect_g(df, g = "g_i", cond = cond_xy2, pred_df = df_2, d_vec = df$delta_2)
+    expect_g(df_11, g = "g_i", cond = cond_xy2, pred_df = df_2, d_vec = df$delta_2)
 
   # 3. Get estimate.
   # This is correct because eg_xyi both estimate E[g | X, Yi] using all of the 
   # observed Y_i values. Not just the values in A_{01} for example.
-  mean(eg_x) + 
+  if (prop_ind) {
+    d00 <- df$delta_00
+    d10 <- df$delta_10
+    d01 <- df$delta_01
+    d11 <- df$delta_11
+    return(mean(eg_x) + 
+      mean(d10 / pi_10 * (eg_xy1 - eg_x)) +
+      mean(d01 / pi_01 * (eg_xy2 - eg_x)) +
+      mean(d11 / pi_11 * (df[["g_i"]] - eg_xy1 - eg_xy2 + eg_x)))
+  } else {
+  return(mean(eg_x) + 
     mean(df$delta_1 / pi1_w * (eg_xy1 - eg_x)) +
     mean(df$delta_2 / pi2_w * (eg_xy2 - eg_x)) +
-    mean(df$delta_1 * df$delta_2 / pi11_w * (df[["g_i"]] - eg_xy1 - eg_xy2 + eg_x))
+    mean(df$delta_1 * df$delta_2 / pi11_w * (df[["g_i"]] - eg_xy1 - eg_xy2 + eg_x)))
+  }
 }
 
 # ********************
@@ -428,7 +447,7 @@ comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
   df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
 
   if (is.na(theta2)) {
-    theta2 = opt_lin_est(df, gfun = "Y2", mean_x = mean_x, cov_y1y2 = cov_e1e2)
+    theta2 <- opt_lin_est(df, gfun = "Y2", mean_x = mean_x, cov_y1y2 = cov_e1e2)
   }
 
   est11 <- df_11$Y1^2 * df_11$Y2
@@ -448,5 +467,192 @@ comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
   w11 <- (1 / v11) / wsum
 
   return(w11 * mean(est11) + w10 * mean(est10) + w01 * mean(est01) + w00 * mean(est00))
+
+}
+
+# ************************************
+# * Optimal Semiparametric Estimator *
+# ************************************
+
+opt_semi_est <- function(df, gfun = "Y2", est = "opt", test = FALSE) {
+
+  # Steps: 
+  # 1. Compute E[g_i | X_i]
+  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+  #   E[E[g | X, Y1]E[g | X, Y2]]
+  # 3. Compute c_i
+  # 4. Put it all together
+
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+
+  # 1. Compute E[g_i | X_i]
+  mod_gx <- lm(g_i ~ X, data = df_11)
+
+  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+  #   E[E[g | X, Y1]E[g | X, Y2]]
+  exp_gx2 <- mean(predict(mod_gx)^2)
+  mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
+  exp_gy12 <- mean(predict(mod_gy1)^2)
+  mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
+  exp_gy22 <- mean(predict(mod_gy2)^2)
+  exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+
+  # 3. Compute c_i
+  pi_11 <- unique(df$prob_11)
+  pi_10 <- unique(df$prob_10)
+  pi_01 <- unique(df$prob_01)
+  pi_00 <- unique(df$prob_00)
+
+  if (est == "opt") {
+    cov_mat <- 
+      matrix(c(exp_gx2 * (1 / pi_10 + 1 / pi_01 + 1 / pi_11 - 1),
+               -(1 / pi_10 + 1 / pi_11) * exp_gx2,
+               -(1 / pi_01 + 1 / pi_11) * exp_gx2,
+               -(1 / pi_10 + 1 / pi_11) * exp_gx2,
+               (1 / pi_10 + 1 / pi_11) * exp_gy12,
+               (1 / pi_11) * exp_gy1y2,
+               -(1 / pi_01 + 1 / pi_11) * exp_gx2,
+               (1 / pi_11) * exp_gy1y2,
+               (1 / pi_01 + 1 / pi_11) * exp_gy22),
+      nrow = 3)
+
+    resp_mat <- 
+      matrix(c((1 + 1 / pi_11) * exp_gx2,
+               -1 / pi_11 * exp_gy12,
+               -1 / pi_11 * exp_gy22),
+      nrow = 3)
+    c_mat <- -solve(cov_mat, resp_mat)
+  } else if (est == "prop") {
+    c_mat <- matrix(c(pi_00, pi_10, pi_01), nrow = 3)
+  } else if (est == "corrprop") {
+    d00 <- df$delta_00
+    d10 <- df$delta_10
+    d01 <- df$delta_01
+    d11 <- df$delta_11
+    c0 <- 
+    head(1 - (d10 + d11) / (pi_10 + pi_11) - 
+      (d01 + d11) / (pi_01 + pi_11) + d11 / pi_11)  
+    head(pi_00 / pi_11 * d11 - d00)
+
+    c1 <- -1 / (pi_10 + pi_11)
+    c2 <- -1 / (pi_01 + pi_11)
+    c_mat <- matrix(c(c0, c1, c2), nrow = 3)
+
+  } else if (est == "default") {
+    c_mat <- matrix(c(1, 1, 1), nrow = 3)
+  }
+
+  # 4. Put it all together
+  A0 <- (1 - df$delta_10 / pi_10 - df$delta_01 / pi_01 + df$delta_11 / pi_11) * 
+        c_mat[1] * predict(mod_gx, newdata = df)
+  A1 <- (df$delta_10 / pi_10 - df$delta_11 / pi_11) * 
+        c_mat[2] * predict(mod_gy1, newdata = df)
+  A2 <- (df$delta_01 / pi_01 - df$delta_11 / pi_11) * 
+        c_mat[3] * predict(mod_gy2, newdata = df)
+
+  if (test) {
+    ipw <- df$delta_11 / pi_11 * df$g_i
+    return(list(est = mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2),
+                ipw = mean(df$delta_11 / pi_11 * df$g_i),
+                A0 = mean(A0),
+                A1 = mean(A1),
+                A2 = mean(A2),
+                ipwA0 = mean(ipw + A0),
+                ipwA1 = mean(ipw + A1),
+                ipwA2 = mean(ipw + A2),
+                A0A1 = mean(A0 + A1),
+                A0A2 = mean(A0 + A2),
+                A1A2 = mean(A1 + A2)
+    ))
+  }
+  return(mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2))
+
+}
+
+opt_delta_c <-  function(df, gfun = "Y2", est = "opt", test = FALSE) {
+
+  # Steps: 
+  # 1. Compute E[g_i | X_i]
+  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+  #   E[E[g | X, Y1]E[g | X, Y2]]
+  # 3. Compute c_i
+  # 4. Put it all together
+
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+
+  # 1. Compute E[g_i | X_i]
+  mod_gx <- lm(g_i ~ X, data = df_11)
+
+  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+  #   E[E[g | X, Y1]E[g | X, Y2]]
+  exp_gx2 <- mean(predict(mod_gx)^2)
+  mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
+  exp_gy12 <- mean(predict(mod_gy1)^2)
+  mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
+  exp_gy22 <- mean(predict(mod_gy2)^2)
+  exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+
+  # 3. Compute c_i
+  pi_11 <- unique(df$prob_11)
+  pi_10 <- unique(df$prob_10)
+  pi_01 <- unique(df$prob_01)
+  pi_00 <- unique(df$prob_00)
+
+
+  if (est == "opt") {
+    cov_mat <- 
+      matrix(c(exp_gx2 * (1 / pi_11 + 1 / pi_00) * pi_00^2,
+               pi_00 * pi_10 / pi_11 * exp_gx2,
+               pi_00 * pi_01 / pi_11 * exp_gx2,
+               pi_00 * pi_10 / pi_11 * exp_gx2,
+               pi_10^2 * (1 / pi_11 + 1 / pi_10) * exp_gy12,
+               pi_10 * pi_01 / pi_11 * exp_gy1y2,
+               pi_00 * pi_01 / pi_11 * exp_gx2,
+               pi_10 * pi_01 / pi_11 * exp_gy1y2,
+               pi_01^2 * (1 / pi_11 + 1 / pi_01) * exp_gy22),
+      nrow = 3)
+
+    resp_mat <- 
+      matrix(c(-pi_00 / pi_11 * exp_gx2,
+               -pi_10 / pi_11 * exp_gy12,
+               -pi_01 / pi_11 * exp_gy22),
+      nrow = 3)
+    c_mat <- solve(cov_mat, resp_mat)
+  } else if (est == "default") {
+    c_mat <- matrix(c(1, 1, 1), nrow = 3)
+  }
+
+  # 4. Put it all together
+  A0 <- (df$delta_11 / pi_11 - df$delta_00 / pi_00) * pi_00 *
+        c_mat[1] * predict(mod_gx, newdata = df)
+  A1 <- (df$delta_11 / pi_11 - df$delta_10 / pi_10) * pi_10 *
+        c_mat[2] * predict(mod_gy1, newdata = df)
+  A2 <- (df$delta_11 / pi_11 - df$delta_01 / pi_01) * pi_01 *
+        c_mat[3] * predict(mod_gy2, newdata = df)
+
+  if (test) {
+    ipw <- df$delta_11 / pi_11 * df$g_i
+    return(list(est = mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2),
+                ipw = mean(df$delta_11 / pi_11 * df$g_i),
+                A0 = mean(A0),
+                A1 = mean(A1),
+                A2 = mean(A2),
+                ipwA0 = mean(ipw + A0),
+                ipwA1 = mean(ipw + A1),
+                ipwA2 = mean(ipw + A2),
+                A0A1 = mean(A0 + A1),
+                A0A2 = mean(A0 + A2),
+                A1A2 = mean(A1 + A2)
+    ))
+  }
+  return(mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2))
 
 }
