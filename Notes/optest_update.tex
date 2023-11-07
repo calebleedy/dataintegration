@@ -146,6 +146,19 @@ an example about choosing the values of $\hat c$.
   \bottomrule
 \end{tabular}
 
+I wanted to give a brief comment on the origin of each of these estimators. The 
+first estimator $\hat \theta_{prop}$ is the estimator proposed by Dr. Kim. The 
+original goal was to show that this is optimal. The second estimator, 
+$\hat \theta^{ind}_{prop}$ is the first estimator with different functions of 
+$\delta$ to try to make each component more independent from each other. The 
+problem with this is that the components are still dependent and it has worse 
+properties in simulation studies (next section). The estimator $\hat \theta_c$ 
+is the originial estimator $\hat \theta_{prop}$ with different coefficients that
+hopefully make it slightly more efficient. The estimator $\hat \theta_{c, ind}$ 
+does the same thing with $\hat \theta_{prop}^{ind}$. Finally, 
+$\hat \theta_{\delta}$ uses the functional form of Theorem 7.2 from 
+\cite{tsiatis2006semiparametric} and optimized coefficients.
+
 %It turns out that $\hat \theta_{prop}$ from Equation~\ref{eq:prop} is contained within 
 %the previous class of estimators with 
 %
@@ -229,8 +242,6 @@ $\hat \theta_{\delta}$ & 0.011 & 0.636 & 0.983 & 0.163\\
 
 Like the first simulation, $\hat \theta_{prop}$ and $\hat \theta_{\delta}$ 
 performed the best.
-
-\newpage 
 
 \section*{Next Steps}
 
