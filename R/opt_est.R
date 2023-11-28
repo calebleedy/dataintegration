@@ -696,3 +696,108 @@ opt_delta_c <-  function(df, gfun = "Y2", est = "opt", test = FALSE, pow = 1) {
   return(mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2))
 
 }
+
+opt_theta_c <-  function(df, gfun = "Y2", est = "opt", test = FALSE, pow = 1) {
+
+  # Steps: 
+  # 1. Compute E[g_i | X_i]
+  # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+  #   E[E[g | X, Y1]E[g | X, Y2]]
+  # 3. Compute c_i
+  # 4. Put it all together
+
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+
+  if (pow == 1) {
+    # 1. Compute E[g_i | X_i]
+    mod_gx <- lm(g_i ~ X, data = df_11)
+
+    # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+    #   E[E[g | X, Y1]E[g | X, Y2]]
+    exp_gx2 <- mean(predict(mod_gx)^2)
+    mod_gy1 <- lm(g_i ~ X + Y1, data = df_11)
+    exp_gy12 <- mean(predict(mod_gy1)^2)
+    mod_gy2 <- lm(g_i ~ X + Y2, data = df_11)
+    exp_gy22 <- mean(predict(mod_gy2)^2)
+    exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+  } else if (pow == 3) {
+    # 1. Compute E[g_i | X_i]
+    mod_gx <- lm(g_i ~ X + I(X^2) + I(X^3), data = df_11)
+
+    # 2. Compute E[E[g | X]^2], E[E[g | X, Y1]^2], E[E[g | X, Y2]^2], 
+    #   E[E[g | X, Y1]E[g | X, Y2]]
+    exp_gx2 <- mean(predict(mod_gx)^2)
+    mod_gy1 <- lm(g_i ~ X + Y1 + I(X^2) + I(Y1^2) + I(X*Y1) + 
+                        I(X*X*X) + I(X*X*Y1) + I(X*Y1*Y1) + I(Y1*Y1*Y1),
+               data = df_11)
+    exp_gy12 <- mean(predict(mod_gy1)^2)
+    mod_gy2 <- lm(g_i ~ X + Y2 + I(X*X) + I(X*Y2) + I(Y2*Y2) + 
+                        I(X*X*X) + I(X*X*Y2) + I(X*Y2*Y2) + I(Y2*Y2*Y2),
+               data = df_11)
+    exp_gy22 <- mean(predict(mod_gy2)^2)
+    exp_gy1y2 <- mean(predict(mod_gy1) * predict(mod_gy2))
+  } else {
+    stop("We have only implemented pow = 1, and pow = 3")
+  }
+
+  # 3. Compute c_i
+  pi_11 <- unique(df$prob_11)
+  pi_10 <- unique(df$prob_10)
+  pi_01 <- unique(df$prob_01)
+  pi_00 <- unique(df$prob_00)
+
+  if (est == "opt") {
+    pi_1112 <- pi_11 * (pi_10 + pi_11) * (pi_01 + pi_11)
+    cov_mat <- 
+      matrix(c(exp_gx2 * ((pi_10 * pi_01 + pi_11^2) / pi_1112 - 1),
+               -pi_10 * pi_01 / pi_1112 * exp_gx2,
+               -pi_10 * pi_01 / pi_1112 * exp_gx2,
+               -pi_10 * pi_01 / pi_1112 * exp_gx2,
+               (1 / pi_11 - 1 / (pi_10 + pi_11)) * exp_gy12,
+               pi_10 * pi_01 / pi_1112 * exp_gy1y2,
+               -pi_10 * pi_01 / pi_1112 * exp_gx2,
+               pi_10 * pi_01 / pi_1112 * exp_gy1y2,
+               (1 / pi_11 - 1 / (pi_01 + pi_11)) * exp_gy22),
+      nrow = 3)
+
+    resp_mat <- 
+      matrix(c(-(1 - 1 / (pi_10 + pi_11) - 1 / (pi_01 + pi_11) + 1 / pi_11) * exp_gx2,
+               -(1 / (pi_10 + pi_11) - 1 / pi_11) * exp_gy12,
+               -(1 / (pi_01 + pi_11) - 1 / pi_11) * exp_gy22),
+      nrow = 3)
+    c_mat <- solve(cov_mat, resp_mat)
+  } else if (est == "default") {
+    c_mat <- matrix(c(1, 1, 1), nrow = 3)
+  }
+
+  # 4. Put it all together
+  A0 <- (1 - (df$delta_10 + df$delta_11) / (pi_10 + pi_11) - 
+        (df$delta_01 + df$delta_11) / (pi_01 + pi_11) + df$delta_11 / pi_11) *
+        c_mat[1] * predict(mod_gx, newdata = df)
+  A1 <- ((df$delta_10 + df$delta_11) / (pi_10 + pi_11) - df$delta_11 / pi_11) *
+        c_mat[2] * predict(mod_gy1, newdata = df)
+  A2 <- ((df$delta_01 + df$delta_11) / (pi_01 + pi_11) - df$delta_11 / pi_11) *
+        c_mat[3] * predict(mod_gy2, newdata = df)
+
+  if (test) {
+    ipw <- df$delta_11 / pi_11 * df$g_i
+    return(list(est = mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2),
+                ipw = mean(df$delta_11 / pi_11 * df$g_i),
+                A0 = mean(A0),
+                A1 = mean(A1),
+                A2 = mean(A2),
+                ipwA0 = mean(ipw + A0),
+                ipwA1 = mean(ipw + A1),
+                ipwA2 = mean(ipw + A2),
+                A0A1 = mean(A0 + A1),
+                A0A2 = mean(A0 + A2),
+                A1A2 = mean(A1 + A2)
+    ))
+  }
+  return(mean(df$delta_11 / pi_11 * df$g_i + A0 + A1 + A2))
+
+}

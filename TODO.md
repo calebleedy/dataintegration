@@ -10,33 +10,17 @@
 * [ ] Recap Kim and Rao (2012, Biometrika). We could extend it to three phases
       or two step calibration.
 * [ ] Recap Chen and Kim (2014)
-* [ ] Fill in Section 2 and 3 on `project1.tex`
-  * [ ] Section 2:
-    * [ ] Write up notation
-    * [ ] Explain non-nested multiphase sampling
-    * [ ] Write up the goal (integrate data from multiple probability samples).
-    * [ ] Summarize existing methods
-    * [ ] Connect existing methods to current approach
-  * [ ] Section 3:
-    * [ ] Introduce semiparametric theory
-    * [ ] Connect semiparametric theory to survey sampling
-    * [ ] Introduce model-assisted class of estimators for non-nested sampling
-    * [ ] Find model-optimal design consistent estimator
-    * [ ] Show basic statistical properties:
-      * [ ] Convergence in probability
-      * [ ] CLT
 * [ ] Show that proposed estimator is optimal
-* [ ] Write implicit assumptions in simulation
 
-## From Meeting: August 15, 2023
-* [ ] Literature review of combining samples
-
-## From Meeting: October 24, 2023
-* [ ] Compare results to normal model
-* [ ] Unpool estimates
-* [ ] Run simulation study
 # Done
 
+## November 9, 2023
+
+* [X] Compare results to normal model
+* [X] Unpool estimates
+* [X] Run simulation study
+* [X] Literature review of combining samples
+* [X] Write implicit assumptions in simulation
 ## September 11, 2023
 * [X] Non-linear simulation
 * [X] Use independent samples

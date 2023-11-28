@@ -59,6 +59,8 @@ mc_theta <-
     wls_est <- opt_lin_est(df, cov_y1y2 = cor_e1e2)
     prop_est <- prop_nmono_est(df)
     propind_est <- prop_nmono_est(df, prop_ind = TRUE)
+    propopt_est <- opt_theta_c(df)
+    propoptdef_est <- opt_theta_c(df, est = "default")
     semiopt_est <- opt_semi_est(df)
     semidef_est <- opt_semi_est(df, est = "default")
     semidel_est <- opt_delta_c(df)
@@ -72,6 +74,8 @@ mc_theta <-
                   wls = wls_est,
                   prop = prop_est,
                   propind = propind_est,
+                  propopt = propopt_est,
+                  propoptdef = propoptdef_est,
                   semiopt = semiopt_est,
                   semidef = semidef_est,
                   semidel = semidel_est,
@@ -95,6 +99,8 @@ mc_theta |>
     bias_wls = mean(wls) - true_theta,
     bias_prop = mean(prop) - true_theta,
     bias_propind = mean(propind) - true_theta,
+    bias_propopt = mean(propopt) - true_theta,
+    bias_propoptdef = mean(propoptdef) - true_theta,
     bias_semiopt = mean(semiopt) - true_theta,
     bias_semidef = mean(semidef) - true_theta,
     bias_semidel = mean(semidel) - true_theta,
@@ -106,6 +112,8 @@ mc_theta |>
     sd_wls = sd(wls),
     sd_prop = sd(prop),
     sd_propind = sd(propind),
+    sd_propopt = sd(propopt),
+    sd_propoptdef = sd(propoptdef),
     sd_semiopt = sd(semiopt),
     sd_semidef = sd(semidef),
     sd_semidel = sd(semidel),
@@ -117,6 +125,8 @@ mc_theta |>
     tstat_wls = (mean(wls) - true_theta) / sqrt(var(wls) / B),
     tstat_prop = (mean(prop) - true_theta) / sqrt(var(prop) / B),
     tstat_propind = (mean(propind) - true_theta) / sqrt(var(propind) / B),
+    tstat_propopt = (mean(propopt) - true_theta) / sqrt(var(propopt) / B),
+    tstat_propoptdef = (mean(propoptdef) - true_theta) / sqrt(var(propoptdef) / B),
     tstat_semiopt = (mean(semiopt) - true_theta) / sqrt(var(semiopt) / B),
     tstat_semidef = (mean(semidef) - true_theta) / sqrt(var(semidef) / B),
     tstat_semidel = (mean(semidel) - true_theta) / sqrt(var(semidel) / B),

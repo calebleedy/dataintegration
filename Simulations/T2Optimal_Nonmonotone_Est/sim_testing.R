@@ -46,7 +46,7 @@ mc_ests <-
 
     # Estimate different parts of theta_hat_c
     # semidef <- opt_semi_est(df, est = "opt", test = TRUE)
-    semidef <- opt_delta_c(df, est = "opt", test = TRUE)
+    semidef <- opt_theta_c(df, est = "opt", test = TRUE)
 
     return(tibble(est = semidef$est,
                   ipw = semidef$ipw,
@@ -200,3 +200,80 @@ mc_ests |>
                caption = paste0("True Theta is ", true_theta,
                                 ". Cov_e1e2 = ", cor_e1e2 ))
 
+# For theta_c_opt
+cov_mat <- 
+  matrix(c((true_theta^2 + 1) * ((pi_10 * pi_01 + pi_11^2) / pi_1112 - 1),
+           -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
+           -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
+           -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
+           (1 / pi_11 - 1 / (pi_10 + pi_11)) * (true_theta^2 + 1 + cor_e1e2^2),
+           pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1 + cor_e1e2^2),
+           -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
+           pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1 + cor_e1e2^2),
+           (1 / pi_11 - 1 / (pi_01 + pi_11)) * (true_theta^2 + 2)),
+  nrow = 3)
+
+resp_mat <- 
+  matrix(c(-(1 - 1 / (pi_10 + pi_11) - 1 / (pi_01 + pi_11) + 1 / pi_11) * (true_theta^2 + 1),
+           -(1 / (pi_10 + pi_11) - 1 / pi_11) * (true_theta^2 + 1 + cor_e1e2^2),
+           -(1 / (pi_01 + pi_11) - 1 / pi_11) * (true_theta^2 + 2)),
+  nrow = 3)
+c_mat <- solve(cov_mat, resp_mat)
+#c_mat <- matrix(c(1, 1, 1), nrow = 3)
+
+c0 <- c_mat[1]
+c1 <- c_mat[2]
+c2 <- c_mat[3]
+
+pi_1112 <- pi_11 * (pi_10 + pi_11) * (pi_01 + pi_11)
+var_ipw <- (2 + (1 - pi_11) / pi_11 * (2 + true_theta^2)) / n_obs
+var_A0 <- (c0^2 * (true_theta^2 + 1) * 
+              ((pi_10 * pi_01 + pi_11^2) / pi_1112 - 1)) / n_obs
+var_A1 <- (c1^2 * (true_theta^2 + 1 + cor_e1e2^2) * 
+              (1 / pi_11 - 1 / (pi_10 + pi_11))) / n_obs
+var_A2 <- (c2^2 * (true_theta^2 + 2) * 
+              (1 / pi_11 - 1 / (pi_01 + pi_11))) / n_obs
+cov_ipwA0 <- (c0 * (true_theta^2 + 1) * (1 - 1 / (pi_10 + pi_11) - 1 / (pi_01 + pi_11) + 1 / pi_11)) / n_obs
+cov_ipwA1 <- (c1 * (true_theta^2 + 1 + cor_e1e2^2) * (1 / (pi_10 + pi_11) - 1 / pi_11)) / n_obs
+cov_ipwA2 <- (c2 * (true_theta^2 + 2) * (1 / (pi_01 + pi_11) - 1 / pi_11)) / n_obs
+cov_A0A1 <- ((-pi_10 * pi_01 / pi_1112) * c0 * c1 * (true_theta^2 + 1)) / n_obs
+cov_A0A2 <- ((-pi_10 * pi_01 / pi_1112) * c0 * c2 * (true_theta^2 + 1)) / n_obs
+cov_A1A2 <- (pi_10 * pi_01 / pi_1112) * c1 * c2 * (true_theta^2 + 1 + cor_e1e2^2) / n_obs
+
+exp_var <- 
+  c(var_ipw + var_A0 + var_A1 + var_A2 + 
+      2 * (cov_ipwA0 + cov_ipwA1 + cov_ipwA2 + cov_A0A1 + cov_A0A2 + cov_A1A2),
+    var_ipw,
+    var_A0,
+    var_A1,
+    var_A2,
+    var_ipw + var_A0 + 2 * cov_ipwA0,
+    var_ipw + var_A1 + 2 * cov_ipwA1,
+    var_ipw + var_A2 + 2 * cov_ipwA2,
+    var_A0 + var_A1 + 2 * cov_A0A1,
+    var_A0 + var_A2 + 2 * cov_A0A2,
+    var_A1 + var_A2 + 2 * cov_A1A2
+  )
+
+mc_ests |>
+  summarize(
+    var_est = var(est),
+    var_ipw = var(ipw),
+    var_A0 = var(A0),
+    var_A1 = var(A1),
+    var_A2 = var(A2),
+    var_ipwA0 = var(ipwA0),
+    var_ipwA1 = var(ipwA1),
+    var_ipwA2 = var(ipwA2),
+    var_A0A1 = var(A0A1),
+    var_A0A2 = var(A0A2),
+    var_A1A2 = var(A1A2)
+  ) |>
+  tidyr::pivot_longer(cols = everything(),
+                      names_to = c(".value", "algorithm"),
+                      names_pattern = "(.*)_(.*)") |>
+  mutate(exp_var = exp_var) |>
+  knitr::kable(#"latex", booktabs = TRUE,
+               digits = 6,
+               caption = paste0("True Theta is ", true_theta,
+                                ". Cov_e1e2 = ", cor_e1e2 ))
