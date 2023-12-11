@@ -81,6 +81,65 @@ gen_optsim_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cor_e1e2 = 0
 
 }
 
+#' This function generates a multivariate normal distribution with missingness.
+#' The main difference is that the category sizes are unbalanced.
+#'
+#' @param n - An integer for the number of observations
+#'
+#' @return df - A data frame.
+gen_unbal_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cor_e1e2 = 0) {
+
+  # 1. Generate X, Y1, Y2
+  mean_vec <- c(0, 0, 0)
+  sigma_mat <-
+    matrix(c(1, cor_xe1, cor_xe2, cor_xe1, 1, cor_e1e2, cor_xe2, cor_e1e2, 1),
+           nrow = 3)
+
+  data <- MASS::mvrnorm(n, mean_vec, sigma_mat)
+
+  x_vec <- data[, 1]
+  y1 <- x_vec + data[, 2]
+  y2 <- theta + x_vec + data[, 3]
+
+  # 2. Generate the missing patterns:
+  # | Pattern | Prob |
+  # |---------|------|
+  # | 11      | 0.2  |
+  # | 10      | 0.4  |
+  # | 01      | 0.1  |
+  # | 00      | 0.3  |
+  u_vec <- runif(n)
+  patt_vec <-
+    case_when(
+      u_vec < 0.2 ~ "11",
+      u_vec < 0.6 ~ "10",
+      u_vec < 0.7 ~ "01",
+      u_vec < 1.0 ~ "00"
+    )
+  delta_y1 <-
+    case_when(
+      patt_vec == "11" | patt_vec == "10" ~ 1,
+      patt_vec == "01" | patt_vec == "00" ~ 0
+    )
+  delta_y2 <-
+    case_when(
+      patt_vec == "11" | patt_vec == "01" ~ 1,
+      patt_vec == "10" | patt_vec == "00" ~ 0
+    )
+  prob_1 <- 0.6
+  prob_2 <- 0.3
+  prob_11 <- 0.2
+
+  tibble(X = x_vec, Y1 = y1, Y2 = y2,
+         delta_1 = delta_y1, delta_2 = delta_y2,
+         prob_11 = prob_11, prob_1 = prob_1, prob_2 = prob_2,
+         prob_10 = 0.4, prob_01 = 0.1, prob_00 = 0.3,
+         delta_11 = delta_y1 * delta_y2, delta_10 = delta_y1 * (1 - delta_y2),
+         delta_01 = (1 - delta_y1) * delta_y2,
+         delta_00 = (1 - delta_y1) * (1 - delta_y2))
+
+}
+
 # ****************
 # * EM Algorithm *
 # ****************
@@ -429,13 +488,54 @@ opt_lin_est <- function(df,
 
 }
 
-comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
-                         mean_x = 0, cov_e1e2 = 0, theta2 = NA) {
+comb_lin_est_lin <- 
+  function(df, gfun = "Y2", theta2 = NA, cov_e1e2 = 0, test = FALSE, opt_w = TRUE) {
 
   df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
-  df$X3 <- df$X^3
-  df$X2 <- df$X^2
-  df$Y12 <- df$Y1^2
+
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+
+  if (is.na(theta2)) {
+    theta2 <- opt_lin_est(df, gfun = "Y2", mean_x = 0, cov_y1y2 = cov_e1e2)
+  }
+
+  est11 <- df_11$Y2
+  est10 <- theta2 + cov_e1e2 * df_10$Y1 + (1 - cov_e1e2) * df_10$X
+  est01 <- df_01$Y2
+  est00 <- theta2 + df_00$X
+
+  v10 <- var(est10)
+  v01 <- var(est01)
+  v00 <- var(est00)
+  v11 <- var(est11)
+
+  wsum <- 1 / v10 + 1 / v01 + 1 / v00 + 1 / v11
+  w10 <- (1 / v10) / wsum
+  w01 <- (1 / v01) / wsum
+  w00 <- (1 / v00) / wsum
+  w11 <- (1 / v11) / wsum
+
+  if (test) {
+    return(list(est_vec = c(mean(est11), mean(est10), mean(est01), mean(est00)),
+                w_vec = c(w11, w10, w01, w00)))
+
+  }
+
+  if (!opt_w) {
+    return((mean(est11) + mean(est10) + mean(est01) + mean(est00)) / 4)
+  }
+
+  return(w11 * mean(est11) + w10 * mean(est10) + w01 * mean(est01) + w00 * mean(est00))
+}
+
+comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
+                         mean_x = 0, cov_e1e2 = 0, theta2 = NA,
+                         test = FALSE, opt_w = TRUE) {
+
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
 
   if (mean_x != 0) {
     df$X <- df$X - mean_x
@@ -465,6 +565,17 @@ comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
   w01 <- (1 / v01) / wsum
   w00 <- (1 / v00) / wsum
   w11 <- (1 / v11) / wsum
+
+  if (test) {
+    return(list(est_vec = c(mean(est11), mean(est10), mean(est01), mean(est00)),
+                w_vec = c(w11, w10, w01, w00),
+                v_vec = c(v11, v10, v01, v00)))
+
+  }
+
+  if (!opt_w) {
+    return((mean(est11) + mean(est10) + mean(est01) + mean(est00)) / 4)
+  }
 
   return(w11 * mean(est11) + w10 * mean(est10) + w01 * mean(est01) + w00 * mean(est00))
 

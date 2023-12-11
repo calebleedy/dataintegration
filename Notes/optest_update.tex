@@ -137,7 +137,7 @@ an example about choosing the values of $\hat c$.
   $\left(\frac{\delta_{10}}{\pi_{10}} - \frac{\delta_{11}}{\pi_{11}}\right)$ & \checkmark \\
   $\hat \theta_{c}$ & $c_0\left(1 - \frac{(\delta_{10} + \delta_{11})}{(\pi_{10} + \pi_{11})} - 
   \frac{(\delta_{01} + \delta_{11})}{(\pi_{01} + \pi_{11})} + \frac{\delta_{11}}{\pi_{11}}\right)$ &
-  $c_1\left(\frac{\delta_{10} + \delta_{11}}{\pi_{10} + \pi_{11}} - \frac{\delta_{11}}{\pi_{11}}\right)$ & \\
+  $c_1\left(\frac{\delta_{10} + \delta_{11}}{\pi_{10} + \pi_{11}} - \frac{\delta_{11}}{\pi_{11}}\right)$ & \checkmark \\
   $\hat \theta_{c, ind}$ & $c_0\left(1 - \frac{(\delta_{10})}{(\pi_{10})} - 
   \frac{(\delta_{01})}{(\pi_{01})} + \frac{\delta_{11}}{\pi_{11}}\right)$ &
   $c_1\left(\frac{\delta_{10}}{\pi_{10}} - \frac{\delta_{11}}{\pi_{11}}\right)$ & \checkmark \\
@@ -205,6 +205,7 @@ Oracle & 0.001 & 0.044 & 1.546 & 0.061\\
 CC & 0.002 & 0.058 & 1.549 & 0.061\\
 IPW & 0.006 & 0.210 & 1.504 & 0.066\\
 $\hat \theta_{prop}$ & 0.002 & 0.051 & 1.911 & 0.028\\
+$\hat \theta_{c}$ & 0.002 & 0.051 & 1.920 & 0.027\\
 $\hat \theta_{prop}^{ind}$ & 0.002 & 0.091 & 0.983 & 0.163\\
 $\hat \theta_{c, ind}$ & 0.001 & 0.074 & 0.784 & 0.216\\
 $\hat \theta_{\delta}$ & 0.002 & 0.051 & 1.964 & 0.025\\
@@ -212,11 +213,15 @@ $\hat \theta_{\delta}$ & 0.002 & 0.051 & 1.964 & 0.025\\
 \end{tabular}
 \end{table}
 
-The main takeaway from this simulation study is that $\hat \theta_\delta$
+The main takeaway from this simulation study is that $\hat \theta_\delta$,
+$\hat \theta_c$
 and $\hat\theta_{prop}$ have the smallest standard deviation among the 
-non-oracle estimators.
+non-oracle estimators. In fact $\hat \theta_c$ and $\hat \theta_{prop}$ are 
+virtually identical because the optimal values of $c$ in $\hat \theta_c$ 
+are $(c_0, c_1, c_2)' \approx (1, 1, 1)'$.
 
 \subsection*{Simulation 2}
+
 We now test a second simulation study. The setup of this simulation study 
 is the same as the previous simulation. The only difference is that we 
 are interested in estimating $\theta = E[Y_1^2 Y_2]$. In other words, now 
@@ -234,14 +239,15 @@ Oracle & 0.007 & 0.529 & 0.741 & 0.229\\
 CC & 0.023 & 0.824 & 1.518 & 0.065\\
 IPW & 0.031 & 0.915 & 1.846 & 0.032\\
 $\hat \theta_{prop}$ & 0.011 & 0.635 & 0.912 & 0.181\\
+$\hat \theta_{c}$ & 0.012 & 0.632 & 1.010 & 0.156\\
 $\hat \theta_{c, ind}$ & 0.013 & 0.662 & 1.060 & 0.145\\
 $\hat \theta_{\delta}$ & 0.011 & 0.636 & 0.983 & 0.163\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Like the first simulation, $\hat \theta_{prop}$ and $\hat \theta_{\delta}$ 
-performed the best.
+Like the first simulation, $\hat \theta_{prop}$, $\hat \theta_c$
+and $\hat \theta_{\delta}$ performed the best.
 
 \section*{Next Steps}
 

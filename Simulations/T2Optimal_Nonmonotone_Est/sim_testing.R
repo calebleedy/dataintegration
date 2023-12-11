@@ -46,7 +46,7 @@ mc_ests <-
 
     # Estimate different parts of theta_hat_c
     # semidef <- opt_semi_est(df, est = "opt", test = TRUE)
-    semidef <- opt_theta_c(df, est = "opt", test = TRUE)
+    semidef <- opt_theta_c(df, gfun ="Y1^2 * Y2", pow = 3, est = "default", test = TRUE)
 
     return(tibble(est = semidef$est,
                   ipw = semidef$ipw,
@@ -75,6 +75,7 @@ pi_11 <- 0.4
 pi_10 <- 0.2
 pi_01 <- 0.2
 pi_00 <- 0.2
+pi_1112 <- pi_11 * (pi_10 + pi_11) * (pi_01 + pi_11)
 
 # For theta_c
 c_mat <- 
@@ -225,7 +226,6 @@ c0 <- c_mat[1]
 c1 <- c_mat[2]
 c2 <- c_mat[3]
 
-pi_1112 <- pi_11 * (pi_10 + pi_11) * (pi_01 + pi_11)
 var_ipw <- (2 + (1 - pi_11) / pi_11 * (2 + true_theta^2)) / n_obs
 var_A0 <- (c0^2 * (true_theta^2 + 1) * 
               ((pi_10 * pi_01 + pi_11^2) / pi_1112 - 1)) / n_obs

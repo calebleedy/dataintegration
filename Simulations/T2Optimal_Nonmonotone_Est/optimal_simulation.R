@@ -57,6 +57,7 @@ mc_theta <-
       mean()
     # em_est <- em_optsim(df)
     wls_est <- opt_lin_est(df, cov_y1y2 = cor_e1e2)
+    wlsalt_est <- comb_lin_est_lin(df, theta2 = true_theta, cov_e1e2 = cor_e1e2)
     prop_est <- prop_nmono_est(df)
     propind_est <- prop_nmono_est(df, prop_ind = TRUE)
     propopt_est <- opt_theta_c(df)
@@ -72,6 +73,7 @@ mc_theta <-
                   ipw = ipw_est,
                   # em = em_est,
                   wls = wls_est,
+                  wlsalt = wlsalt_est,
                   prop = prop_est,
                   propind = propind_est,
                   propopt = propopt_est,
@@ -97,6 +99,7 @@ mc_theta |>
     bias_cc = mean(cc) - true_theta,
     bias_ipw = mean(ipw) - true_theta,
     bias_wls = mean(wls) - true_theta,
+    bias_wlsalt = mean(wlsalt) - true_theta,
     bias_prop = mean(prop) - true_theta,
     bias_propind = mean(propind) - true_theta,
     bias_propopt = mean(propopt) - true_theta,
@@ -110,6 +113,7 @@ mc_theta |>
     sd_cc = sd(cc),
     sd_ipw = sd(ipw),
     sd_wls = sd(wls),
+    sd_wlsalt = sd(wlsalt),
     sd_prop = sd(prop),
     sd_propind = sd(propind),
     sd_propopt = sd(propopt),
@@ -123,6 +127,7 @@ mc_theta |>
     tstat_cc = (mean(cc) - true_theta) / sqrt(var(cc) / B),
     tstat_ipw = (mean(ipw) - true_theta) / sqrt(var(ipw) / B),
     tstat_wls = (mean(wls) - true_theta) / sqrt(var(wls) / B),
+    tstat_wlsalt = (mean(wlsalt) - true_theta) / sqrt(var(wlsalt) / B),
     tstat_prop = (mean(prop) - true_theta) / sqrt(var(prop) / B),
     tstat_propind = (mean(propind) - true_theta) / sqrt(var(propind) / B),
     tstat_propopt = (mean(propopt) - true_theta) / sqrt(var(propopt) / B),
