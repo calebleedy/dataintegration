@@ -493,29 +493,29 @@ comb_lin_est_lin <-
 
   df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
 
-  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
   df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
   df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
-  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
 
   if (is.na(theta2)) {
     theta2 <- opt_lin_est(df, gfun = "Y2", mean_x = 0, cov_y1y2 = cov_e1e2)
   }
 
-  est11 <- df_11$Y2
+  est00 <- theta2 + df_00$X
   est10 <- theta2 + cov_e1e2 * df_10$Y1 + (1 - cov_e1e2) * df_10$X
   est01 <- df_01$Y2
-  est00 <- theta2 + df_00$X
+  est11 <- df_11$Y2
 
-  v10 <- var(est10)
-  v01 <- var(est01)
-  v00 <- var(est00)
-  v11 <- var(est11)
+  v00 <- 1 / df$prob_00[1] * (theta2^2 + 1) - (theta2^2)
+  v10 <- 1 / df$prob_10[1] * (theta2^2 + 1) - (theta2^2)
+  v01 <- 1 / df$prob_01[1] * (theta2^2 + 2) - (theta2^2)
+  v11 <- 1 / df$prob_11[1] * (theta2^2 + 2) - (theta2^2)
 
   wsum <- 1 / v10 + 1 / v01 + 1 / v00 + 1 / v11
+  w00 <- (1 / v00) / wsum
   w10 <- (1 / v10) / wsum
   w01 <- (1 / v01) / wsum
-  w00 <- (1 / v00) / wsum
   w11 <- (1 / v11) / wsum
 
   if (test) {
@@ -550,20 +550,22 @@ comb_lin_est <- function(df, gfun = "Y1^2 * Y2",
     theta2 <- opt_lin_est(df, gfun = "Y2", mean_x = mean_x, cov_y1y2 = cov_e1e2)
   }
 
-  est11 <- df_11$Y1^2 * df_11$Y2
+  est00 <- df_00$X^3 + df_00$X^2 * theta2 + df_00$X * (2 * cov_e1e2 + 1) + theta2
   est10 <- df_10$Y1^2 * (df_10$X + theta2)
   est01 <- (df_01$X^2 + 1) * df_01$Y2
-  est00 <- df_00$X^3 + df_00$X^2 * theta2 + df_00$X * (2 * cov_e1e2 + 1) + theta2
+  est11 <- df_11$Y1^2 * df_11$Y2
 
-  v10 <- var(est10)
-  v01 <- var(est01)
-  v00 <- var(est00)
-  v11 <- var(est11)
+  v00 <- 1 / df$prob_00[1] * (6 * theta2^2 + 4 * cov_e1e2^2 + 16 * cov_e1e2 + 22) - 
+    (4 * theta2^2)
+  v10 <- 1 / df$prob_10[1] * (2 * theta2^2 + 4) - (4 * theta2^2)
+  v01 <- 1 / df$prob_01[1] * (6 * theta2^2 + 28) - (4 * theta2^2)
+  v11 <- 12 / df$prob_11[1] * (theta2^2 + 4 * cov_e1e2 + 2 * cov_e1e2 + 3) - 
+    (4 * theta2^2)
 
   wsum <- 1 / v10 + 1 / v01 + 1 / v00 + 1 / v11
+  w00 <- (1 / v00) / wsum
   w10 <- (1 / v10) / wsum
   w01 <- (1 / v01) / wsum
-  w00 <- (1 / v00) / wsum
   w11 <- (1 / v11) / wsum
 
   if (test) {

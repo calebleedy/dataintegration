@@ -1,8 +1,9 @@
-# Title: Optimal_Nonmonotone_Est/optimal_simulation.R
+# Title: semi_cost.R
 # Created by: Caleb Leedy
-# Created on: August 19, 2023
-# Purpose: This file contains the code to test the proposed estimator with an
-# optimal estimator in the case where everything is normal.
+# Created on: January 9, 2024
+# Purpose: This file contains the code to compare the semiparametric 
+# estimators with parametric estimators. It largely follows the same 
+# design as ../T2Optimal_Nonmonotone_Est/optimal_simulation.R.
 
 # ***********
 # * Outline *

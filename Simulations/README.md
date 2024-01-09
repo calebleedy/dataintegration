@@ -9,5 +9,7 @@ existing papers.
 other estimators in the non-monotone case.
 3. T2Optimal_Nonmonotone_Est: Code to test and find the optimal estimator 
 when combining multiple samples with non-monotone missingness.
+4. T3Assess_Semiparametric_Cost: Code to test the cost using a semiparametric 
+estimator instead of a linear estimator.
 
 The numbers `T1` and `T2` refer to the project level README order of tasks.
