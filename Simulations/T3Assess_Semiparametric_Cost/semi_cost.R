@@ -70,11 +70,11 @@ mc_theta <-
     semidel_est <- opt_delta_c(df)
     semideldef_est <- opt_delta_c(df, est = "default")
 
-    conalg_para <- min_var_alg(df, mod_type = "parametric", cov_e1e2 = cov_e1e2)
-    conalg_sumzero<- min_var_alg(df, mod_type = "sumzero", cov_e1e2 = cov_e1e2)
-    conalg_outrob <- min_var_alg(df, mod_type = "outcome_robust", cov_e1e2 = cov_e1e2)
-    conalg_resprob <- min_var_alg(df, mod_type = "response_robust", cov_e1e2 = cov_e1e2)
-    conalg_doubrob <- min_var_alg(df, mod_type = "double_robust", cov_e1e2 = cov_e1e2)
+    conalg_para <- min_var_alg(df, mod = "para", cov_e1e2 = cov_e1e2)
+    conalg_sumzero <- min_var_alg(df, mod = "sumzero", cov_e1e2 = cov_e1e2)
+    conalg_outrob <- min_var_alg(df, mod = "out_rob", cov_e1e2 = cov_e1e2)
+    conalg_resprob <- min_var_alg(df, mod = "resp_rob", cov_e1e2 = cov_e1e2)
+    conalg_doubrob <- min_var_alg(df, mod = "double_rob", cov_e1e2 = cov_e1e2)
 
     return(tibble(oracle = oracle_est,
                   oraclex = oraclex_est,

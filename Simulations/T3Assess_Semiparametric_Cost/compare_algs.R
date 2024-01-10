@@ -22,13 +22,13 @@ source("R/opt_est.R")
 #'
 #' @param df - A data frame generated from R/opt_est.R::gen_optsim_data.
 #' @param gfun - A string
-#' @param mod_type - A string. Currently, this only supports one of
+#' @param mod - A string. Currently, this only supports one of
 #' "parametric", "sumzero", "outcome_robust", "response_robust", or
 #' "double_robust".
 min_var_alg <- 
   function(df,
            gfun = "Y2",
-           mod_type = "parametric",
+           mod = "para",
            theta = NA,
            mean_x = 0,
            cov_e1e2 = 0) {
@@ -46,11 +46,11 @@ min_var_alg <-
   # We use the population functional forms for gamma_hat and v_gamma
   g_11 <- mean(df$delta_00 / df$prob_00 * (theta + df$X))
   g_21 <- mean(df$delta_10 / df$prob_10 * (theta + df$X))
+  g_22 <- mean(df$delta_10 / df$prob_10 * (theta + df$X + cov_e1e2 * (df$Y1 - df$X)))
   g_31 <- mean(df$delta_01 / df$prob_01 * (theta + df$X))
-  g_41 <- mean(df$delta_11 / df$prob_11 * (theta + df$X))
-  g_22 <- mean(df$delta_10 / df$prob_10 * (theta + df$X + cov_e1e2 * (df$Y2 - df$X)))
-  g_42 <- mean(df$delta_11 / df$prob_11 * (theta + df$X + cov_e1e2 * (df$Y2 - df$X)))
   g_33 <- mean(df$delta_01 / df$prob_01 * (df$Y2))
+  g_41 <- mean(df$delta_11 / df$prob_11 * (theta + df$X))
+  g_42 <- mean(df$delta_11 / df$prob_11 * (theta + df$X + cov_e1e2 * (df$Y1 - df$X)))
   g_43 <- mean(df$delta_11 / df$prob_11 * (df$Y2))
   g_44 <- mean(df$delta_11 / df$prob_11 * (df$Y2))
 
@@ -91,17 +91,17 @@ min_var_alg <-
   # CVXR
   c_hat <- Variable(length(gam_vec))
 
-  if (mod_type == "parametric") {
+  if (mod == "para") {
     con1 <- matrix(rep(1, length(gam_vec)), nrow = 1) %*% c_hat <= 1
     con2 <- matrix(rep(1, length(gam_vec)), nrow = 1) %*% c_hat >= 1
     con_list <- list(con1, con2)
-  } else if (mod_type == "sumzero") {
+  } else if (mod == "sumzero") {
     con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat <= 1
     con2 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat >= 1
     con3 <- matrix(c(rep(1, length(gam_vec) - 1), 0), nrow = 1) %*% c_hat <= 0
     con4 <- matrix(c(rep(1, length(gam_vec) - 1), 0), nrow = 1) %*% c_hat >= 0
     con_list <- list(con1, con2, con3, con4)
-  } else if (mod_type == "outcome_robust") {
+  } else if (mod == "out_rob") {
     con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat <= 1
     con2 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat >= 1
     con3 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat <= 0
@@ -111,7 +111,7 @@ min_var_alg <-
     con7 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat <= 0
     con8 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat >= 0
     con_list <- list(con1, con2, con3, con4, con5, con6, con7, con8)
-  } else if (mod_type == "response_robust") {
+  } else if (mod == "resp_rob") {
     con1 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_00[1]
     con2 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_00[1]
     con3 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_10[1]
@@ -121,7 +121,7 @@ min_var_alg <-
     con7 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat <= df$prob_11[1]
     con8 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat >= df$prob_11[1]
     con_list <- list(con1, con2, con3, con4, con5, con6, con7, con8)
-  } else if (mod_type == "double_robust") {
+  } else if (mod == "double_rob") {
     con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat <= 1
     con2 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat >= 1
     con3 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat <= 0
