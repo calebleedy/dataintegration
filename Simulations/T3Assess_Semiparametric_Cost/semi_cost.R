@@ -17,12 +17,14 @@
 
 library(dplyr)
 library(stringr)
+library(CVXR)
 
 library(doParallel)
 library(doRNG)
 library(parallelly)
 
 source("R/opt_est.R")
+source("Simulations/T3Assess_Semiparametric_Cost/compare_algs.R")
 
 # ***************************
 # * Monte Carlo Simulations *
@@ -31,18 +33,18 @@ source("R/opt_est.R")
 clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
 registerDoParallel(clust)
 
-B <- 3000
+B <- 1000
 n_obs <- 1000
 true_theta <- 5 
-cor_e1e2 <- 0.5
+cov_e1e2 <- 0.5
 
 mc_theta <-
   foreach(iter = 1:B,
           .options.RNG = 1,
-          .packages = c("dplyr", "stringr")) %dorng% {
+          .packages = c("dplyr", "stringr", "CVXR")) %dorng% {
 
     # Generate Data
-    df <- gen_optsim_data(n = n_obs, theta = true_theta, cor_e1e2 = cor_e1e2)
+    df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
 
     # Get Estimates
     oracle_est <- mean(df$Y2)
@@ -57,8 +59,8 @@ mc_theta <-
       pull(Y2) |>
       mean()
     # em_est <- em_optsim(df)
-    wls_est <- opt_lin_est(df, cov_y1y2 = cor_e1e2)
-    wlsalt_est <- comb_lin_est_lin(df, theta2 = true_theta, cov_e1e2 = cor_e1e2)
+    wls_est <- opt_lin_est(df, cov_y1y2 = cov_e1e2)
+    wlsalt_est <- comb_lin_est_lin(df, theta2 = true_theta, cov_e1e2 = cov_e1e2)
     prop_est <- prop_nmono_est(df)
     propind_est <- prop_nmono_est(df, prop_ind = TRUE)
     propopt_est <- opt_theta_c(df)
@@ -67,6 +69,12 @@ mc_theta <-
     semidef_est <- opt_semi_est(df, est = "default")
     semidel_est <- opt_delta_c(df)
     semideldef_est <- opt_delta_c(df, est = "default")
+
+    conalg_para <- min_var_alg(df, mod_type = "parametric", cov_e1e2 = cov_e1e2)
+    conalg_sumzero<- min_var_alg(df, mod_type = "sumzero", cov_e1e2 = cov_e1e2)
+    conalg_outrob <- min_var_alg(df, mod_type = "outcome_robust", cov_e1e2 = cov_e1e2)
+    conalg_resprob <- min_var_alg(df, mod_type = "response_robust", cov_e1e2 = cov_e1e2)
+    conalg_doubrob <- min_var_alg(df, mod_type = "double_robust", cov_e1e2 = cov_e1e2)
 
     return(tibble(oracle = oracle_est,
                   oraclex = oraclex_est,
@@ -82,7 +90,12 @@ mc_theta <-
                   semiopt = semiopt_est,
                   semidef = semidef_est,
                   semidel = semidel_est,
-                  semideldef = semideldef_est
+                  semideldef = semideldef_est,
+                  conpara = conalg_para$theta_est,
+                  conzero = conalg_sumzero$theta_est,
+                  conout = conalg_outrob$theta_est,
+                  conresp = conalg_resprob$theta_est,
+                  condoub = conalg_doubrob$theta_est
     ))
   } |>
   bind_rows()
@@ -109,6 +122,11 @@ mc_theta |>
     bias_semidef = mean(semidef) - true_theta,
     bias_semidel = mean(semidel) - true_theta,
     bias_semideldef = mean(semideldef) - true_theta,
+    bias_conpara = mean(conpara) - true_theta,
+    bias_conzero = mean(conzero) - true_theta,
+    bias_conout = mean(conout) - true_theta,
+    bias_conresp = mean(conresp) - true_theta,
+    bias_condoub = mean(condoub) - true_theta,
     sd_oracle = sd(oracle),
     sd_oraclex = sd(oraclex),
     sd_cc = sd(cc),
@@ -123,6 +141,11 @@ mc_theta |>
     sd_semidef = sd(semidef),
     sd_semidel = sd(semidel),
     sd_semideldef = sd(semideldef),
+    sd_conpara = sd(conpara),
+    sd_conzero = sd(conzero),
+    sd_conout = sd(conout),
+    sd_conresp = sd(conresp),
+    sd_condoub = sd(condoub),
     tstat_oracle = (mean(oracle) - true_theta) / sqrt(var(oracle) / B),
     tstat_oraclex = (mean(oraclex) - true_theta) / sqrt(var(oraclex) / B),
     tstat_cc = (mean(cc) - true_theta) / sqrt(var(cc) / B),
@@ -136,7 +159,12 @@ mc_theta |>
     tstat_semiopt = (mean(semiopt) - true_theta) / sqrt(var(semiopt) / B),
     tstat_semidef = (mean(semidef) - true_theta) / sqrt(var(semidef) / B),
     tstat_semidel = (mean(semidel) - true_theta) / sqrt(var(semidel) / B),
-    tstat_semideldef = (mean(semideldef) - true_theta) / sqrt(var(semideldef) / B)
+    tstat_semideldef = (mean(semideldef) - true_theta) / sqrt(var(semideldef) / B),
+    tstat_conpara = (mean(conpara) - true_theta) / sqrt(var(conpara) / B),
+    tstat_conzero = (mean(conzero) - true_theta) / sqrt(var(conzero) / B),
+    tstat_conout = (mean(conout) - true_theta) / sqrt(var(conout) / B),
+    tstat_conresp = (mean(conresp) - true_theta) / sqrt(var(conresp) / B),
+    tstat_condoub = (mean(condoub) - true_theta) / sqrt(var(condoub) / B)
   ) |>
   tidyr::pivot_longer(cols = everything(),
                       names_to = c(".value", "algorithm"),
@@ -145,7 +173,7 @@ mc_theta |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 3,
                caption = paste0("True Theta is ", true_theta,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2 ))
 
 # * Testing the standard deviations
 # When sigma_11 = 1 and sigma_22 = 1, we have:
@@ -160,18 +188,18 @@ sqrt(2 / (n_obs * 0.6))
 sqrt((2 + (0.6 * true_theta^2)) / (n_obs * 0.4))
 # WLS:
 m_mat <- matrix(c(1, 0, 1, 0, 0, 1, 0, 1), ncol = 2)
-v_mat <- matrix(c(1 / (n_obs * 0.4), cor_e1e2 / (n_obs * 0.4), 0, 0,
-                  cor_e1e2 / (n_obs * 0.4), 1 / (n_obs * 0.4), 0, 0,
+v_mat <- matrix(c(1 / (n_obs * 0.4), cov_e1e2 / (n_obs * 0.4), 0, 0,
+                  cov_e1e2 / (n_obs * 0.4), 1 / (n_obs * 0.4), 0, 0,
                   0, 0, 1 / (n_obs * 0.2), 0,
                   0, 0, 0, 1 / (n_obs * 0.2)), nrow = 4)
 exp_inv_cov <- solve(t(m_mat) %*% solve(v_mat) %*% m_mat)
 sqrt(exp_inv_cov[2, 2])
 # Prop
 exp_var <- 
-  (1 + cor_e1e2^2 * (1 / 0.4 - 1 / 0.6) + 1 / 0.6 + 
-   2 * cor_e1e2^2 * (1 / 0.6 - 1) * 0.4 / 0.6) / n_obs
+  (1 + cov_e1e2^2 * (1 / 0.4 - 1 / 0.6) + 1 / 0.6 + 
+   2 * cov_e1e2^2 * (1 / 0.6 - 1) * 0.4 / 0.6) / n_obs
 
 sqrt(exp_var)
 # Semiopt
 ## Default
-sqrt((6 + 7.5 * cor_e1e2^2) / n_obs)
+sqrt((6 + 7.5 * cov_e1e2^2) / n_obs)

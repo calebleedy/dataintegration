@@ -33,7 +33,7 @@ registerDoParallel(clust)
 B <- 3000
 n_obs <- 1000
 true_theta <- 5 
-cor_e1e2 <- 0.5
+cov_e1e2 <- 0.5
 
 mc_theta <-
   foreach(iter = 1:B,
@@ -41,7 +41,7 @@ mc_theta <-
           .packages = c("dplyr", "stringr")) %dorng% {
 
     # Generate Data
-    df <- gen_optsim_data(n = n_obs, theta = true_theta, cor_e1e2 = cor_e1e2)
+    df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
 
     # Get Estimates
     oracle_est <- mean(df$Y2)
@@ -56,8 +56,8 @@ mc_theta <-
       pull(Y2) |>
       mean()
     # em_est <- em_optsim(df)
-    wls_est <- opt_lin_est(df, cov_y1y2 = cor_e1e2)
-    wlsalt_est <- comb_lin_est_lin(df, theta2 = true_theta, cov_e1e2 = cor_e1e2)
+    wls_est <- opt_lin_est(df, cov_y1y2 = cov_e1e2)
+    wlsalt_est <- comb_lin_est_lin(df, theta2 = true_theta, cov_e1e2 = cov_e1e2)
     prop_est <- prop_nmono_est(df)
     propind_est <- prop_nmono_est(df, prop_ind = TRUE)
     propopt_est <- opt_theta_c(df)
@@ -144,7 +144,7 @@ mc_theta |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 3,
                caption = paste0("True Theta is ", true_theta,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2 ))
 
 # * Testing the standard deviations
 # When sigma_11 = 1 and sigma_22 = 1, we have:
@@ -159,18 +159,18 @@ sqrt(2 / (n_obs * 0.6))
 sqrt((2 + (0.6 * true_theta^2)) / (n_obs * 0.4))
 # WLS:
 m_mat <- matrix(c(1, 0, 1, 0, 0, 1, 0, 1), ncol = 2)
-v_mat <- matrix(c(1 / (n_obs * 0.4), cor_e1e2 / (n_obs * 0.4), 0, 0,
-                  cor_e1e2 / (n_obs * 0.4), 1 / (n_obs * 0.4), 0, 0,
+v_mat <- matrix(c(1 / (n_obs * 0.4), cov_e1e2 / (n_obs * 0.4), 0, 0,
+                  cov_e1e2 / (n_obs * 0.4), 1 / (n_obs * 0.4), 0, 0,
                   0, 0, 1 / (n_obs * 0.2), 0,
                   0, 0, 0, 1 / (n_obs * 0.2)), nrow = 4)
 exp_inv_cov <- solve(t(m_mat) %*% solve(v_mat) %*% m_mat)
 sqrt(exp_inv_cov[2, 2])
 # Prop
 exp_var <- 
-  (1 + cor_e1e2^2 * (1 / 0.4 - 1 / 0.6) + 1 / 0.6 + 
-   2 * cor_e1e2^2 * (1 / 0.6 - 1) * 0.4 / 0.6) / n_obs
+  (1 + cov_e1e2^2 * (1 / 0.4 - 1 / 0.6) + 1 / 0.6 + 
+   2 * cov_e1e2^2 * (1 / 0.6 - 1) * 0.4 / 0.6) / n_obs
 
 sqrt(exp_var)
 # Semiopt
 ## Default
-sqrt((6 + 7.5 * cor_e1e2^2) / n_obs)
+sqrt((6 + 7.5 * cov_e1e2^2) / n_obs)

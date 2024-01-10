@@ -28,12 +28,12 @@ library(stringr)
 #' @param n - An integer for the number of observations
 #'
 #' @return df - A data frame.
-gen_optsim_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cor_e1e2 = 0) {
+gen_optsim_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cov_e1e2 = 0) {
 
   # 1. Generate X, Y1, Y2
   mean_vec <- c(0, 0, 0)
   sigma_mat <-
-    matrix(c(1, cor_xe1, cor_xe2, cor_xe1, 1, cor_e1e2, cor_xe2, cor_e1e2, 1),
+    matrix(c(1, cor_xe1, cor_xe2, cor_xe1, 1, cov_e1e2, cor_xe2, cov_e1e2, 1),
            nrow = 3)
 
   data <- MASS::mvrnorm(n, mean_vec, sigma_mat)
@@ -87,12 +87,12 @@ gen_optsim_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cor_e1e2 = 0
 #' @param n - An integer for the number of observations
 #'
 #' @return df - A data frame.
-gen_unbal_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cor_e1e2 = 0) {
+gen_unbal_data <- function(n, theta = 0, cor_xe1 = 0, cor_xe2 = 0, cov_e1e2 = 0) {
 
   # 1. Generate X, Y1, Y2
   mean_vec <- c(0, 0, 0)
   sigma_mat <-
-    matrix(c(1, cor_xe1, cor_xe2, cor_xe1, 1, cor_e1e2, cor_xe2, cor_e1e2, 1),
+    matrix(c(1, cor_xe1, cor_xe2, cor_xe1, 1, cov_e1e2, cor_xe2, cov_e1e2, 1),
            nrow = 3)
 
   data <- MASS::mvrnorm(n, mean_vec, sigma_mat)

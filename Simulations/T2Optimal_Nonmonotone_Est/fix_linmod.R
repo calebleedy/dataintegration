@@ -27,7 +27,7 @@ registerDoParallel(clust)
 B <- 3000
 n_obs <- 1000
 true_theta <- 5
-cor_e1e2 <- 0.5
+cov_e1e2 <- 0.5
 
 mc_theta <-
   foreach(iter = 1:B,
@@ -35,16 +35,16 @@ mc_theta <-
           .packages = c("dplyr", "stringr")) %dorng% {
 
     # Generate Data
-    df <- gen_optsim_data(n = n_obs, theta = true_theta, cor_e1e2 = cor_e1e2)
+    df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
 
     # Get Estimates
-    wls_est <- comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2)
+    wls_est <- comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2)
     wls_est_test <- 
-      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2, test = TRUE)
+      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2, test = TRUE)
     wlstt_est <- 
-      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2, theta2 = true_theta)
+      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2, theta2 = true_theta)
     wlstt_est_test <- 
-      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2,
+      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2,
                    theta2 = true_theta, test = TRUE)
 
     return(tibble(wls = wls_est,
@@ -139,7 +139,7 @@ mc_theta |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 3,
                caption = paste0("True g is ", true_g,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2 ))
 
 
 

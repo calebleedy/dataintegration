@@ -29,7 +29,7 @@ registerDoParallel(clust)
 B <- 3000
 n_obs <- 1000
 true_theta <- 5 
-cor_e1e2 <- 0.5
+cov_e1e2 <- 0.5
 
 mc_theta <-
   foreach(iter = 1:B,
@@ -37,7 +37,7 @@ mc_theta <-
           .packages = c("dplyr", "stringr")) %dorng% {
 
     # Generate Data
-    df <- gen_unbal_data(n = n_obs, theta = true_theta, cor_e1e2 = cor_e1e2)
+    df <- gen_unbal_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
 
     # Get Estimates
     oracle_est <- mean(df$Y2)
@@ -52,7 +52,7 @@ mc_theta <-
       pull(Y2) |>
       mean()
     # em_est <- em_optsim(df)
-    wls_est <- opt_lin_est(df, cov_y1y2 = cor_e1e2)
+    wls_est <- opt_lin_est(df, cov_y1y2 = cov_e1e2)
     prop_est <- prop_nmono_est(df)
     propind_est <- prop_nmono_est(df, prop_ind = TRUE)
     propopt_est <- opt_theta_c(df)
@@ -135,7 +135,7 @@ mc_theta |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 3,
                caption = paste0("True Theta is ", true_theta,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2 ))
 
 # ***************************
 # * Monte Carlo Simulations *
@@ -147,7 +147,7 @@ registerDoParallel(clust)
 B <- 3000
 n_obs <- 1000
 true_theta <- 5
-cor_e1e2 <- 0.5
+cov_e1e2 <- 0.5
 
 mc_theta <-
   foreach(iter = 1:B,
@@ -157,7 +157,7 @@ mc_theta <-
     # g_fun <- "Y1^2Y2"
     
     # Generate Data
-    df <- gen_unbal_data(n = n_obs, theta = true_theta, cor_e1e2 = cor_e1e2)
+    df <- gen_unbal_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
 
     # Get Estimates
     oracle_est <- mean(df$Y1^2 * df$Y2)
@@ -173,9 +173,9 @@ mc_theta <-
       mutate(g_f = Y1^2 * Y2) |>
       pull(g_f) |>
       mean()
-    wls_est <- comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2)
+    wls_est <- comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2)
     wlstt_est <- 
-      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cor_e1e2, theta2 = true_theta)
+      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2, theta2 = true_theta)
     prop_est <- prop_nmono_est(df, gfun = "Y1^2 * Y2", pow = 3)
     propopt_est <- opt_theta_c(df, gfun = "Y1^2 * Y2", pow = 3)
     semiopt_est <- opt_semi_est(df, gfun = "Y1^2 * Y2", pow = 3)
@@ -251,4 +251,4 @@ mc_theta |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 3,
                caption = paste0("True g is ", true_g,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2))

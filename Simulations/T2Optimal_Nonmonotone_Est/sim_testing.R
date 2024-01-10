@@ -34,7 +34,7 @@ registerDoParallel(clust)
 B <- 5000
 n_obs <- 1000
 true_theta <- 5
-cor_e1e2 <- 0.5
+cov_e1e2 <- 0.5
 
 mc_ests <-
   foreach(iter = 1:B,
@@ -42,7 +42,7 @@ mc_ests <-
           .packages = c("dplyr", "stringr")) %dorng% {
 
     # Generate Data
-    df <- gen_optsim_data(n = n_obs, theta = true_theta, cor_e1e2 = cor_e1e2)
+    df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
 
     # Estimate different parts of theta_hat_c
     # semidef <- opt_semi_est(df, est = "opt", test = TRUE)
@@ -83,13 +83,13 @@ solve(matrix(c(11.5 * (true_theta^2 + 1),
                -7.5 * (true_theta^2 + 1),
                -7.5 * (true_theta^2 + 1),
                -7.5 * (true_theta^2 + 1),
-               7.5 * (true_theta^2 + 1 + cor_e1e2^2),
-               2.5 * (true_theta^2 + 1 + cor_e1e2^2),
+               7.5 * (true_theta^2 + 1 + cov_e1e2^2),
+               2.5 * (true_theta^2 + 1 + cov_e1e2^2),
                -7.5 * (true_theta^2 + 1),
-               2.5 * (true_theta^2 + 1 + cor_e1e2^2),
+               2.5 * (true_theta^2 + 1 + cov_e1e2^2),
                7.5 * (true_theta^2 + 2)), nrow = 3),
       matrix(c(-3.5 * (true_theta^2 + 1),
-               2.5 * (true_theta^2 + 1 + cor_e1e2^2),
+               2.5 * (true_theta^2 + 1 + cov_e1e2^2),
                2.5 * (true_theta^2 + 2)), nrow = 3))
 
 c0 <- c_mat[1]
@@ -99,16 +99,16 @@ c2 <- c_mat[3]
 var_ipw <- (2 + (1 - pi_11) / pi_11 * (2 + true_theta^2)) / n_obs
 var_A0 <- (c0^2 * (true_theta^2 + 1) * 
               (1 / pi_10 + 1 / pi_01 + 1 / pi_11 - 1)) / n_obs
-var_A1 <- (c1^2 * (true_theta^2 + 1 + cor_e1e2^2) * 
+var_A1 <- (c1^2 * (true_theta^2 + 1 + cov_e1e2^2) * 
               (1 / pi_10 + 1 / pi_11)) / n_obs
 var_A2 <- (c2^2 * (true_theta^2 + 2) * 
               (1 / pi_01 + 1 / pi_11)) / n_obs
 cov_ipwA0 <- (c0 * (true_theta^2 + 1) * (1 + 1 / pi_11)) / n_obs
-cov_ipwA1 <- (-c1 * (true_theta^2 + 1 + cor_e1e2^2) * (1 / pi_11)) / n_obs
+cov_ipwA1 <- (-c1 * (true_theta^2 + 1 + cov_e1e2^2) * (1 / pi_11)) / n_obs
 cov_ipwA2 <- (-c2 * (true_theta^2 + 2) * (1 / pi_11)) / n_obs
 cov_A0A1 <- (-(1 / pi_10 + 1 / pi_11) * c0 * c1 * (true_theta^2 + 1)) / n_obs
 cov_A0A2 <- (-(1 / pi_01 + 1 / pi_11) * c0 * c2 * (true_theta^2 + 1)) / n_obs
-cov_A1A2 <- (1 / pi_11) * c1 * c2 * (true_theta^2 + 1 + cor_e1e2^2) / n_obs
+cov_A1A2 <- (1 / pi_11) * c1 * c2 * (true_theta^2 + 1 + cov_e1e2^2) / n_obs
 
 exp_var <- 
   c(var_ipw + var_A0 + var_A1 + var_A2 + 
@@ -132,15 +132,15 @@ V_mat <-
            pi_00 * pi_10 / pi_11 * (true_theta^2 + 1),
            pi_00 * pi_01 / pi_11 * (true_theta^2 + 1),
            pi_00 * pi_10 / pi_11 * (true_theta^2 + 1),
-           pi_10^2 * (1 / pi_11 + 1 / pi_10) * (true_theta^2 + 1 + cor_e1e2^2),
-           pi_10 * pi_01 / pi_11 * (true_theta^2 + 1 + cor_e1e2^2),
+           pi_10^2 * (1 / pi_11 + 1 / pi_10) * (true_theta^2 + 1 + cov_e1e2^2),
+           pi_10 * pi_01 / pi_11 * (true_theta^2 + 1 + cov_e1e2^2),
            pi_00 * pi_01 / pi_11 * (true_theta^2 + 1),
-           pi_10 * pi_01 / pi_11 * (true_theta^2 + 1 + cor_e1e2^2),
+           pi_10 * pi_01 / pi_11 * (true_theta^2 + 1 + cov_e1e2^2),
            pi_01^2 * (1 / pi_11 + 1 / pi_01) * (true_theta^2 + 2)),
   nrow = 3)
 
 C_mat <- matrix(c(-pi_00 / pi_11 * (true_theta^2 + 1),
-                  -pi_10 / pi_11 * (true_theta^2 + 1 + cor_e1e2^2),
+                  -pi_10 / pi_11 * (true_theta^2 + 1 + cov_e1e2^2),
                   -pi_01 / pi_11 * (true_theta^2 + 2)),
          nrow = 3)
 
@@ -151,16 +151,16 @@ c2 <- c_mat[3]
 
 var_ipw <- (2 + (1 - pi_11) / pi_11 * (2 + true_theta^2)) / n_obs
 var_A0 <- (c0^2 * (true_theta^2 + 1) * pi_00^2 * (1 / pi_11 + 1 / pi_00)) / n_obs
-var_A1 <- (c1^2 * (true_theta^2 + 1 + cor_e1e2^2) * 
+var_A1 <- (c1^2 * (true_theta^2 + 1 + cov_e1e2^2) * 
             pi_10^2 * (1 / pi_10 + 1 / pi_11)) / n_obs
 var_A2 <- (c2^2 * (true_theta^2 + 2) * pi_01^2 * 
               (1 / pi_01 + 1 / pi_11)) / n_obs
 cov_ipwA0 <- (c0 * (true_theta^2 + 1) * (pi_00 / pi_11)) / n_obs
-cov_ipwA1 <- (c1 * (true_theta^2 + 1 + cor_e1e2^2) * (pi_10 / pi_11)) / n_obs
+cov_ipwA1 <- (c1 * (true_theta^2 + 1 + cov_e1e2^2) * (pi_10 / pi_11)) / n_obs
 cov_ipwA2 <- (c2 * (true_theta^2 + 2) * (pi_01 / pi_11)) / n_obs
 cov_A0A1 <- ((pi_00 * pi_10 / pi_11) * c0 * c1 * (true_theta^2 + 1)) / n_obs
 cov_A0A2 <- ((pi_00 * pi_01 / pi_11) * c0 * c2 * (true_theta^2 + 1)) / n_obs
-cov_A1A2 <- (pi_10 * pi_01 / pi_11) * c1 * c2 * (true_theta^2 + 1 + cor_e1e2^2) / n_obs
+cov_A1A2 <- (pi_10 * pi_01 / pi_11) * c1 * c2 * (true_theta^2 + 1 + cov_e1e2^2) / n_obs
 
 exp_var <- 
   c(var_ipw + var_A0 + var_A1 + var_A2 + 
@@ -199,7 +199,7 @@ mc_ests |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 6,
                caption = paste0("True Theta is ", true_theta,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2 ))
 
 # For theta_c_opt
 cov_mat <- 
@@ -207,16 +207,16 @@ cov_mat <-
            -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
            -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
            -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
-           (1 / pi_11 - 1 / (pi_10 + pi_11)) * (true_theta^2 + 1 + cor_e1e2^2),
-           pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1 + cor_e1e2^2),
+           (1 / pi_11 - 1 / (pi_10 + pi_11)) * (true_theta^2 + 1 + cov_e1e2^2),
+           pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1 + cov_e1e2^2),
            -pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1),
-           pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1 + cor_e1e2^2),
+           pi_10 * pi_01 / pi_1112 * (true_theta^2 + 1 + cov_e1e2^2),
            (1 / pi_11 - 1 / (pi_01 + pi_11)) * (true_theta^2 + 2)),
   nrow = 3)
 
 resp_mat <- 
   matrix(c(-(1 - 1 / (pi_10 + pi_11) - 1 / (pi_01 + pi_11) + 1 / pi_11) * (true_theta^2 + 1),
-           -(1 / (pi_10 + pi_11) - 1 / pi_11) * (true_theta^2 + 1 + cor_e1e2^2),
+           -(1 / (pi_10 + pi_11) - 1 / pi_11) * (true_theta^2 + 1 + cov_e1e2^2),
            -(1 / (pi_01 + pi_11) - 1 / pi_11) * (true_theta^2 + 2)),
   nrow = 3)
 c_mat <- solve(cov_mat, resp_mat)
@@ -229,16 +229,16 @@ c2 <- c_mat[3]
 var_ipw <- (2 + (1 - pi_11) / pi_11 * (2 + true_theta^2)) / n_obs
 var_A0 <- (c0^2 * (true_theta^2 + 1) * 
               ((pi_10 * pi_01 + pi_11^2) / pi_1112 - 1)) / n_obs
-var_A1 <- (c1^2 * (true_theta^2 + 1 + cor_e1e2^2) * 
+var_A1 <- (c1^2 * (true_theta^2 + 1 + cov_e1e2^2) * 
               (1 / pi_11 - 1 / (pi_10 + pi_11))) / n_obs
 var_A2 <- (c2^2 * (true_theta^2 + 2) * 
               (1 / pi_11 - 1 / (pi_01 + pi_11))) / n_obs
 cov_ipwA0 <- (c0 * (true_theta^2 + 1) * (1 - 1 / (pi_10 + pi_11) - 1 / (pi_01 + pi_11) + 1 / pi_11)) / n_obs
-cov_ipwA1 <- (c1 * (true_theta^2 + 1 + cor_e1e2^2) * (1 / (pi_10 + pi_11) - 1 / pi_11)) / n_obs
+cov_ipwA1 <- (c1 * (true_theta^2 + 1 + cov_e1e2^2) * (1 / (pi_10 + pi_11) - 1 / pi_11)) / n_obs
 cov_ipwA2 <- (c2 * (true_theta^2 + 2) * (1 / (pi_01 + pi_11) - 1 / pi_11)) / n_obs
 cov_A0A1 <- ((-pi_10 * pi_01 / pi_1112) * c0 * c1 * (true_theta^2 + 1)) / n_obs
 cov_A0A2 <- ((-pi_10 * pi_01 / pi_1112) * c0 * c2 * (true_theta^2 + 1)) / n_obs
-cov_A1A2 <- (pi_10 * pi_01 / pi_1112) * c1 * c2 * (true_theta^2 + 1 + cor_e1e2^2) / n_obs
+cov_A1A2 <- (pi_10 * pi_01 / pi_1112) * c1 * c2 * (true_theta^2 + 1 + cov_e1e2^2) / n_obs
 
 exp_var <- 
   c(var_ipw + var_A0 + var_A1 + var_A2 + 
@@ -276,4 +276,4 @@ mc_ests |>
   knitr::kable(#"latex", booktabs = TRUE,
                digits = 6,
                caption = paste0("True Theta is ", true_theta,
-                                ". Cov_e1e2 = ", cor_e1e2 ))
+                                ". Cov_e1e2 = ", cov_e1e2 ))
