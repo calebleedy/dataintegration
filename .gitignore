@@ -2,6 +2,7 @@ Notes/*
 !Notes/*.tex
 !Notes/*.pdf
 !Notes/*.md
+!Notes/*.qmd
 Presentations/*
 !Presentations/*.tex
 !Presentations/*.bib

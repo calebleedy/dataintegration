@@ -1,0 +1,946 @@
+---
+title: "Understanding Semiparametric Constraints"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    include-in-header: "latex_header.tex"
+    keep-tex: true
+---
+
+```{r}
+#| label: global variables
+#| echo: false
+B <- 1000
+
+```
+
+# Introduction {#sec-intro}
+
+The goal of this report is to understand how additional constraints effect
+semiparametric models. 
+Inspired by Dr. Fuller's note, I set out to see if we could assess the amount 
+of efficiency loss due to using semiparametric inference. First, let's define 
+some notation.
+
+| Segment | Quantity of Interest | Estimator | Coefficient |
+| --------|----------------------| --------- | ------------ |
+| $A_{00}$ | $E[g \mid X]$           | $\hat \gamma_{11}$ | $c_{11}$ |
+| $A_{10}$ | $E[g \mid X]$           | $\hat \gamma_{21}$ | $c_{21}$ |
+| $A_{10}$ | $E[g \mid X, Y_1]$      | $\hat \gamma_{22}$ | $c_{22}$ |
+| $A_{01}$ | $E[g \mid X]$           | $\hat \gamma_{31}$ | $c_{31}$ |
+| $A_{01}$ | $E[g \mid X, Y_2]$      | $\hat \gamma_{33}$ | $c_{33}$ |
+| $A_{11}$ | $E[g \mid X]$           | $\hat \gamma_{41}$ | $c_{41}$ |
+| $A_{11}$ | $E[g \mid X, Y_1]$      | $\hat \gamma_{42}$ | $c_{42}$ |
+| $A_{11}$ | $E[g \mid X, Y_2]$      | $\hat \gamma_{43}$ | $c_{43}$ |
+| $A_{11}$ | $E[g \mid X, Y_1, Y_2]$ | $\hat \gamma_{44}$ | $c_{44}$ |
+: This table shows the relationship between different quantities of
+interest in each segment, their estimators, and the corresponding coefficients
+of their estimators. {#tbl-reftab}
+
+This is a similar framework to understanding the class of estimators 
+that we discussed in \verb|optest_update.pdf|, where we write the estimator 
+as a weighted average of different expectation with functional coefficients.
+
+$$\hat \theta = \frac{\delta_{11}}{\pi_{11}}g(Z) + \beta_0(\delta, c_0)E[g(Z)
+\mid X] + \beta_1(\delta, c_1)E[g(Z) \mid X, Y_1] + \beta_2(\delta, c_2) E[g(Z)
+\mid X, Y_2].$$
+
+However, now we write the estimator as 
+
+$$\hat \theta = \sum_{k,t} c_{kt}\hat \gamma_{kt}$$
+
+where $\hat \gamma_{kt} = \frac{\delta_{ij}}{\pi_{ij}}E[g \mid G_{ij}(X, Y_1,
+Y_2)]$ and $ij$ corresponds to the segment $A_{ij}$ associated with $\hat
+\gamma_{kt}$ in @tbl-reftab.
+
+# Methods {#sec-methods}
+
+As noted by Dr. Fuller, we can understand parametric estimation as solving 
+the following constrained optimization problems:
+
+\begin{align*}
+  \min &\Var\left(\sum_{k, t} c_{kt} \hat \gamma_{kt}\right) \text{ such that } 
+  \sum_{k,t} c_{kt} = 1 \\
+       &\text{or} \\
+  \min &\Var\left(\sum_{k, t} c_{kt} \hat \gamma_{kt}\right) \text{ such that } 
+  \sum_{(k,t): (k,t) \neq (4, 4)} c_{kt} = 0 \text{ and } c_{44} = 1. \\
+\end{align*}
+
+To be robust to the outcome model, we can construct a similar optimization
+problem with different constraints:
+
+\begin{align*}
+  \min \Var\left(\sum_{k, t} c_{kt} \hat \gamma_{kt}\right) \text{ such that }& 
+  c_{11} + c_{21} + c_{31} + c_{41} = 0, c_{22} + c_{42} = 0, c_{33} + c_{43} = 0,\\
+       &\text{and } c_{44} = 1.
+\end{align*}
+
+Likewise to be robust to the response model, we can have the problem:
+
+\begin{align*}
+  \min \Var\left(\sum_{k, t} c_{kt} \hat \gamma_{kt}\right) \text{ such that }& 
+  c_{11} = \pi_{00}, c_{21} + c_{22} = \pi_{10}, c_{31} + c_{33} = \pi_{01}, \\
+       &\text{ and } c_{41} + c_{42} + c_{43} + c_{44} = \pi_{11}.
+\end{align*}
+
+To be double robust (robust to the outcome and response model) we can combine 
+the last two constraints. This is summarized in @tbl-mods.
+
+| Type | Constraints |
+| -----| ------------|
+| Parametric 1 | $\sum_{k, t} c_{kt} = 1$ |
+| Parametric 2 |  $\sum_{k, t: (k, t) \neq (4, 4)} c_{kt} = 0, c_{44} = 1$ |
+| Outcome Robust | $c_{11} + c_{21} + c_{31} + c_{41} = 0, c_{22} + c_{42} = 0, c_{33} + c_{43} = 0, \text{ and } c_{44} = 1.$ |
+| Response Robust | $c_{11} = \pi_{00}, c_{21} + c_{22} = \pi_{10}, c_{31} + c_{33} = \pi_{01}, \text{ and } c_{41} + c_{42} + c_{43} + c_{44} = \pi_{11}$ |
+| Double Robust | $c_{11} + c_{21} + c_{31} + c_{41} = 0, c_{22} + c_{42} = 0, c_{33} + c_{43} = 0, c_{44} = 1, c_{11} = \pi_{00}, c_{21} + c_{22} = \pi_{10}, c_{31} + c_{33} = \pi_{01}, \text{ and } c_{41} + c_{42} + c_{43} + c_{44} = \pi_{11}$ |
+: This table identifies the different constraints for each model type. {#tbl-mods}
+
+# Simulation Study {#sec-simulations}
+
+## Simulation 1 {.unnumbered}
+
+We use the following simulation setup
+
+\begin{align*}
+  \begin{bmatrix} x \\ e_1 \\ e_2 \end{bmatrix} 
+  &\stackrel{ind}{\sim} N\left(\begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix}, 
+  \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & \rho \\ 0 & \rho & 1 \end{bmatrix}\right) \\
+  y_1 &= x + e_1 \\
+  y_2 &= \theta + x + e_2 \\
+\end{align*}
+
+Furthermore, $\pi_{11} = 0.2$ and $\pi_{00} = 0.3, \pi_{10} = 0.4$, and 
+$\pi_{01} = 0.1$.
+The goal of this simulation study is to find $\theta = E[Y_2]$. In other words,
+$g(Z) = Y_2$. There are several algorithms for comparison which are defined 
+as the following:
+
+\begin{align*}
+  Oracle &= n^{-1} \sum_{i = 1}^n g(Z_i)\\
+  CC &= \frac{\sum_{i = 1}^n \delta_{11} g(Z_i)}{\sum_{i = 1}^n \delta_{11}} \\
+  IPW &= \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g(Z_i)\\
+\end{align*}
+
+Furthermore, we include four existing estimators that we have already 
+proposed in the past: WLS, Prop, PropInd, and SemiDelta. 
+
+The estimator WLS is a a weight least square estimator derived in the 
+following manner. We now consider a normal model:
+
+$$ 
+  \begin{pmatrix}
+    x_i \\ e_{1i} \\ e_{2i}
+  \end{pmatrix} \stackrel{ind}{\sim}
+  N \left(
+  \begin{bmatrix}
+    0 \\ 0 \\ 0
+  \end{bmatrix},
+  \begin{bmatrix}
+    1 & 0 & 0 \\
+    0 & \sigma_{11} & \sigma_{12} \\ 
+    0 & \sigma_{12} & \sigma_{22}
+  \end{bmatrix},
+  \right)
+$$
+
+and define $y_{1i} = \theta_1 + x_i + e_{1i}$ and $y_{2i} = \theta_2 + x_i
++ e_{2i}$. Then $b_1 = b_2 = 1$. We define $\bar z_k^{(ij)}$ as the mean of
+$y_k$ in segment $A_{ij}$. This means that we have means $\bar z_1^{(11)}$,
+$\bar z_2^{(11)}$, $\bar z_1^{(10)}$, and $\bar z_2^{(01)}$. Let $W = [\bar
+z_1^{(11)}, \bar z_2^{(11)}, \bar z_1^{(10)}, \bar z_2^{(01)}]'$, then for
+$n_{ij} = |A_{ij}|$, we have
+
+$$Z - M \mu \sim N(\vec 0, V)$$
+
+where 
+
+$$M = 
+  \begin{bmatrix}
+    1 & 0 \\
+    0 & 1 \\
+    1 & 0 \\
+    0 & 1 \\
+  \end{bmatrix}
+  \text{ and }
+  V = 
+  \begin{bmatrix}
+    \frac{\sigma_{11}}{n_{11}} & \frac{\sigma_{12}}{n_{11}} & 0 & 0 \\
+    \frac{\sigma_{12}}{n_{11}} & \frac{\sigma_{22}}{n_{11}} & 0 & 0 \\
+    0 & 0 & \frac{\sigma_{11}}{n_{10}} & 0 \\
+    0 & 0 & 0 & \frac{\sigma_{22}}{n_{01}} \\
+  \end{bmatrix}.
+$$
+
+Thus, the BLUE for $\mu = [\mu_1, \mu_2]'$ is 
+
+$$\hat \mu = (M' V^{-1} M)^{-1} M' V^{-1} W.$$
+
+Hence, WLS is $\mu_2$ as $g(X, Y_1, Y_2) = Y_2$.
+
+The remaining three estimators are drived from the following expression
+where the values for $\beta$ are provided in @tbl-beta. These 
+are good estimators to compare to because Prop is the original proposed 
+estimator. PropInd has the same form as Prop except the values for $\beta$ 
+is different. PropInd shares the same values of $\beta$ as all of the new 
+models with constraints. SemiDelta is useful because it is the best 
+estimator in general so far.
+
+$$
+\hat \theta = \frac{\delta_{11}}{\pi_{11}}g(Z) + 
+\beta_0(\delta, c_0)E[g(Z) \mid X] + 
+\beta_1(\delta, c_1)E[g(Z) \mid X, Y_1] + 
+\beta_2(\delta, c_2) E[g(Z)
+\mid X, Y_2].
+$$
+
+| Estimator | $\beta_0(\delta, c_0)$ | $\beta_1(\delta, c_1)$ |
+| --------- | ---------------------- | ---------------------- |
+  Prop | $\left(1 - \frac{(\delta_{10} + \delta_{11})}{(\pi_{10} + \pi_{11})} - \frac{(\delta_{01} + \delta_{11})}{(\pi_{01} + \pi_{11})} + \frac{\delta_{11}}{\pi_{11}}\right)$ | $\left(\frac{\delta_{10} + \delta_{11}}{\pi_{10} + \pi_{11}} - \frac{\delta_{11}}{\pi_{11}}\right)$ |
+  PropInd | $\left(1 - \frac{(\delta_{10})}{(\pi_{10})} - \frac{(\delta_{01})}{(\pi_{01})} + \frac{\delta_{11}}{\pi_{11}}\right)$ | $\left(\frac{\delta_{10}}{\pi_{10}} - \frac{\delta_{11}}{\pi_{11}}\right)$ |
+  SemiDelta | $c_0\left(\frac{\delta_{11}}{\pi_{11}} - \frac{\delta_{00}}{\pi_{00}}\right)$ | $c_1\left(\frac{\delta_{11}}{\pi_{11}} - \frac{\delta_{10}}{\pi_{10}}\right)$ |
+
+: This table displays the values of $\beta$ for different estimator types. {#tbl-beta}
+
+In the simulation results in @tbl-sim1, the new results have the 
+same label as the value from the `Type` column in @tbl-mods.
+
+```{r}
+#| label: libraries
+#| echo: false
+#| warning: false
+#| message: false
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(CVXR)
+library(ggplot2)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+source("R/opt_est.R")
+source("Simulations/T3Assess_Semiparametric_Cost/compare_algs.R")
+
+```
+
+
+```{r}
+#| label: mcmc E[g] = Y2
+#| echo: false
+
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+n_obs <- 1000
+true_theta <- 5 
+cov_e1e2 <- 0.5
+
+mc_theta <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr", "CVXR")) %dorng% {
+
+    # Generate Data
+    # df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+    df <- gen_unbal_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+
+    # Get Estimates
+    oracle_est <- mean(df$Y2)
+    oraclex_est <- mean(df$Y2 - df$X)
+    ipw_est <- 
+      filter(df, delta_1 == 1, delta_2 == 1) |>
+      mutate(g_est = Y2 / prob_11) |>
+      pull(g_est) |>
+      sum() / nrow(df)
+    cc_est <- 
+      filter(df, delta_2 == 1) |>
+      pull(Y2) |>
+      mean()
+    # em_est <- em_optsim(df)
+    wls_est <- opt_lin_est(df, cov_y1y2 = cov_e1e2)
+    wlsalt_est <- comb_lin_est_lin(df, theta2 = true_theta, cov_e1e2 = cov_e1e2)
+    prop_est <- prop_nmono_est(df)
+    propind_est <- prop_nmono_est(df, prop_ind = TRUE)
+    propopt_est <- opt_theta_c(df)
+    propoptdef_est <- opt_theta_c(df, est = "default")
+    semiopt_est <- opt_semi_est(df)
+    semidef_est <- opt_semi_est(df, est = "default")
+    semidel_est <- opt_delta_c(df)
+    semideldef_est <- opt_delta_c(df, est = "default")
+
+    conalg_para <- min_var_alg(df, mod = "para", cov_e1e2 = cov_e1e2)
+    conalg_sumzero <- min_var_alg(df, mod = "sumzero", cov_e1e2 = cov_e1e2)
+    conalg_outrob <- min_var_alg(df, mod = "out_rob", cov_e1e2 = cov_e1e2)
+    conalg_resprob <- min_var_alg(df, mod = "resp_rob", cov_e1e2 = cov_e1e2)
+    conalg_doubrob <- min_var_alg(df, mod = "double_rob", cov_e1e2 = cov_e1e2)
+
+    return(tibble(oracle = oracle_est,
+                  oraclex = oraclex_est,
+                  cc = cc_est,
+                  ipw = ipw_est,
+                  # em = em_est,
+                  wls = wls_est,
+                  wlsalt = wlsalt_est,
+                  prop = prop_est,
+                  propind = propind_est,
+                  propopt = propopt_est,
+                  propoptdef = propoptdef_est,
+                  semiopt = semiopt_est,
+                  semidef = semidef_est,
+                  semidel = semidel_est,
+                  semideldef = semideldef_est,
+                  conpara = conalg_para$theta_est,
+                  conzero = conalg_sumzero$theta_est,
+                  conout = conalg_outrob$theta_est,
+                  conresp = conalg_resprob$theta_est,
+                  condoub = conalg_doubrob$theta_est
+    ))
+  } |>
+  bind_rows()
+
+stopCluster(clust)
+
+```
+
+```{r}
+#| label: tbl-sim1
+#| echo: false
+#| tbl-cap: |
+#|    Results from Simulation 1. True values: $\theta = 5, \rho = 0.5$. 
+#|    The test conducted for the T-statistic and P-value is a two sample test 
+#|    to see if the estimator is unbiased. This simulation uses 
+#|    $Y_1 = x + \varepsilon_1$, $Y_2 = \theta + x + \varepsilon_2$ where 
+#|    $X \sim N(0, 1)$ and $(\varepsilon_1, \varepsilon_2)$ come from a mean 
+#|    zero bivariate normal distribution with unit variance and covariance 
+#|    $\rho$. The segments are unbalanced with: $\pi_{11} = 0.2$, 
+#|    $\pi_{10} = 0.4$, $\pi_{01} = 0.1$, and $\pi_{00} = 0.3$.
+
+mc_theta |>
+  summarize(
+    bias_oracle = mean(oracle) - true_theta,
+    bias_cc = mean(cc) - true_theta,
+    bias_ipw = mean(ipw) - true_theta,
+    bias_wls = mean(wls) - true_theta,
+    bias_prop = mean(prop) - true_theta,
+    bias_semidel = mean(semidel) - true_theta,
+    bias_conpara = mean(conpara) - true_theta,
+    bias_conzero = mean(conzero) - true_theta,
+    bias_conout = mean(conout) - true_theta,
+    bias_conresp = mean(conresp) - true_theta,
+    bias_condoub = mean(condoub) - true_theta,
+    sd_oracle = sd(oracle),
+    sd_cc = sd(cc),
+    sd_ipw = sd(ipw),
+    sd_wls = sd(wls),
+    sd_prop = sd(prop),
+    sd_semidel = sd(semidel),
+    sd_conpara = sd(conpara),
+    sd_conzero = sd(conzero),
+    sd_conout = sd(conout),
+    sd_conresp = sd(conresp),
+    sd_condoub = sd(condoub),
+    tstat_oracle = (mean(oracle) - true_theta) / sqrt(var(oracle) / B),
+    tstat_cc = (mean(cc) - true_theta) / sqrt(var(cc) / B),
+    tstat_ipw = (mean(ipw) - true_theta) / sqrt(var(ipw) / B),
+    tstat_wls = (mean(wls) - true_theta) / sqrt(var(wls) / B),
+    tstat_prop = (mean(prop) - true_theta) / sqrt(var(prop) / B),
+    tstat_semidel = (mean(semidel) - true_theta) / sqrt(var(semidel) / B),
+    tstat_conpara = (mean(conpara) - true_theta) / sqrt(var(conpara) / B),
+    tstat_conzero = (mean(conzero) - true_theta) / sqrt(var(conzero) / B),
+    tstat_conout = (mean(conout) - true_theta) / sqrt(var(conout) / B),
+    tstat_conresp = (mean(conresp) - true_theta) / sqrt(var(conresp) / B),
+    tstat_condoub = (mean(condoub) - true_theta) / sqrt(var(condoub) / B)
+  ) |>
+  tidyr::pivot_longer(cols = everything(),
+                      names_to = c(".value", "Algorithm"),
+                      names_pattern = "(.*)_(.*)") |>
+  mutate(pval = pt(-abs(tstat), df = B)) |>
+  mutate(Algorithm = case_when(
+    Algorithm == "oracle" ~ "Oracle",
+    Algorithm == "cc" ~ "CC",
+    Algorithm == "ipw" ~ "IPW",
+    Algorithm == "wls" ~ "WLS",
+    Algorithm == "prop" ~ "$\\hat \\theta_{prop}$",
+    Algorithm == "semidel" ~ "$\\hat \\theta_{\\delta}$",
+    Algorithm == "conpara" ~ "Parametric 1",
+    Algorithm == "conzero" ~ "Parametric 2",
+    Algorithm == "conout" ~ "Outcome Robust",
+    Algorithm == "conresp" ~ "Response Robust",
+    Algorithm == "condoub" ~ "Double Robust",
+    TRUE ~ "ERROR"
+  )) |>
+  knitr::kable(digits = 3)
+
+```
+
+## Simulation 2 {.unnumbered}
+
+Next, we used the same simulation setup except that we are interested in 
+estimating $\theta = E[g] = E[Y_1^2 Y_2]$. We do not use the WLS estimator 
+because it does not work.
+
+```{r}
+#| label: mcmc E[g] = Y1^2 Y2
+#| echo: false
+
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+mc_theta <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr", "CVXR")) %dorng% {
+
+    # g_fun <- "Y1^2Y2"
+    
+    # Generate Data
+    # df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+    df <- gen_unbal_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+
+    # Get Estimates
+    oracle_est <- mean(df$Y1^2 * df$Y2)
+    oraclex_est <- mean((df$Y1)^2 * (df$Y2 - df$X))
+    ipw_est <- 
+      filter(df, delta_1 == 1, delta_2 == 1) |>
+      mutate(g_f = Y1^2 * Y2) |>
+      mutate(g_est = g_f / prob_11) |>
+      pull(g_est) |>
+      sum() / nrow(df)
+    cc_est <- 
+      filter(df, delta_1 == 1, delta_2 == 1) |>
+      mutate(g_f = Y1^2 * Y2) |>
+      pull(g_f) |>
+      mean()
+    wls_est <- comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2)
+    wlstt_est <- 
+      comb_lin_est(df, gfun = "Y1^2 * Y2", cov_e1e2 = cov_e1e2, theta2 = true_theta)
+    prop_est <- prop_nmono_est(df, gfun = "Y1^2 * Y2", pow = 3)
+    propopt_est <- opt_theta_c(df, gfun = "Y1^2 * Y2", pow = 3)
+    semiopt_est <- opt_semi_est(df, gfun = "Y1^2 * Y2", pow = 3)
+    semidef_est <- opt_semi_est(df, gfun = "Y1^2 * Y2", est = "default", pow = 3)
+    semidel_est <- opt_delta_c(df, gfun = "Y1^2 * Y2", pow = 3)
+    semideldef_est <- opt_delta_c(df, gfun = "Y1^2 * Y2", est = "default", pow = 3)
+
+    conalg_para <- 
+      min_var_alg(df, gfun = "Y1^2 * Y2", mod = "para", cov_e1e2 = cov_e1e2)
+    conalg_sumzero <- 
+      min_var_alg(df, gfun = "Y1^2 * Y2", mod = "sumzero", cov_e1e2 = cov_e1e2)
+    conalg_outrob <- 
+      min_var_alg(df, gfun = "Y1^2 * Y2", mod = "out_rob", cov_e1e2 = cov_e1e2)
+    conalg_resprob <- 
+      min_var_alg(df, gfun = "Y1^2 * Y2", mod = "resp_rob", cov_e1e2 = cov_e1e2)
+    conalg_doubrob <- 
+      min_var_alg(df, gfun = "Y1^2 * Y2", mod = "double_rob", cov_e1e2 = cov_e1e2)
+
+    return(tibble(oracle = oracle_est,
+                  oraclex = oraclex_est,
+                  cc = cc_est,
+                  ipw = ipw_est,
+                  wls = wls_est,
+                  wlstt = wlstt_est,
+                  prop = prop_est,
+                  propopt = propopt_est,
+                  semiopt = semiopt_est,
+                  semidef = semidef_est,
+                  semidel = semidel_est,
+                  semideldef = semideldef_est,
+                  conpara = conalg_para$theta_est,
+                  conzero = conalg_sumzero$theta_est,
+                  conout = conalg_outrob$theta_est,
+                  conresp = conalg_resprob$theta_est,
+                  condoub = conalg_doubrob$theta_est
+    ))
+  } |> 
+  bind_rows()
+
+stopCluster(clust)
+
+
+```
+
+```{r}
+#| label: tbl-sim2
+#| echo: false
+#| tbl-cap: |
+#|    Results from Simulation 2. True values: $\theta = 10, \rho = 0.5$. 
+#|    The test conducted for the T-statistic and P-value is a two sample test 
+#|    to see if the estimator is unbiased. This simulation uses the same
+#|    setup as Simulation 1 with
+#|    $Y_1 = x + \varepsilon_1$, $Y_2 = \theta + x + \varepsilon_2$ where 
+#|    $X \sim N(0, 1)$ and $(\varepsilon_1, \varepsilon_2)$ come from a mean 
+#|    zero bivariate normal distribution with unit variance and covariance 
+#|    $\rho$. The segments are unbalanced with: $\pi_{11} = 0.2$, 
+#|    $\pi_{10} = 0.4$, $\pi_{01} = 0.1$, and $\pi_{00} = 0.3$.
+
+true_g <- 2 * true_theta
+
+mc_theta |>
+  summarize(
+    bias_oracle = mean(oracle) - true_g,
+    bias_oraclex = mean(oraclex) - true_g,
+    bias_cc = mean(cc) - true_g,
+    bias_ipw = mean(ipw) - true_g,
+    bias_wls = mean(wls) - true_g,
+    bias_wlstt = mean(wlstt) - true_g,
+    bias_prop = mean(prop) - true_g,
+    bias_propopt = mean(propopt) - true_g,
+    bias_semiopt = mean(semiopt) - true_g,
+    bias_semidef = mean(semidef) - true_g,
+    bias_semidel = mean(semidel) - true_g,
+    bias_semideldef = mean(semideldef) - true_g,
+    bias_conpara = mean(conpara) - true_g,
+    bias_conzero = mean(conzero) - true_g,
+    bias_conout = mean(conout) - true_g,
+    bias_conresp = mean(conresp) - true_g,
+    bias_condoub = mean(condoub) - true_g,
+    sd_oracle = sd(oracle),
+    sd_oraclex = sd(oraclex),
+    sd_cc = sd(cc),
+    sd_ipw = sd(ipw),
+    sd_wls = sd(wls),
+    sd_wlstt = sd(wlstt),
+    sd_prop = sd(prop),
+    sd_propopt = sd(propopt),
+    sd_semiopt = sd(semiopt),
+    sd_semidef = sd(semidef),
+    sd_semidel = sd(semidel),
+    sd_semideldef = sd(semideldef),
+    sd_conpara = sd(conpara),
+    sd_conzero = sd(conzero),
+    sd_conout = sd(conout),
+    sd_conresp = sd(conresp),
+    sd_condoub = sd(condoub),
+    tstat_oracle = (mean(oracle) - true_g) / sqrt(var(oracle) / B),
+    tstat_oraclex = (mean(oraclex) - true_g) / sqrt(var(oraclex) / B),
+    tstat_cc = (mean(cc) - true_g) / sqrt(var(cc) / B),
+    tstat_ipw = (mean(ipw) - true_g) / sqrt(var(ipw) / B),
+    tstat_wls = (mean(wls) - true_g) / sqrt(var(wls) / B),
+    tstat_wlstt = (mean(wlstt) - true_g) / sqrt(var(wlstt) / B),
+    tstat_prop = (mean(prop) - true_g) / sqrt(var(prop) / B),
+    tstat_propopt = (mean(propopt) - true_g) / sqrt(var(propopt) / B),
+    tstat_semiopt = (mean(semiopt) - true_g) / sqrt(var(semiopt) / B),
+    tstat_semidef = (mean(semidef) - true_g) / sqrt(var(semidef) / B),
+    tstat_semidel = (mean(semidel) - true_g) / sqrt(var(semidel) / B),
+    tstat_semideldef = (mean(semideldef) - true_g) / sqrt(var(semideldef) / B),
+    tstat_conpara = (mean(conpara) - true_g) / sqrt(var(conpara) / B),
+    tstat_conzero = (mean(conzero) - true_g) / sqrt(var(conzero) / B),
+    tstat_conout = (mean(conout) - true_g) / sqrt(var(conout) / B),
+    tstat_conresp = (mean(conresp) - true_g) / sqrt(var(conresp) / B),
+    tstat_condoub = (mean(condoub) - true_g) / sqrt(var(condoub) / B)
+  ) |>
+  tidyr::pivot_longer(cols = everything(),
+               names_to = c(".value", "Algorithm"),
+               names_pattern = "(.*)_(.*)") |>
+  mutate(pval = pt(-abs(tstat), df = B)) |>
+  filter(Algorithm %in% c("oracle", "cc", "ipw", "prop", "semidel", "conpara",
+           "conzero", "conout", "conresp", "condoub")) |>
+  mutate(Algorithm = case_when(
+    Algorithm == "oracle" ~ "Oracle",
+    Algorithm == "cc" ~ "CC",
+    Algorithm == "ipw" ~ "IPW",
+    Algorithm == "prop" ~ "$\\hat \\theta_{prop}$",
+    Algorithm == "semidel" ~ "$\\hat \\theta_{\\delta}$",
+    Algorithm == "conpara" ~ "Parametric 1",
+    Algorithm == "conzero" ~ "Parametric 2",
+    Algorithm == "conout" ~ "Outcome Robust",
+    Algorithm == "conresp" ~ "Response Robust",
+    Algorithm == "condoub" ~ "Double Robust",
+    TRUE ~ "ERROR"
+  )) |>
+  knitr::kable(digits = 3)
+
+```
+
+## Discussion {.unnumbered}
+
+There has been concern about why the constrained results are the same in
+@tbl-sim1. This section aims to address these concerns.
+
+```{r}
+#| label: MCMC extended Sim 1
+#| echo: false
+
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+n_obs <- 1000
+true_theta <- 5 
+cov_e1e2 <- 0.5
+
+mc_theta <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr", "CVXR", "tidyr")) %dorng% {
+
+    # Generate Data
+    # df <- gen_optsim_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+    df <- gen_unbal_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+
+    # Get Estimates
+    conalg_para <- min_var_alg(df, mod = "para", cov_e1e2 = cov_e1e2)
+    conalg_sumzero <- min_var_alg(df, mod = "sumzero", cov_e1e2 = cov_e1e2)
+    conalg_outrob <- min_var_alg(df, mod = "out_rob", cov_e1e2 = cov_e1e2)
+    conalg_resprob <- min_var_alg(df, mod = "resp_rob", cov_e1e2 = cov_e1e2)
+    conalg_doubrob <- min_var_alg(df, mod = "double_rob", cov_e1e2 = cov_e1e2)
+
+    return(
+      tibble(conpara = conalg_para$theta_est,
+             conzero = conalg_sumzero$theta_est,
+             conout = conalg_outrob$theta_est,
+             conresp = conalg_resprob$theta_est,
+             condoub = conalg_doubrob$theta_est,
+             parac = conalg_para$c_hat,
+             zeroc = conalg_sumzero$c_hat,
+             outc = conalg_outrob$c_hat,
+             respc = conalg_resprob$c_hat,
+             doubc = conalg_doubrob$c_hat,
+             iter = iter,
+             c_i = 1:9
+      ) |> 
+      group_by(conpara, conzero, conout, conresp, condoub) |> 
+      nest()
+    )
+  } |>
+  bind_rows()
+
+stopCluster(clust)
+
+```
+
+Interestingly enough, the optimization algorithm does not have a lot of
+variability in the output. The variance for each coefficient is found 
+in @tbl-estvar. Since these values are all basically zero, we can see that
+for each algorithm we are getting basically the same coefficients each
+iteration. The coefficients that we see are displayed in @tbl-estc.
+
+```{r}
+#| label: tbl-estvar
+#| echo: false
+#| tbl-cap: |
+#|    This table displays the variance of each coefficient for each estimator.
+#|    A number close to zero means that the optimization algorithm chose 
+#|    very similar values for each Monte Carlo simulation. A value of exactly 
+#|    zero indicated that the optimization algorithm chose the exact same
+#|    number.
+
+c_tab <-
+  bind_rows(mc_theta$data) |>
+  pivot_longer(cols = parac:doubc, names_to = "estimator", values_to = "c_val") |>
+  mutate(c_i = paste0("c_", c_i)) |>
+  pivot_wider(names_from = "c_i", values_from = "c_val")
+
+# Variance of each coefficient per estimator
+alg_vec <- c("Para. 1", "Para. 2", "Outcome",
+             "Response", "Double")
+names(alg_vec) <- c("parac", "zeroc", "outc", "respc", "doubc")
+
+ord_vec <- 1:5
+names(ord_vec) <- c("parac", "zeroc", "outc", "respc", "doubc")
+
+c_tab |>
+  group_by(estimator) |>
+  summarize(across(starts_with("c_"), var), .groups = "drop") |>
+  rename_with(~paste0("$", .x, "$"), starts_with("c_")) |>
+  mutate(order = ord_vec[estimator]) |>
+  mutate(estimator = alg_vec[estimator]) |>
+  rename(Estimator = estimator) |>
+  arrange(order) |>
+  select(-order) |>
+  knitr::kable(digits = 3)
+
+```
+
+```{r}
+#| label: tbl-estc
+#| echo: false
+#| tbl-cap: This table displays the estimated coefficients for each algorithm on
+#|  iteration 1. Since the variance between iterations is small, these are
+#|  reasonable for subsequent iterations.
+
+c_tab |>
+  filter(iter == 1) |>
+  rename_with(~paste0("$", .x, "$"), starts_with("c_")) |>
+  mutate(estimator = alg_vec[estimator]) |>
+  rename(Estimator = estimator) |>
+  select(-iter) |>
+  knitr::kable(digits = 3)
+
+```
+
+```{r}
+#| echo: false
+
+#' get_f_statistic is a function to compute the F-statistic between two of 
+#' the constrained models.
+#'
+#' @param c_tab - A table with values for the estimated c coefficients
+#' @param reduced_mod - A string indicating which model is the reduced model
+#' @param full_mod - A string indicating which model is the full model
+#' @param df - A data set simulated from the same data generating process that 
+#'    the c_tab coefficients were estimated from.
+#'
+#' @note We have previously shown that the variance of the estimated c_tab 
+#' variables is close to or exactly zero. Hence, conducting a new simulation 
+#' should not effect the results of the model much.
+get_f_statistic <- function(c_tab, reduced_mod, full_mod,
+                            df, theta = true_theta, cov_e1e2 = cov_e1e2) {
+
+  vars_lst <- list(reduced_mod, full_mod)
+  # SSE reduced 
+  red_cvec <-
+    c_tab |>
+    filter(iter == 1) |>
+    filter(.data[["estimator"]] == vars_lst[[1]]) |>
+    select(starts_with("c_")) |>
+    as.numeric()
+
+  # SSE full
+  full_cvec <-
+    c_tab |>
+    filter(iter == 1) |>
+    filter(.data[["estimator"]] == vars_lst[[2]]) |>
+    select(starts_with("c_")) |>
+    as.numeric()
+
+  # Constructing gam_vec
+  Eg <- theta
+  Egx <- theta + df$X 
+  Egxy1 <- theta + df$X + cov_e1e2 * (df$Y1 - df$X)
+  Egxy2 <- df$Y2
+  EEg2 <- theta^2 + 2
+  EEgx2 <- theta^2 + 1
+  EEgxy12 <- theta^2 + 1 + cov_e1e2^2
+  EEgxy22 <- theta^2 + 2
+  EEgxy1Egxy2 <- theta^2 + 1 + cov_e1e2^2
+
+  g_11 <- df$delta_00 / df$prob_00 * (Egx)
+  g_21 <- df$delta_10 / df$prob_10 * (Egx)
+  g_22 <- df$delta_10 / df$prob_10 * (Egxy1)
+  g_31 <- df$delta_01 / df$prob_01 * (Egx)
+  g_33 <- df$delta_01 / df$prob_01 * (Egxy2)
+  g_41 <- df$delta_11 / df$prob_11 * (Egx)
+  g_42 <- df$delta_11 / df$prob_11 * (Egxy1)
+  g_43 <- df$delta_11 / df$prob_11 * (Egxy2)
+  g_44 <- df$delta_11 / df$prob_11 * (df$Y2)
+
+  gam_mat <- base::cbind(g_11, g_21, g_22, g_31, g_33, g_41, g_42, g_43, g_44)
+
+  # SSE
+  sse_red <- sum((as.numeric(gam_mat %*% t(t(red_cvec))) - theta)^2)
+  sse_full <- sum((as.numeric(gam_mat %*% t(t(full_cvec))) - theta)^2)
+
+  # Error Degrees of Freedom
+  df_vec <- nrow(df) - 1 - c(9 - 1, 9 - 2, 9 - 4, 9 - 4, 9 - 8)
+  names(df_vec) <- c("parac", "zeroc", "outc", "respc", "doubc")
+
+  df_red <- df_vec[reduced_mod]
+  df_full <- df_vec[full_mod]
+
+  fstat <- ((sse_red - sse_full) / (df_red - df_full)) / (sse_full / df_full)
+
+  pval <- 1 - pf(fstat, df_red - df_full, df_full)
+  return(list(f = fstat, p = pval))
+
+}
+
+```
+
+```{r}
+#| label: tbl-fstat
+#| echo: false
+#| tbl-cap: This table computes the F-statistic and P-value for an F-test
+#|    comparing the `Full Model` with a nested model in `Reduced Model`. The
+#|    computation of the F-statistic is found in the `get_f_statistic` function.
+
+df <- gen_unbal_data(n = n_obs, theta = true_theta, cov_e1e2 = cov_e1e2)
+rf_tab <- tibble(rmod = c("zeroc", "outc",  "respc", "doubc",
+                 "outc",  "respc", "doubc", "doubc", "doubc"),
+                 fmod = c("parac", "parac", "parac", "parac",
+                 "zeroc", "zeroc", "zeroc", "outc",  "respc"))
+
+fstat_tab <-
+  purrr::pmap(rf_tab, function(rmod, fmod) {
+    get_f_statistic(c_tab, rmod, fmod, df = df, cov_e1e2 = cov_e1e2)
+  }) |>
+  bind_rows()
+
+change_tab_names <- c("Parametric 1", "Parametric 2", "Outcome Robust",
+                      "Response Robust", "Double Robust")
+names(change_tab_names) <- c("parac", "zeroc", "outc", "respc", "doubc")
+
+rf_tab |>
+  mutate(Fstat = fstat_tab$f) |>
+  mutate(fmod = change_tab_names[fmod]) |>
+  mutate(rmod = change_tab_names[rmod]) |>
+  select(fmod, rmod, Fstat) |>
+  rename(`Reduced Model` = rmod) |>
+  rename(`Full Model` = fmod) |>
+  mutate(`P-Value` = fstat_tab$p) |>
+  knitr::kable(digits = 2)
+
+
+```
+
+From the analysis in @tbl-fstat, we can see that there are significant
+differences between several of the models. Why is this different from the 
+previous analysis in @tbl-sim1? The answer comes from how we compute the
+variance versus the sum of squares of error. The variance is computed from each
+estimator created in a Monte Carlo trial; whereas the sum of squares of error is
+summed from each individuals estimate for the mean of $Y_2$. For more details
+about how the F-test is computed see Appendix A and Appendix B.
+
+{{< pagebreak >}}
+
+# Appendix A: Computing the F-Test {.appendix}
+
+To compute an F test we can use @eq-fstat.
+
+$$ F = \frac{(SSE_{Reduced} - SSE_{Full}) / (DFE_{Reduced} - DFE_{Full})}{
+SSE_{Full} / DFE_{Full}}. $$ {#eq-fstat}
+
+Let's assess what this would mean to compare models `Parametric 1` and 
+`Outcome Robust` from @tbl-mods.
+
+| Type | Constraints |
+| -----| ------------|
+| Parametric 1 | $\sum_{k, t} c_{kt} = 1$ |
+| Parametric 2 |  $\sum_{k, t: (k, t) \neq (4, 4)} c_{kt} = 0, c_{44} = 1$ |
+| Outcome Robust | $c_{11} + c_{21} + c_{31} + c_{41} = 0, c_{22} + c_{42} = 0, c_{33} + c_{43} = 0, \text{ and } c_{44} = 1.$ |
+| Response Robust | $c_{11} = \pi_{00}, c_{21} + c_{22} = \pi_{10}, c_{31} + c_{33} = \pi_{01}, \text{ and } c_{41} + c_{42} + c_{43} + c_{44} = \pi_{11}$ |
+| Double Robust | $c_{11} + c_{21} + c_{31} + c_{41} = 0, c_{22} + c_{42} = 0, c_{33} + c_{43} = 0, c_{44} = 1, c_{11} = \pi_{00}, c_{21} + c_{22} = \pi_{10}, c_{31} + c_{33} = \pi_{01}, \text{ and } c_{41} + c_{42} + c_{43} + c_{44} = \pi_{11}$ |
+: This table identifies the different constraints for each model type. {#tbl-mods}
+
+Consider the case where we run estimate each model on a data set with $n = 1000$
+observations, and define the following notation: let $\hat \theta^{(P)}$ and 
+$\hat \theta^{(OR)}$ be the estimated values of $\theta = E[Y_2]$ for the
+`Parametric 1` model and the `Outcome Robust` model respectively. Define 
+the estimated coefficients to be $\hat c_j^{(P)}$ and $\hat c_j^{(OR)}$ where 
+$j = 1, \dots 9$ for the `Parametric 1` and `Outcome Robust` models
+respectively. The one can compute the SSE with the following:
+
+$$ SSE = n^{-1} \sum_{i = 1}^n (\hat y_{2i} - \theta)^2 \text{ where }
+\hat y_{2i} = \sum_{j = 1}^9 \hat c_j \hat \gamma_j $$
+
+and $\hat \gamma_0 := \hat \gamma_{00} = \frac{\delta_{00i}}{\pi_{00}} E[Y_2
+\mid x_i]$, $\hat \gamma_1 := \hat \gamma_{11} = \frac{\delta_{10i}}{\pi_{10}} E[Y_2
+\mid x_i, y_{1i}]$, etc. Note that this is different from the previous estimate
+of the variance which used the Monte Carlo variance (standard deviation) defined
+by $$ \frac{1}{n - 1} \sum_{b = 1}^B (\hat \theta_b - \bar \theta_B)^2 $$ where
+$B$ is the number of Monte Carlo estimates and $\bar \theta_B = \frac{1}{B}
+\sum_{b = 1}^B \hat \theta_b$.
+
+Likewise, one can compute the degrees of freedom by noticing that each model has
+a degrees of freedom equal to nine minus the number of constraints. This means 
+that we can compute the model degrees of freedom and error degrees of freedom
+for each model type, which we do in @tbl-df
+
+| Model | Model Degrees of Freedom | Error Degrees of Freedom |
+| -----| ------------------------ | ------------------------ |
+| Parametric 1    | $9 - 1 = 8$ | $n - 1 - 8 = n - 9$ |
+| Parametric 2    | $9 - 1 = 8$ | $n - 1 - 8 = n - 9$ |
+| Outcome Robust  | $9 - 4 = 5$ | $n - 1 - 5 = n - 6$ |
+| Response Robust | $9 - 4 = 5$ | $n - 1 - 5 = n - 6$ |
+| Double Robust   | $9 - 8 = 1$ | $n - 1 - 1 = n - 2$ |
+: This table displays the degrees of freedom for each model {#tbl-df}
+
+So continuing our first example^[SSE values might differ in @tbl-fstat slightly
+depending on the actual data values.], if $SSE^{(P)} = 993$ and $SSE^{(OR)} =
+3428$ with $n = 1000$ then the F statistic is
+
+$$F = \frac{(3428 - 993) / (3)}{993 / (1000 - 9)} = 810.$$
+
+The critical value we want to compare this with is the $0.95$ quantile of 
+$F_{3, 993}$ which is $2.61$. So there *is* a significant difference 
+between the fit of these two model. (The p-value is basically zero.) The 
+code to do this automatically is in Appendix B.
+
+{{< pagebreak >}}
+
+# Appendix B: R Functions {.appendix}
+
+```{r}
+#| lst-label: lst-getfstat
+#| lst-cap: The R code for estimating the F statistic.
+#| echo: true
+
+#' get_f_statistic is a function to compute the F-statistic between two of 
+#' the constrained models.
+#'
+#' @param c_tab - A table with values for the estimated c coefficients
+#' @param reduced_mod - A string indicating which model is the reduced model
+#' @param full_mod - A string indicating which model is the full model
+#' @param df - A data set simulated from the same data generating process that 
+#'    the c_tab coefficients were estimated from.
+#'
+#' @note We have previously shown that the variance of the estimated c_tab 
+#' variables is close to or exactly zero. Hence, conducting a new simulation 
+#' should not effect the results of the model much.
+get_f_statistic <- 
+  function(c_tab, reduced_mod, full_mod, df, theta = true_theta, cov_e1e2) {
+
+  vars_lst <- list(reduced_mod, full_mod)
+
+  # SSE reduced 
+  red_cvec <-
+    c_tab |>
+    filter(iter == 1) |>
+    filter(.data[["estimator"]] == vars_lst[[1]]) |>
+    select(starts_with("c_")) |>
+    as.numeric()
+
+  # SSE full
+  full_cvec <-
+    c_tab |>
+    filter(iter == 1) |>
+    filter(.data[["estimator"]] == vars_lst[[2]]) |>
+    select(starts_with("c_")) |>
+    as.numeric()
+
+  # Constructing gam_vec
+  Eg <- theta
+  Egx <- theta + df$X 
+  Egxy1 <- theta + df$X + cov_e1e2 * (df$Y1 - df$X)
+  Egxy2 <- df$Y2
+  EEg2 <- theta^2 + 2
+  EEgx2 <- theta^2 + 1
+  EEgxy12 <- theta^2 + 1 + cov_e1e2^2
+  EEgxy22 <- theta^2 + 2
+  EEgxy1Egxy2 <- theta^2 + 1 + cov_e1e2^2
+
+  g_11 <- df$delta_00 / df$prob_00 * (Egx)
+  g_21 <- df$delta_10 / df$prob_10 * (Egx)
+  g_22 <- df$delta_10 / df$prob_10 * (Egxy1)
+  g_31 <- df$delta_01 / df$prob_01 * (Egx)
+  g_33 <- df$delta_01 / df$prob_01 * (Egxy2)
+  g_41 <- df$delta_11 / df$prob_11 * (Egx)
+  g_42 <- df$delta_11 / df$prob_11 * (Egxy1)
+  g_43 <- df$delta_11 / df$prob_11 * (Egxy2)
+  g_44 <- df$delta_11 / df$prob_11 * (df$Y2)
+
+  gam_mat <- base::cbind(g_11, g_21, g_22, g_31, g_33, g_41, g_42, g_43, g_44)
+
+  # SSE
+  sse_red <- sum((as.numeric(gam_mat %*% t(t(red_cvec))) - theta)^2)
+  sse_full <- sum((as.numeric(gam_mat %*% t(t(full_cvec))) - theta)^2)
+
+  # Error Degrees of Freedom
+  df_vec <- nrow(df) - 1 - c(9 - 1, 9 - 2, 9 - 4, 9 - 4, 9 - 8)
+  names(df_vec) <- c("parac", "zeroc", "outc", "respc", "doubc")
+
+  df_red <- df_vec[reduced_mod]
+  df_full <- df_vec[full_mod]
+
+  fstat <- ((sse_red - sse_full) / (df_red - df_full)) / (sse_full / df_full)
+
+  pval <- 1 - pf(fstat, df_red - df_full, df_full)
+  return(list(f = fstat, p = pval))
+
+}
+
+```
+

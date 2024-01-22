@@ -95,7 +95,39 @@ Equation~\ref{eq:class} with specific examples in Table~\ref{tab:ests}.
 
 The challenge with working with this class is the $\beta$ coefficients. These
 are functional coefficients and so it is difficult for me to understand how to 
-show that a particular class is optimal.
+show that a particular class is optimal. Dispite this difficulty, we were able 
+to show that the proposed estimator is not optimal via simulation. When this 
+estimator was compared to other estimators in Table~\ref{eq:class}, it did not 
+perform the best when the segments were unbalanced and the estimating function 
+was nonlinear. This is shown in Table~\ref{tab:unbalanced}
+
+\begin{table}[ht!]
+  \caption{True Values: $\theta = 10$, $\rho = 0.5$. This simulation assesses 
+  the bias and standard deviation (SD) of different estimators of the function 
+$\theta = E[Y_1^2 Y_2]$ where $Y_1 = x + \varepsilon_1$, $Y_2 = \beta + x + 
+\varepsilon_2$, $x \perp (\varepsilon_1, \varepsilon_2)$, and 
+$(\varepsilon_1, \varepsilon_2)$ come from a mean zero bivariate normal 
+distribution with unit variance and covariance of $\rho$. This simulation uses 
+a sample size of $N = 1000$ and $B = 3000$ Monte Carlo simulations. Each 
+observation has the following independent probabilities of landing into a 
+respective segment: $\pi_{11} = 0.2$, $\pi_{10} = 0.4$, $\pi_{01} = 0.1$, and
+$\pi_{00} = 0.3$. The columns of Tstat and P-value give the test statistic and
+p-value from a two sample test for unbiasedness.}
+  \label{tab:unbalanced}
+  \centering
+  \begin{tabular}[t]{lrrrr}
+    \toprule
+    Algorithm & Bias & SD & Tstat & P-value\\
+    \midrule
+    Oracle & 0.007 & 0.529 & 0.741 & 0.229\\
+    CC & 0.036 & 1.190 & 1.667 & 0.048\\
+    IPW & 0.029 & 1.372 & 1.170 & 0.121\\
+    $\hat \theta_{prop}$ & 0.004 & 0.694 & 0.292 & 0.385\\
+    $\hat \theta_{c}$ & 0.007 & 0.670 & 0.582 & 0.280\\
+    $\hat \theta_{\delta}$ & 0.018 & 0.675 & 1.478 & 0.070\\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \section*{Current Work}
 

@@ -26,12 +26,7 @@ source("R/opt_est.R")
 #' "parametric", "sumzero", "outcome_robust", "response_robust", or
 #' "double_robust".
 min_var_alg <- 
-  function(df,
-           gfun = "Y2",
-           mod = "para",
-           theta = NA,
-           mean_x = 0,
-           cov_e1e2 = 0) {
+  function(df, gfun = "Y2", mod = "para", theta = NA, mean_x = 0, cov_e1e2 = 0) {
 
   df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
   df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
@@ -125,58 +120,35 @@ min_var_alg <-
   # CVXR
   c_hat <- Variable(length(gam_vec))
 
-  # TODO: We can change the inequality constraints to equality constraints.
   if (mod == "para") {
-    con1 <- matrix(rep(1, length(gam_vec)), nrow = 1) %*% c_hat <= 1
-    con2 <- matrix(rep(1, length(gam_vec)), nrow = 1) %*% c_hat >= 1
-    con_list <- list(con1, con2)
+    con1 <- matrix(rep(1, length(gam_vec)), nrow = 1) %*% c_hat == 1
+    con_list <- list(con1)
   } else if (mod == "sumzero") {
-    con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat <= 1
-    con2 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat >= 1
-    con3 <- matrix(c(rep(1, length(gam_vec) - 1), 0), nrow = 1) %*% c_hat <= 0
-    con4 <- matrix(c(rep(1, length(gam_vec) - 1), 0), nrow = 1) %*% c_hat >= 0
-    con_list <- list(con1, con2, con3, con4)
+    con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat == 1
+    con2 <- matrix(c(rep(1, length(gam_vec) - 1), 0), nrow = 1) %*% c_hat == 0
+    con_list <- list(con1, con2)
   } else if (mod == "out_rob") {
-    con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat <= 1
-    con2 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat >= 1
-    con3 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat <= 0
-    con4 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat >= 0
-    con5 <- matrix(c(0, 0, 1, 0, 0, 0, 1, 0, 0), nrow = 1) %*% c_hat <= 0
-    con6 <- matrix(c(0, 0, 1, 0, 0, 0, 1, 0, 0), nrow = 1) %*% c_hat >= 0
-    con7 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat <= 0
-    con8 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat >= 0
-    con_list <- list(con1, con2, con3, con4, con5, con6, con7, con8)
+    con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat == 1
+    con2 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat == 0
+    con3 <- matrix(c(0, 0, 1, 0, 0, 0, 1, 0, 0), nrow = 1) %*% c_hat == 0
+    con4 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat == 0
+    con_list <- list(con1, con2, con3, con4)
   } else if (mod == "resp_rob") {
-    con1 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_00[1]
-    con2 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_00[1]
-    con3 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_10[1]
-    con4 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_10[1]
-    con5 <- matrix(c(0, 0, 0, 1, 1, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_01[1]
-    con6 <- matrix(c(0, 0, 0, 1, 1, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_01[1]
-    con7 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat <= df$prob_11[1]
-    con8 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat >= df$prob_11[1]
-    con_list <- list(con1, con2, con3, con4, con5, con6, con7, con8)
+    con1 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat == df$prob_00[1]
+    con2 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat == df$prob_10[1]
+    con3 <- matrix(c(0, 0, 0, 1, 1, 0, 0, 0, 0), nrow = 1) %*% c_hat == df$prob_01[1]
+    con4 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat == df$prob_11[1]
+    con_list <- list(con1, con2, con3, con4)
   } else if (mod == "double_rob") {
-    con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat <= 1
-    con2 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat >= 1
-    con3 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat <= 0
-    con4 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat >= 0
-    con5 <- matrix(c(0, 0, 1, 0, 0, 0, 1, 0, 0), nrow = 1) %*% c_hat <= 0
-    con6 <- matrix(c(0, 0, 1, 0, 0, 0, 1, 0, 0), nrow = 1) %*% c_hat >= 0
-    con7 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat <= 0
-    con8 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat >= 0
-
-    con9 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_00[1]
-    con10 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_00[1]
-    con11 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_10[1]
-    con12 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_10[1]
-    con13 <- matrix(c(0, 0, 0, 1, 1, 0, 0, 0, 0), nrow = 1) %*% c_hat <= df$prob_01[1]
-    con14 <- matrix(c(0, 0, 0, 1, 1, 0, 0, 0, 0), nrow = 1) %*% c_hat >= df$prob_01[1]
-    con15 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat <= df$prob_11[1]
-    con16 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat >= df$prob_11[1]
-
-    con_list <- list(con1, con2, con3, con4, con5, con6, con7, con8,
-                     con9, con10, con11, con12, con13, con14, con15, con16)
+    con1 <- matrix(c(rep(0, length(gam_vec) - 1), 1), nrow = 1) %*% c_hat == 1
+    con2 <- matrix(c(1, 1, 0, 1, 0, 1, 0, 0, 0), nrow = 1) %*% c_hat == 0
+    con3 <- matrix(c(0, 0, 1, 0, 0, 0, 1, 0, 0), nrow = 1) %*% c_hat == 0
+    con4 <- matrix(c(0, 0, 0, 0, 1, 0, 0, 1, 0), nrow = 1) %*% c_hat == 0
+    con5 <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat == df$prob_00[1]
+    con6 <- matrix(c(0, 1, 1, 0, 0, 0, 0, 0, 0), nrow = 1) %*% c_hat == df$prob_10[1]
+    con7 <- matrix(c(0, 0, 0, 1, 1, 0, 0, 0, 0), nrow = 1) %*% c_hat == df$prob_01[1]
+    con8 <- matrix(c(0, 0, 0, 0, 0, 1, 1, 1, 1), nrow = 1) %*% c_hat == df$prob_11[1]
+    con_list <- list(con1, con2, con3, con4, con5, con6, con7, con8)
   } else {
     stop("Other models not supported.")
   }
@@ -190,4 +162,3 @@ min_var_alg <-
   return(list(theta_est = as.numeric(gam_vec %*% c_est), c_hat = as.numeric(c_est)))
 
 } 
-
