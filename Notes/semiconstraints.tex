@@ -197,11 +197,11 @@
 
 \title{Understanding Semiparametric Constraints}
 \author{Caleb Leedy}
-\date{19 January 2024}
+\date{22 January 2024}
 
 \begin{document}
 \maketitle
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, enhanced, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, sharp corners, interior hidden, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, boxrule=0pt, frame hidden, borderline west={3pt}{0pt}{shadecolor}, breakable, enhanced, sharp corners]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-intro}{%
 \section{Introduction}\label{sec-intro}}
@@ -240,21 +240,40 @@ Segment & Quantity of Interest & Estimator & Coefficient \\
 
 This is a similar framework to understanding the class of estimators
 that we discussed in \verb|optest_update.pdf|, where we write the
-estimator as a weighted average of different expectation with functional
-coefficients.
+estimator as a weighted average of different expectations with
+functional coefficients.
 
-\[\hat \theta = \frac{\delta_{11}}{\pi_{11}}g(Z) + \beta_0(\delta, c_0)E[g(Z)
-\mid X] + \beta_1(\delta, c_1)E[g(Z) \mid X, Y_1] + \beta_2(\delta, c_2) E[g(Z)
+\[\hat \theta = \frac{\delta_{11}}{\pi_{11}}g(Z) + \beta_0(\delta)E[g(Z)
+\mid X] + \beta_1(\delta)E[g(Z) \mid X, Y_1] + \beta_2(\delta) E[g(Z)
 \mid X, Y_2].\]
+
+In this case, we assume that \(E[\beta_j(\delta)] = 0\) for
+\(j = 0, 1, 2\).
 
 However, now we write the estimator as
 
-\[\hat \theta = \sum_{k,t} c_{kt}\hat \gamma_{kt}\]
+\begin{equation}\protect\hypertarget{eq-linest}{}{\hat \theta = \sum_{k,t} c_{kt}\hat \gamma_{kt}}\label{eq-linest}\end{equation}
 
 where
 \(\hat \gamma_{kt} = \frac{\delta_{ij}}{\pi_{ij}}E[g \mid G_{ij}(X, Y_1, Y_2)]\)
 and \(ij\) corresponds to the segment \(A_{ij}\) associated with
-\(\hat \gamma_{kt}\) in Table~\ref{tbl-reftab}.
+\(\hat \gamma_{kt}\) in Table~\ref{tbl-reftab}. In general the estimator
+has the following form,
+
+\begin{align*}
+\hat \theta = n^{-1} \sum_{i = 1}^n 
+  &\left\{c_{11}\frac{\delta_{00}}{\pi_{00}} E[g \mid X]+ \right.\\
+  &c_{21}\frac{\delta_{10}}{\pi_{10}} E[g \mid X]+ 
+  c_{22}\frac{\delta_{10}}{\pi_{10}} E[g \mid X, Y_1]+ \\
+  &c_{31}\frac{\delta_{01}}{\pi_{01}} E[g \mid X]+ 
+  c_{33}\frac{\delta_{01}}{\pi_{01}} E[g \mid X, Y_2]+ \\
+  &c_{41}\frac{\delta_{11}}{\pi_{11}} E[g \mid X]+ 
+  c_{42}\frac{\delta_{11}}{\pi_{11}} E[g \mid X, Y_1]+
+  c_{43}\frac{\delta_{11}}{\pi_{11}} E[g \mid X, Y_2]+
+  \left.c_{44}\frac{\delta_{11}}{\pi_{11}} E[g \mid X, Y_1, Y_2]\right\}
+\end{align*}
+
+which we have condensed to Equation~\ref{eq-linest}.
 
 \hypertarget{sec-methods}{%
 \section{Methods}\label{sec-methods}}
@@ -325,6 +344,54 @@ Response Robust &
 Double Robust &
 \(c_{11} + c_{21} + c_{31} + c_{41} = 0, c_{22} + c_{42} = 0, c_{33} + c_{43} = 0, c_{44} = 1, c_{11} = \pi_{00}, c_{21} + c_{22} = \pi_{10}, c_{31} + c_{33} = \pi_{01}, \text{ and } c_{41} + c_{42} + c_{43} + c_{44} = \pi_{11}\) \\
 \end{longtable}
+
+We can justify the constraints for the Outcome Robust model by rewriting
+the estimator into the following form:
+
+\begin{align*}
+E_\delta[\hat \theta] &= n^{-1} \sum_{i = 1}^n E_\delta\left[
+E[g \mid X] \left(\frac{\delta_{00}}{\pi_{00}} c_{11} +
+\frac{\delta_{10}}{\pi_{10}}c_{21} \frac{\delta_{01}}{\pi_{01}}c_{31} +
+\frac{\delta_{11}}{\pi_{11}}c_{41}\right)\right. + \\ 
+&\qquad\qquad\qquad\qquad E[g \mid X, Y_1] \left(\frac{\delta_{10}}{\pi_{10}}c_{22} + 
+\frac{\delta_{11}}{\pi_{11}}c_{42}\right) +\\ 
+&\qquad\qquad\qquad\qquad E[g \mid X, Y_2] \left(\frac{\delta_{01}}{\pi_{01}}c_{33} + 
+\frac{\delta_{11}}{\pi_{11}}c_{43}\right) +\\ 
+&\qquad\qquad\qquad\qquad \left.g \frac{\delta_{11}}{\pi_{11}}c_{44}\right] \\
+&= n^{-1} \sum_{i = 1}^n \left\{E[g \mid X](c_{11} + c_{21} + c_{31} + c_{41}) +
+E[g \mid X, Y_1] (c_{22} + c_{42}) +
+E[g \mid X, Y_2] (c_{33} + c_{43}) + g c_{44}\right\}
+\end{align*}
+
+Thus, if the Outcome Robust constraints are satisfied,
+\(E_\delta[\hat \theta] = g\) when we take the expectation with respect
+to the response variable \(\delta\). These constraints make sense
+because if they are satisfied \(E[\hat \theta]\) does not depend on the
+correct specification of the models for \(E[g \mid G_r(X, Y_1, Y_2)]\).
+
+Likewise, we can justify the constraints for the Response Robust model
+by rewriting Equation~\ref{eq-linest} into the form
+
+\begin{align*}
+E_Z [\hat \theta] &= n^{-1} \sum_{i = 1}^n E_Z\left[
+\frac{\delta_{00}}{\pi_{00}}c_{11} E[g \mid X]\right. + \\
+&\qquad\qquad\qquad\qquad\frac{\delta_{10}}{\pi_{10}}\left(c_{21}E[g \mid X] + 
+  c_{22}E[g \mid X, Y_1]\right) +\\
+&\qquad\qquad\qquad\qquad\frac{\delta_{01}}{\pi_{01}}\left(c_{31}E[g \mid X] + 
+  c_{33}E[g \mid X, Y_2]\right) +\\
+&\qquad\qquad\qquad\qquad\left.\frac{\delta_{11}}{\pi_{11}}\left(c_{41}E[g \mid X] + 
+  c_{42}E[g \mid X, Y_1] + c_{43}E[g \mid X, Y_2] + c_{44}g\right)\right] \\
+& n^{-1} \sum_{i = 1}^n \left(\frac{\delta_{00}}{\pi_{00}}c_{11} + 
+\frac{\delta_{10}}{\pi_{10}}(c_{21} + c_{22}) + 
+\frac{\delta_{01}}{\pi_{01}}(c_{31} + c_{33}) + 
+\frac{\delta_{11}}{\pi_{11}}(c_{41} + c_{42} + c_{43} + c_{44})\right)g
+\end{align*}
+
+Thus, if the Response Robust constraints are satisfied,
+\(E_X[\hat \theta] = g\) when we take the expectation with respect to
+the outcome variable \(Z = (X, Y_1, Y_2)'\). These constraints make
+sense because when they are satisfied \(E[\hat \theta]\) does not depend
+on the correct response probabilities \(\pi = E[\delta]\).
 
 \hypertarget{sec-simulations}{%
 \section{Simulation Study}\label{sec-simulations}}
@@ -733,14 +800,14 @@ Full Model & Reduced Model & Fstat & P-Value \\
 \bottomrule\noalign{}
 \endlastfoot
 Parametric 1 & Parametric 2 & 0.00 & 1 \\
-Parametric 1 & Outcome Robust & 1190.30 & 0 \\
+Parametric 1 & Outcome Robust & 799.85 & 0 \\
 Parametric 1 & Response Robust & 0.00 & 1 \\
-Parametric 1 & Double Robust & 510.13 & 0 \\
-Parametric 2 & Outcome Robust & 1787.26 & 0 \\
+Parametric 1 & Double Robust & 342.79 & 0 \\
+Parametric 2 & Outcome Robust & 1200.99 & 0 \\
 Parametric 2 & Response Robust & 0.00 & 1 \\
-Parametric 2 & Double Robust & 595.75 & 0 \\
+Parametric 2 & Double Robust & 400.33 & 0 \\
 Outcome Robust & Double Robust & 0.00 & 1 \\
-Response Robust & Double Robust & 895.43 & 0 \\
+Response Robust & Double Robust & 601.70 & 0 \\
 \end{longtable}
 
 From the analysis in Table~\ref{tbl-fstat}, we can see that there are
