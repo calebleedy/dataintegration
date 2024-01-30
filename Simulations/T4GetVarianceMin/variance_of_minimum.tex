@@ -1,0 +1,357 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+
+\usepackage{bm}
+\usepackage{ragged2e}
+
+\newcommand{\bf}{\mathbf}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Cov}{\text{Cov}}
+\renewcommand{\arraystretch}{1.2}
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\makeatother
+\makeatletter
+\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Non-Monotone Missingness: The Minimal Variance of the Linear Estimate},
+  pdfauthor={Caleb Leedy},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Non-Monotone Missingness: The Minimal Variance of the Linear
+Estimate}
+\author{Caleb Leedy}
+\date{24 January 2024}
+
+\begin{document}
+\maketitle
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[sharp corners, breakable, interior hidden, enhanced, borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt, frame hidden]}{\end{tcolorbox}}\fi
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+The goal of this project is to get an optimal (or near optimal)
+estimator of a general estimator when the data has a non-monotone
+missing structure. So far we have reduced the problem to estimating the
+following:
+
+\begin{equation}\protect\hypertarget{eq-estclass}{}{
+\hat \theta = \frac{\delta_{11}}{\pi_{11}} g(Z) + 
+\lambda_0(\delta) \alpha_0(X) +
+\lambda_1(\delta) \alpha_1(X, Y_1) +
+\lambda_2(\delta) \alpha_2(X, Y_2).
+}\label{eq-estclass}\end{equation}
+
+For notation we have variables \(Z = (X, Y_1, Y_2)\) that are observed
+in the segment noted in Table~\ref{tbl-segments}.
+
+\hypertarget{tbl-segments}{}
+\begin{longtable}[]{@{}ll@{}}
+\caption{\label{tbl-segments}This table matches the segment with its
+associated observed variables.}\tabularnewline
+\toprule\noalign{}
+Segment & Variables \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Segment & Variables \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(A_{00}\) & \(X\) \\
+\(A_{10}\) & \(X, Y_1\) \\
+\(A_{01}\) & \(X, Y_2\) \\
+\(A_{11}\) & \(X, Y_1, Y_2\) \\
+\end{longtable}
+
+For each segment \(A_{d_1 d_2}\) the probability of an observation being
+in a specific segment is known to be \(\pi_{d_1 d_2}\), and the
+associated random variable that indicates whether observation \(i\) is
+in \(A_{d_1 d_2}\) is \(\delta_{d_1 d_2 i}\). For brevity, it will
+sometimes be convienent to drop the subscript \(i\). To get an optimal
+estimator, we need to choose values of \(\lambda\) and \(\alpha\) to
+minimize the variance of \(\hat \theta\).
+
+\hypertarget{simplifications}{%
+\section{Simplifications}\label{simplifications}}
+
+To simplify this model consider the case in which each \(\lambda\)
+\emph{and} \(\alpha\) are linear functions. This means that we have the
+following:
+\(\lambda_0 = \lambda_0^{(0)} + \lambda_1^{(0)}\delta_{00} + \lambda_2^{(0)} \delta_{10} + \lambda_3^{(0)} \delta_{01} + \lambda_4^{(0)}\delta_{11}\),
+\(\lambda_1 = \lambda_0^{(1)} + \lambda_2^{(1)} \delta_{10} + \lambda_4^{(1)}\delta_{11}\),
+and
+\(\lambda_2 = \lambda_0^{(2)} + \lambda_3^{(2)} \delta_{01} + \lambda_4^{(2)}\delta_{11}\).
+Also, \(\alpha_0 = \alpha_0^{(0)} + \alpha_1^{(0)} x\),
+\(\alpha_1 = \alpha_0^{(1)} + \alpha_1^{(1)} x + \alpha_2^{(1)} y_1\),
+and
+\(\alpha_2 = \alpha_0^{(2)} + \alpha_1^{(1)} x + \alpha_3^{(1)} y_2\).
+This means that we can express the estimator in
+Equation~\ref{eq-estclass} as the following matrix equation:
+
+\[
+\hat \theta = n^{-1} \bf{1}_n' \left(\frac{\delta_{11}}{\pi_{11}} g(Z) + 
+(\pmb{\alpha} \pmb{\lambda}' \pmb{\delta})' \bf Z\right).
+\]
+
+where
+
+\[
+\pmb{\alpha} = 
+\begin{bmatrix}
+\alpha_0^{(0)} & \alpha_0^{(1)} & \alpha_0^{(2)} \\
+\alpha_1^{(0)} & \alpha_1^{(1)} & \alpha_1^{(2)} \\
+0 & \alpha_2^{(1)} & 0 \\
+0 & 0 & \alpha_3^{(2)} \\
+\end{bmatrix},
+\pmb{\lambda} = 
+\begin{bmatrix}
+\lambda_0^{(0)} & \lambda_0^{(1)} & \lambda_0^{(2)} \\
+\lambda_1^{(0)} & 0 & 0 \\
+\lambda_2^{(0)} & \lambda_2^{(1)} & 0 \\
+\lambda_3^{(0)} & 0 & \lambda_3^{(2)} \\
+\lambda_4^{(0)} & \lambda_4^{(1)} & \lambda_4^{(2)} \\
+\end{bmatrix},
+\pmb{\delta}= 
+\begin{bmatrix}
+1 \\ \delta_{00} \\ \delta_{10} \\ \delta_{01} \\ \delta_{11}
+\end{bmatrix}
+\bf{Z}_i = 
+\begin{bmatrix}
+1 \\ X_i \\ Y_{1i} \\ Y_{2i}
+\end{bmatrix}
+\]
+
+This is a linear estimator and the goal is to find the optimal
+\(\pmb{\alpha}\) and \(\pmb{\lambda}\) that,
+
+\[ \text{minimize } \Var(\hat \theta) \text{ such that } 
+\pmb{\lambda}' E[\pmb{\delta}] = 0.\]
+
+\hypertarget{simpliying-the-variance}{%
+\section{Simpliying the Variance}\label{simpliying-the-variance}}
+
+We know that
+
+\begin{align*}
+\Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z)) + 
+  (\pmb \alpha \pmb \lambda' \pmb \delta)' \bf Z\right) 
+&= \Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z)\right) +
+  \Var((\pmb \alpha \pmb \lambda' \pmb \delta)'\bf Z) +
+  2 \Cov\left(\frac{\delta_{11}}{\pi_{11}}g(Z), 
+  (\pmb \alpha \pmb \lambda' \pmb \delta)' \bf Z\right)\\
+&:= V_1 + V_2 + V_3
+\end{align*}
+
+Hence, we have for \(\Pi := E[\delta]\),
+
+\begin{align*}
+V_1 &= \Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z)\right) \\ 
+&= \Var\left(E\left[\frac{\delta_{11}}{\pi_{11}}g(Z) \mid Z\right]\right)
++ E\left[\Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z) \mid Z\right)\right]\\
+  &= E[g^2(Z)] - E[g(Z)]^2 + \frac{1}{\pi_{11}}E[g^2(Z)] - E[g^2(Z)] \\ 
+  &= \frac{1}{\pi_{11}} E[g^2(Z)] - E[g(Z)]^2
+\end{align*}
+
+\begin{align*}
+V_2 &= \Var((\alpha \lambda' \delta)'Z) \\ 
+&= \Var(E[(\alpha \lambda' \delta)'Z \mid Z]) + 
+E[\Var((\alpha \lambda' \delta)'Z \mid Z)] \\ 
+&= \Pi' \lambda \alpha'  \Var(Z) \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' \Var(\delta)\lambda \alpha' Z]\\
+&= \Pi' \lambda \alpha'  (E[ZZ'] - E[Z]E[Z']) \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' (E[\delta \delta'] - \Pi\Pi')\lambda \alpha' Z]\\
+&= \Pi' \lambda \alpha'  E[ZZ'] \alpha \lambda' \Pi -
+\Pi' \lambda \alpha' E[Z]E[Z'] \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] - 
+E[Z'\alpha \lambda' \Pi\Pi'\lambda \alpha' Z]\\
+&= \Pi' \lambda \alpha'  E[ZZ'] \alpha \lambda' \Pi -
+\Pi' \lambda \alpha' E[Z]E[Z'] \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] - 
+\Pi' \lambda \alpha' E[ZZ'] \alpha \lambda' \Pi \\
+&= \Pi' \lambda \alpha' E[Z]E[Z'] \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] \\
+&= E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] \\
+\end{align*}
+
+The third to last equality holds because a \(1 \times 1\) matrix is
+always symmetric and the last equality holds because
+\(\Pi' \lambda = (\lambda' \Pi)' = 0'\). We can expand this expression
+but we get the horribly ugly result:
+
+\begin{RaggedRight}
+
+$X^{2} \left(\alpha_1^{(0)}\right)^{2} \left(\lambda_0^{(0)}\right)^{2} + 2 X^{2} \left(\alpha_1^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_1^{(0)} \pi_{00} + 2 X^{2} \left(\alpha_1^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_2^{(0)} \pi_{10} + 2 X^{2} \left(\alpha_1^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_3^{(0)} \pi_{01} + 2 X^{2} \left(\alpha_1^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_4^{(0)} \pi_{11} + X^{2} \left(\alpha_1^{(0)}\right)^{2} \left(\lambda_1^{(0)}\right)^{2} \pi_{00} + X^{2} \left(\alpha_1^{(0)}\right)^{2} \left(\lambda_2^{(0)}\right)^{2} \pi_{10} + X^{2} \left(\alpha_1^{(0)}\right)^{2} \left(\lambda_3^{(0)}\right)^{2} \pi_{01} + X^{2} \left(\alpha_1^{(0)}\right)^{2} \left(\lambda_4^{(0)}\right)^{2} \pi_{11} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} \pi_{10} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(0)} \lambda_4^{(1)} \pi_{11} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_1^{(0)} \pi_{00} + 4 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_2^{(0)} \pi_{10} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_3^{(0)} \pi_{01} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_4^{(0)} \pi_{11} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(1)} \lambda_4^{(0)} \lambda_4^{(1)} \pi_{11} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(0)} \lambda_0^{(2)} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_1^{(0)} \pi_{00} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_2^{(0)} \pi_{10} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_3^{(0)} \pi_{01} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_4^{(0)} \pi_{11} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_3^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X^{2} \alpha_1^{(0)} \alpha_1^{(2)} \lambda_4^{(0)} \lambda_4^{(2)} \pi_{11} + 3 X^{2} \left(\alpha_1^{(1)}\right)^{2} \left(\lambda_0^{(1)}\right)^{2} \pi_{10} + X^{2} \left(\alpha_1^{(1)}\right)^{2} \left(\lambda_0^{(1)}\right)^{2} + 2 X^{2} \left(\alpha_1^{(1)}\right)^{2} \lambda_0^{(1)} \lambda_4^{(1)} \pi_{11} + X^{2} \left(\alpha_1^{(1)}\right)^{2} \left(\lambda_4^{(1)}\right)^{2} \pi_{11} + 2 X^{2} \alpha_1^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 X^{2} \alpha_1^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 X^{2} \alpha_1^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 X^{2} \alpha_1^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X^{2} \alpha_1^{(1)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 X^{2} \alpha_1^{(1)} \alpha_1^{(2)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + X^{2} \left(\alpha_1^{(2)}\right)^{2} \left(\lambda_0^{(2)}\right)^{2} + 2 X^{2} \left(\alpha_1^{(2)}\right)^{2} \lambda_0^{(2)} \lambda_3^{(2)} \pi_{01} + 2 X^{2} \left(\alpha_1^{(2)}\right)^{2} \lambda_0^{(2)} \lambda_4^{(2)} \pi_{11} + X^{2} \left(\alpha_1^{(2)}\right)^{2} \left(\lambda_3^{(2)}\right)^{2} \pi_{01} + X^{2} \left(\alpha_1^{(2)}\right)^{2} \left(\lambda_4^{(2)}\right)^{2} \pi_{11} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} \pi_{10} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(0)} \lambda_4^{(1)} \pi_{11} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_1^{(0)} \pi_{00} + 4 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_2^{(0)} \pi_{10} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_3^{(0)} \pi_{01} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_4^{(0)} \pi_{11} + 2 X Y_{1} \alpha_1^{(0)} \alpha_2^{(1)} \lambda_4^{(0)} \lambda_4^{(1)} \pi_{11} + 6 X Y_{1} \alpha_1^{(1)} \alpha_2^{(1)} \left(\lambda_0^{(1)}\right)^{2} \pi_{10} + 2 X Y_{1} \alpha_1^{(1)} \alpha_2^{(1)} \left(\lambda_0^{(1)}\right)^{2} + 4 X Y_{1} \alpha_1^{(1)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_4^{(1)} \pi_{11} + 2 X Y_{1} \alpha_1^{(1)} \alpha_2^{(1)} \left(\lambda_4^{(1)}\right)^{2} \pi_{11} + 2 X Y_{1} \alpha_1^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 X Y_{1} \alpha_1^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 X Y_{1} \alpha_1^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 X Y_{1} \alpha_1^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{1} \alpha_1^{(2)} \alpha_2^{(1)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 X Y_{1} \alpha_1^{(2)} \alpha_2^{(1)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(0)} \lambda_0^{(2)} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_1^{(0)} \pi_{00} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_2^{(0)} \pi_{10} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_3^{(0)} \pi_{01} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(0)} \pi_{11} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_3^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X Y_{2} \alpha_1^{(0)} \alpha_3^{(2)} \lambda_4^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{2} \alpha_1^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 X Y_{2} \alpha_1^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 X Y_{2} \alpha_1^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 X Y_{2} \alpha_1^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{2} \alpha_1^{(1)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 X Y_{2} \alpha_1^{(1)} \alpha_3^{(2)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{2} \alpha_1^{(2)} \alpha_3^{(2)} \left(\lambda_0^{(2)}\right)^{2} + 4 X Y_{2} \alpha_1^{(2)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_3^{(2)} \pi_{01} + 4 X Y_{2} \alpha_1^{(2)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(2)} \pi_{11} + 2 X Y_{2} \alpha_1^{(2)} \alpha_3^{(2)} \left(\lambda_3^{(2)}\right)^{2} \pi_{01} + 2 X Y_{2} \alpha_1^{(2)} \alpha_3^{(2)} \left(\lambda_4^{(2)}\right)^{2} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(0)} \left(\lambda_0^{(0)}\right)^{2} + 4 X \alpha_0^{(0)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_1^{(0)} \pi_{00} + 4 X \alpha_0^{(0)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_2^{(0)} \pi_{10} + 4 X \alpha_0^{(0)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_3^{(0)} \pi_{01} + 4 X \alpha_0^{(0)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_4^{(0)} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(0)} \left(\lambda_1^{(0)}\right)^{2} \pi_{00} + 2 X \alpha_0^{(0)} \alpha_1^{(0)} \left(\lambda_2^{(0)}\right)^{2} \pi_{10} + 2 X \alpha_0^{(0)} \alpha_1^{(0)} \left(\lambda_3^{(0)}\right)^{2} \pi_{01} + 2 X \alpha_0^{(0)} \alpha_1^{(0)} \left(\lambda_4^{(0)}\right)^{2} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} \pi_{10} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(0)} \lambda_4^{(1)} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_1^{(0)} \pi_{00} + 4 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_2^{(0)} \pi_{10} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_3^{(0)} \pi_{01} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_4^{(0)} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(1)} \lambda_4^{(0)} \lambda_4^{(1)} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(0)} \lambda_0^{(2)} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_1^{(0)} \pi_{00} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_2^{(0)} \pi_{10} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_3^{(0)} \pi_{01} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_4^{(0)} \pi_{11} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_3^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X \alpha_0^{(0)} \alpha_1^{(2)} \lambda_4^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_0^{(1)} \pi_{10} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_0^{(1)} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_4^{(1)} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(1)} \lambda_1^{(0)} \pi_{00} + 4 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(1)} \lambda_2^{(0)} \pi_{10} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(1)} \lambda_3^{(0)} \pi_{01} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_0^{(1)} \lambda_4^{(0)} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(0)} \lambda_4^{(0)} \lambda_4^{(1)} \pi_{11} + 6 X \alpha_0^{(1)} \alpha_1^{(1)} \left(\lambda_0^{(1)}\right)^{2} \pi_{10} + 2 X \alpha_0^{(1)} \alpha_1^{(1)} \left(\lambda_0^{(1)}\right)^{2} + 4 X \alpha_0^{(1)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_4^{(1)} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(1)} \left(\lambda_4^{(1)}\right)^{2} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 X \alpha_0^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 X \alpha_0^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 X \alpha_0^{(1)} \alpha_1^{(2)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 X \alpha_0^{(1)} \alpha_1^{(2)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_0^{(2)} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(2)} \lambda_1^{(0)} \pi_{00} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(2)} \lambda_2^{(0)} \pi_{10} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(2)} \lambda_3^{(0)} \pi_{01} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_0^{(2)} \lambda_4^{(0)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_3^{(0)} \lambda_3^{(2)} \pi_{01} + 2 X \alpha_0^{(2)} \alpha_1^{(0)} \lambda_4^{(0)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 X \alpha_0^{(2)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 X \alpha_0^{(2)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 X \alpha_0^{(2)} \alpha_1^{(1)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(1)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(1)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(2)} \left(\lambda_0^{(2)}\right)^{2} + 4 X \alpha_0^{(2)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_3^{(2)} \pi_{01} + 4 X \alpha_0^{(2)} \alpha_1^{(2)} \lambda_0^{(2)} \lambda_4^{(2)} \pi_{11} + 2 X \alpha_0^{(2)} \alpha_1^{(2)} \left(\lambda_3^{(2)}\right)^{2} \pi_{01} + 2 X \alpha_0^{(2)} \alpha_1^{(2)} \left(\lambda_4^{(2)}\right)^{2} \pi_{11} + 3 Y_{1}^{2} \left(\alpha_2^{(1)}\right)^{2} \left(\lambda_0^{(1)}\right)^{2} \pi_{10} + Y_{1}^{2} \left(\alpha_2^{(1)}\right)^{2} \left(\lambda_0^{(1)}\right)^{2} + 2 Y_{1}^{2} \left(\alpha_2^{(1)}\right)^{2} \lambda_0^{(1)} \lambda_4^{(1)} \pi_{11} + Y_{1}^{2} \left(\alpha_2^{(1)}\right)^{2} \left(\lambda_4^{(1)}\right)^{2} \pi_{11} + 2 Y_{1} Y_{2} \alpha_2^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 Y_{1} Y_{2} \alpha_2^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 Y_{1} Y_{2} \alpha_2^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 Y_{1} Y_{2} \alpha_2^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 Y_{1} Y_{2} \alpha_2^{(1)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 Y_{1} Y_{2} \alpha_2^{(1)} \alpha_3^{(2)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} \pi_{10} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(0)} \lambda_4^{(1)} \pi_{11} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_1^{(0)} \pi_{00} + 4 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_2^{(0)} \pi_{10} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_3^{(0)} \pi_{01} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_4^{(0)} \pi_{11} + 2 Y_{1} \alpha_0^{(0)} \alpha_2^{(1)} \lambda_4^{(0)} \lambda_4^{(1)} \pi_{11} + 6 Y_{1} \alpha_0^{(1)} \alpha_2^{(1)} \left(\lambda_0^{(1)}\right)^{2} \pi_{10} + 2 Y_{1} \alpha_0^{(1)} \alpha_2^{(1)} \left(\lambda_0^{(1)}\right)^{2} + 4 Y_{1} \alpha_0^{(1)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_4^{(1)} \pi_{11} + 2 Y_{1} \alpha_0^{(1)} \alpha_2^{(1)} \left(\lambda_4^{(1)}\right)^{2} \pi_{11} + 2 Y_{1} \alpha_0^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 Y_{1} \alpha_0^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 Y_{1} \alpha_0^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 Y_{1} \alpha_0^{(2)} \alpha_2^{(1)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 Y_{1} \alpha_0^{(2)} \alpha_2^{(1)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 Y_{1} \alpha_0^{(2)} \alpha_2^{(1)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + Y_{2}^{2} \left(\alpha_3^{(2)}\right)^{2} \left(\lambda_0^{(2)}\right)^{2} + 2 Y_{2}^{2} \left(\alpha_3^{(2)}\right)^{2} \lambda_0^{(2)} \lambda_3^{(2)} \pi_{01} + 2 Y_{2}^{2} \left(\alpha_3^{(2)}\right)^{2} \lambda_0^{(2)} \lambda_4^{(2)} \pi_{11} + Y_{2}^{2} \left(\alpha_3^{(2)}\right)^{2} \left(\lambda_3^{(2)}\right)^{2} \pi_{01} + Y_{2}^{2} \left(\alpha_3^{(2)}\right)^{2} \left(\lambda_4^{(2)}\right)^{2} \pi_{11} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(0)} \lambda_0^{(2)} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(0)} \lambda_3^{(2)} \pi_{01} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(0)} \lambda_4^{(2)} \pi_{11} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_1^{(0)} \pi_{00} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_2^{(0)} \pi_{10} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_3^{(0)} \pi_{01} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(0)} \pi_{11} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_3^{(0)} \lambda_3^{(2)} \pi_{01} + 2 Y_{2} \alpha_0^{(0)} \alpha_3^{(2)} \lambda_4^{(0)} \lambda_4^{(2)} \pi_{11} + 2 Y_{2} \alpha_0^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 Y_{2} \alpha_0^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 Y_{2} \alpha_0^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 Y_{2} \alpha_0^{(1)} \alpha_3^{(2)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 Y_{2} \alpha_0^{(1)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 Y_{2} \alpha_0^{(1)} \alpha_3^{(2)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + 2 Y_{2} \alpha_0^{(2)} \alpha_3^{(2)} \left(\lambda_0^{(2)}\right)^{2} + 4 Y_{2} \alpha_0^{(2)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_3^{(2)} \pi_{01} + 4 Y_{2} \alpha_0^{(2)} \alpha_3^{(2)} \lambda_0^{(2)} \lambda_4^{(2)} \pi_{11} + 2 Y_{2} \alpha_0^{(2)} \alpha_3^{(2)} \left(\lambda_3^{(2)}\right)^{2} \pi_{01} + 2 Y_{2} \alpha_0^{(2)} \alpha_3^{(2)} \left(\lambda_4^{(2)}\right)^{2} \pi_{11} + \left(\alpha_0^{(0)}\right)^{2} \left(\lambda_0^{(0)}\right)^{2} + 2 \left(\alpha_0^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_1^{(0)} \pi_{00} + 2 \left(\alpha_0^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_2^{(0)} \pi_{10} + 2 \left(\alpha_0^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_3^{(0)} \pi_{01} + 2 \left(\alpha_0^{(0)}\right)^{2} \lambda_0^{(0)} \lambda_4^{(0)} \pi_{11} + \left(\alpha_0^{(0)}\right)^{2} \left(\lambda_1^{(0)}\right)^{2} \pi_{00} + \left(\alpha_0^{(0)}\right)^{2} \left(\lambda_2^{(0)}\right)^{2} \pi_{10} + \left(\alpha_0^{(0)}\right)^{2} \left(\lambda_3^{(0)}\right)^{2} \pi_{01} + \left(\alpha_0^{(0)}\right)^{2} \left(\lambda_4^{(0)}\right)^{2} \pi_{11} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} \pi_{10} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(0)} \lambda_0^{(1)} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(0)} \lambda_4^{(1)} \pi_{11} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(1)} \lambda_1^{(0)} \pi_{00} + 4 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(1)} \lambda_2^{(0)} \pi_{10} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(1)} \lambda_3^{(0)} \pi_{01} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_0^{(1)} \lambda_4^{(0)} \pi_{11} + 2 \alpha_0^{(0)} \alpha_0^{(1)} \lambda_4^{(0)} \lambda_4^{(1)} \pi_{11} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(0)} \lambda_0^{(2)} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(0)} \lambda_3^{(2)} \pi_{01} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(0)} \lambda_4^{(2)} \pi_{11} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(2)} \lambda_1^{(0)} \pi_{00} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(2)} \lambda_2^{(0)} \pi_{10} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(2)} \lambda_3^{(0)} \pi_{01} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_0^{(2)} \lambda_4^{(0)} \pi_{11} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_3^{(0)} \lambda_3^{(2)} \pi_{01} + 2 \alpha_0^{(0)} \alpha_0^{(2)} \lambda_4^{(0)} \lambda_4^{(2)} \pi_{11} + 3 \left(\alpha_0^{(1)}\right)^{2} \left(\lambda_0^{(1)}\right)^{2} \pi_{10} + \left(\alpha_0^{(1)}\right)^{2} \left(\lambda_0^{(1)}\right)^{2} + 2 \left(\alpha_0^{(1)}\right)^{2} \lambda_0^{(1)} \lambda_4^{(1)} \pi_{11} + \left(\alpha_0^{(1)}\right)^{2} \left(\lambda_4^{(1)}\right)^{2} \pi_{11} + 2 \alpha_0^{(1)} \alpha_0^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} \pi_{10} + 2 \alpha_0^{(1)} \alpha_0^{(2)} \lambda_0^{(1)} \lambda_0^{(2)} + 2 \alpha_0^{(1)} \alpha_0^{(2)} \lambda_0^{(1)} \lambda_3^{(2)} \pi_{01} + 2 \alpha_0^{(1)} \alpha_0^{(2)} \lambda_0^{(1)} \lambda_4^{(2)} \pi_{11} + 2 \alpha_0^{(1)} \alpha_0^{(2)} \lambda_0^{(2)} \lambda_4^{(1)} \pi_{11} + 2 \alpha_0^{(1)} \alpha_0^{(2)} \lambda_4^{(1)} \lambda_4^{(2)} \pi_{11} + \left(\alpha_0^{(2)}\right)^{2} \left(\lambda_0^{(2)}\right)^{2} + 2 \left(\alpha_0^{(2)}\right)^{2} \lambda_0^{(2)} \lambda_3^{(2)} \pi_{01} + 2 \left(\alpha_0^{(2)}\right)^{2} \lambda_0^{(2)} \lambda_4^{(2)} \pi_{11} + \left(\alpha_0^{(2)}\right)^{2} \left(\lambda_3^{(2)}\right)^{2} \pi_{01} + \left(\alpha_0^{(2)}\right)^{2} \left(\lambda_4^{(2)}\right)^{2} \pi_{11}$
+
+
+\end{RaggedRight}
+
+Finally, to understand \(V_3\) we can solve for the third covariance
+term.
+
+\begin{align*}
+\Cov&\left(\frac{\delta_{11}}{\pi_{11}}g(Z), (\alpha \lambda' \delta)' Z\right)\\
+&= E\left[\frac{\delta_{11}}{\pi_{11}}g(Z)(\alpha \lambda' \delta)' Z\right] - 
+E\left[\frac{\delta_{11}}{\pi_{11}} g(Z)\right] E[(\alpha \lambda' \delta)'Z]\\
+&= E\left[g(Z)\frac{\delta_{11}}{\pi_{11}}\delta' \lambda \alpha' Z\right] - 
+E[g(Z)] (\alpha \lambda' \Pi)' E[Z]\\
+&= E[g(Z) \begin{bmatrix}1 & 0 & 0 & 0 & 1\end{bmatrix} \lambda \alpha' Z] \\
+&= (\lambda_0^{(0)} + \lambda_4^{(0)})(\alpha_0^{(0)} + \alpha_1^{(0)}E[g(Z)x])
++ (\lambda_0^{(1)} + \lambda_4^{(1)})(\alpha_0^{(1)} + \alpha_1^{(1)}E[g(Z)x] +
+\alpha_2^{(1)}E[g(Z)y_1]) \\
+&\qquad \qquad+ (\lambda_0^{(2)} + \lambda_4^{(2)})(\alpha_0^{(2)} +
+\alpha_1^{(2)}E[g(Z)x] + \alpha_3^{(2)}E[g(Z)y_2])
+\end{align*}
+
+Since we have an understanding of \(\Var(\hat \theta)\), we can find the
+minimum by differentiating with respect to each coefficient in
+\(\lambda\) and \(\alpha\).
+
+This is still a work in progress. I need to run a simulation and test it
+out. I also believe that the terms \(\alpha_0^{(0)}\),
+\(\alpha_0^{(1)}\), and \(\alpha_0^{(2)}\) hinder identifiability. But I
+will work on it.
+
+
+
+\end{document}

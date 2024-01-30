@@ -1,0 +1,293 @@
+---
+title: "Non-Monotone Missingness: The Minimal Variance of the Linear Estimate"
+author: "Caleb Leedy"
+date: today
+date-format: "D MMMM YYYY"
+format: 
+  pdf:
+    keep-tex: true
+    include-in-header: latex_header.tex
+---
+
+# Introduction
+
+The goal of this project is to get an optimal (or near optimal) estimator of a
+general estimator when the data has a non-monotone missing structure. So far we
+have reduced the problem to estimating the following:
+
+$$
+\hat \theta = \frac{\delta_{11}}{\pi_{11}} g(Z) + 
+\lambda_0(\delta) \alpha_0(X) +
+\lambda_1(\delta) \alpha_1(X, Y_1) +
+\lambda_2(\delta) \alpha_2(X, Y_2).
+$$ {#eq-estclass}
+
+For notation we have variables $Z = (X, Y_1, Y_2)$ that are observed in the
+segment noted in @tbl-segments.
+
+| Segment | Variables | 
+| ------- | ----------|
+| $A_{00}$| $X$       |
+| $A_{10}$| $X, Y_1$  |
+| $A_{01}$| $X, Y_2$  |
+| $A_{11}$| $X, Y_1, Y_2$ |
+: This table matches the segment with its associated observed variables. {#tbl-segments}
+
+For each segment $A_{d_1 d_2}$ the probability of an observation being in a specific
+segment is known to be $\pi_{d_1 d_2}$, and the associated random variable that
+indicates whether observation $i$ is in $A_{d_1 d_2}$ is $\delta_{d_1 d_2 i}$.
+For brevity, it will sometimes be convienent to drop the subscript $i$. To get
+an optimal estimator, we need to choose values of $\lambda$ and $\alpha$ to
+minimize the variance of $\hat \theta$.
+
+# Simplifications
+
+To simplify this model consider the case in which each $\lambda$ *and* $\alpha$
+are linear functions. This means that we have the following: 
+$\lambda_0 = \lambda_0^{(0)} + \lambda_1^{(0)}\delta_{00} + \lambda_2^{(0)}
+\delta_{10} + \lambda_3^{(0)} \delta_{01} + \lambda_4^{(0)}\delta_{11}$,
+$\lambda_1 = \lambda_0^{(1)} + \lambda_2^{(1)} \delta_{10} +
+\lambda_4^{(1)}\delta_{11}$, and 
+$\lambda_2 = \lambda_0^{(2)} + \lambda_3^{(2)} \delta_{01} +
+\lambda_4^{(2)}\delta_{11}$. Also, 
+$\alpha_0 = \alpha_0^{(0)} + \alpha_1^{(0)} x$, 
+$\alpha_1 = \alpha_0^{(1)} + \alpha_1^{(1)} x + \alpha_2^{(1)} y_1$, and
+$\alpha_2 = \alpha_0^{(2)} + \alpha_1^{(1)} x + \alpha_3^{(1)} y_2$. This means
+that we can express the estimator in @eq-estclass as the following matrix
+equation:
+
+$$
+\hat \theta = n^{-1} \bf{1}_n' \left(\frac{\delta_{11}}{\pi_{11}} g(Z) + 
+(\pmb{\alpha} \pmb{\lambda}' \pmb{\delta})' \bf Z\right).
+$$
+
+where 
+
+$$
+\pmb{\alpha} = 
+\begin{bmatrix}
+\alpha_0^{(0)} & \alpha_0^{(1)} & \alpha_0^{(2)} \\
+\alpha_1^{(0)} & \alpha_1^{(1)} & \alpha_1^{(2)} \\
+0 & \alpha_2^{(1)} & 0 \\
+0 & 0 & \alpha_3^{(2)} \\
+\end{bmatrix},
+\pmb{\lambda} = 
+\begin{bmatrix}
+\lambda_0^{(0)} & \lambda_0^{(1)} & \lambda_0^{(2)} \\
+\lambda_1^{(0)} & 0 & 0 \\
+\lambda_2^{(0)} & \lambda_2^{(1)} & 0 \\
+\lambda_3^{(0)} & 0 & \lambda_3^{(2)} \\
+\lambda_4^{(0)} & \lambda_4^{(1)} & \lambda_4^{(2)} \\
+\end{bmatrix},
+\pmb{\delta}= 
+\begin{bmatrix}
+1 \\ \delta_{00} \\ \delta_{10} \\ \delta_{01} \\ \delta_{11}
+\end{bmatrix}
+\bf{Z}_i = 
+\begin{bmatrix}
+1 \\ X_i \\ Y_{1i} \\ Y_{2i}
+\end{bmatrix}
+$$
+
+This is a linear estimator and the goal is to find the optimal $\pmb{\alpha}$
+and $\pmb{\lambda}$ that, 
+
+$$ \text{minimize } \Var(\hat \theta) \text{ such that } 
+\pmb{\lambda}' E[\pmb{\delta}] = 0.$$
+
+# Simpliying the Variance
+
+We know that 
+
+\begin{align*}
+\Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z)) + 
+  (\pmb \alpha \pmb \lambda' \pmb \delta)' \bf Z\right) 
+&= \Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z)\right) +
+  \Var((\pmb \alpha \pmb \lambda' \pmb \delta)'\bf Z) +
+  2 \Cov\left(\frac{\delta_{11}}{\pi_{11}}g(Z), 
+  (\pmb \alpha \pmb \lambda' \pmb \delta)' \bf Z\right)\\
+&:= V_1 + V_2 + V_3
+\end{align*}
+
+Hence, we have for $\Pi := E[\delta]$,
+
+\begin{align*}
+V_1 &= \Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z)\right) \\ 
+&= \Var\left(E\left[\frac{\delta_{11}}{\pi_{11}}g(Z) \mid Z\right]\right)
++ E\left[\Var\left(\frac{\delta_{11}}{\pi_{11}}g(Z) \mid Z\right)\right]\\
+  &= E[g^2(Z)] - E[g(Z)]^2 + \frac{1}{\pi_{11}}E[g^2(Z)] - E[g^2(Z)] \\ 
+  &= \frac{1}{\pi_{11}} E[g^2(Z)] - E[g(Z)]^2
+\end{align*}
+
+\begin{align*}
+V_2 &= \Var((\alpha \lambda' \delta)'Z) \\ 
+&= \Var(E[(\alpha \lambda' \delta)'Z \mid Z]) + 
+E[\Var((\alpha \lambda' \delta)'Z \mid Z)] \\ 
+&= \Pi' \lambda \alpha'  \Var(Z) \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' \Var(\delta)\lambda \alpha' Z]\\
+&= \Pi' \lambda \alpha'  (E[ZZ'] - E[Z]E[Z']) \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' (E[\delta \delta'] - \Pi\Pi')\lambda \alpha' Z]\\
+&= \Pi' \lambda \alpha'  E[ZZ'] \alpha \lambda' \Pi -
+\Pi' \lambda \alpha' E[Z]E[Z'] \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] - 
+E[Z'\alpha \lambda' \Pi\Pi'\lambda \alpha' Z]\\
+&= \Pi' \lambda \alpha'  E[ZZ'] \alpha \lambda' \Pi -
+\Pi' \lambda \alpha' E[Z]E[Z'] \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] - 
+\Pi' \lambda \alpha' E[ZZ'] \alpha \lambda' \Pi \\
+&= \Pi' \lambda \alpha' E[Z]E[Z'] \alpha \lambda' \Pi + 
+E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] \\
+&= E[Z'\alpha \lambda' E[\delta \delta']\lambda \alpha' Z] \\
+\end{align*}
+
+The third to last equality holds because a $1 \times 1$ matrix is always
+symmetric and the last equality holds because $\Pi' \lambda = (\lambda' \Pi)' =
+0'$. We can expand this expression but we get the horribly ugly result:
+
+\begin{RaggedRight}
+
+```{python}
+#| echo: false
+#| output: asis
+
+import sympy
+
+l00, l01, l02 = sympy.symbols('\lambda_0^{(0)} \lambda_0^{(1)} \lambda_0^{(2)}')
+l10, l20, l21 = sympy.symbols('\lambda_1^{(0)} \lambda_2^{(0)} \lambda_0^{(1)}')
+l30, l32 = sympy.symbols('\lambda_3^{(0)} \lambda_3^{(2)}')
+l40, l41, l42 = sympy.symbols('\lambda_4^{(0)} \lambda_4^{(1)} \lambda_4^{(2)}')
+lmat = sympy.Matrix([
+  [l00, l01, l02],
+  [l10, 0,   0 ],
+  [l20, l21, 0],
+  [l30, 0,   l32],
+  [l40, l41, l42]
+])
+
+a00, a01, a02 = sympy.symbols('\\alpha_0^{(0)} \\alpha_0^{(1)} \\alpha_0^{(2)}')
+a10, a11, a12 = sympy.symbols('\\alpha_1^{(0)} \\alpha_1^{(1)} \\alpha_1^{(2)}')
+a21, a32 = sympy.symbols('\\alpha_2^{(1)} \\alpha_3^{(2)}')
+amat = sympy.Matrix([
+  [a00, a01, a02],
+  [a10, a11, a12],
+  [0,   a21, 0],
+  [0,   0,   a32]
+])
+
+p00, p10, p01, p11 = sympy.symbols('\pi_{00} \pi_{10} \pi_{01} \pi_{11}')
+ddmat = sympy.Matrix([
+  [1,   p00, p10, p01, p11],
+  [p00, p00, 0,   0,   0],
+  [p10, 0,   p10, 0,   0],
+  [p01, 0,   0,   p01, 0],
+  [p11, 0,   0,   0,   p11]
+])
+
+x, y1, y2 = sympy.symbols('X Y_1 Y_2')
+zmat = sympy.Matrix([[1, x, y1, y2]]).T
+
+ans = zmat.T * amat * lmat.T * ddmat * lmat * amat.T * zmat
+print(sympy.latex(sympy.expand(ans[0, 0]), itex = True, mode = "inline"))
+
+```
+\end{RaggedRight}
+
+Finally, to understand $V_3$ we can solve for the third covariance term.
+
+\begin{align*}
+\Cov&\left(\frac{\delta_{11}}{\pi_{11}}g(Z), (\alpha \lambda' \delta)' Z\right)\\
+&= E\left[\frac{\delta_{11}}{\pi_{11}}g(Z)(\alpha \lambda' \delta)' Z\right] - 
+E\left[\frac{\delta_{11}}{\pi_{11}} g(Z)\right] E[(\alpha \lambda' \delta)'Z]\\
+&= E\left[g(Z)\frac{\delta_{11}}{\pi_{11}}\delta' \lambda \alpha' Z\right] - 
+E[g(Z)] (\alpha \lambda' \Pi)' E[Z]\\
+&= E[g(Z) \begin{bmatrix}1 & 0 & 0 & 0 & 1\end{bmatrix} \lambda \alpha' Z] \\
+&= (\lambda_0^{(0)} + \lambda_4^{(0)})(\alpha_0^{(0)} + \alpha_1^{(0)}E[g(Z)x])
++ (\lambda_0^{(1)} + \lambda_4^{(1)})(\alpha_0^{(1)} + \alpha_1^{(1)}E[g(Z)x] +
+\alpha_2^{(1)}E[g(Z)y_1]) \\
+&\qquad \qquad+ (\lambda_0^{(2)} + \lambda_4^{(2)})(\alpha_0^{(2)} +
+\alpha_1^{(2)}E[g(Z)x] + \alpha_3^{(2)}E[g(Z)y_2])
+\end{align*}
+
+Since we have an understanding of $\Var(\hat \theta)$, we can find the minimum 
+by differentiating with respect to each coefficient in $\lambda$ and $\alpha$.
+
+```{python}
+#| echo: false
+
+egx, egy1, egy2 = sympy.symbols('E[gX] E[gY_1] E[gY_2]')
+cov = (l00 + l40) * (a00 + a10 * egx) + (l01 + l41) * (a01 + a11 * egx + a21 *
+  egy1) + (l02 + l42) * (a02 + a12 * egx + a32 * egy2)
+
+var = ans[0, 0] + 2 * cov
+
+# sympy.diff(var, l00)
+# sympy.diff(var, l01)
+# sympy.diff(var, l02)
+# sympy.diff(var, l10)
+# sympy.diff(var, l20)
+# sympy.diff(var, l21)
+# sympy.diff(var, l30)
+# sympy.diff(var, l32)
+# sympy.diff(var, l40)
+# sympy.diff(var, l41)
+# sympy.diff(var, l42)
+# 
+# sympy.diff(var, a00)
+# sympy.diff(var, a01)
+# sympy.diff(var, a02)
+# sympy.diff(var, a10)
+# sympy.diff(var, a11)
+# sympy.diff(var, a12)
+# sympy.diff(var, a21)
+# sympy.diff(var, a32)
+
+```
+
+This is still a work in progress. I need to run a simulation and test it out.
+I also believe that the terms $\alpha_0^{(0)}$, $\alpha_0^{(1)}$, and 
+$\alpha_0^{(2)}$ hinder identifiability. But I will work on it.
+
+```{r}
+#| echo: false
+
+library(dplyr)
+library(CVXR)
+
+source("~/Research/Data_Integration/R/opt_est.R")
+source("~/Research/Data_Integration/Simulations/T3Assess_Semiparametric_Cost/compare_algs.R")
+
+```
+
+
+```{r}
+
+linear_const_min <- function(df, gfun = "Y2") {
+
+  df <- mutate(df, g_i = eval(rlang::parse_expr(gfun)))
+  df_11 <- filter(df, delta_1 == 1, delta_2 == 1)
+  df_10 <- filter(df, delta_1 == 1, delta_2 == 0)
+  df_01 <- filter(df, delta_1 == 0, delta_2 == 1)
+  df_00 <- filter(df, delta_1 == 0, delta_2 == 0)
+
+  # Set up objective
+  lambda <- Variable(rows = 5, cols = 3)
+  alpha <- Variable(rows = 3, cols = 3)
+  Z <- cbind(df$X, df$Y1, df$Y2)
+  dd_mat <- matrix(c(1, pi_00, pi_10, pi_01, pi_11,
+                     pi_00, pi_00, 0, 0, 0,
+                     pi_10, 0, pi_10, 0, 0,
+                     pi_01, 0, 0, pi_01, 0,
+                     pi_11, 0, 0, 0, pi_11), nrow = 5, byrow = TRUE)
+
+  mat <- quad_form(quad_form(t(Z %*% alpha %*% t(lambda)), dd_mat), diag(3))
+  gz_mat <- matrix(df$g_i, ncol = 1)
+  s_mat <- matrix(c(1, 0, 0, 0, 1), ncol = 1)
+  covariance <- 
+    matrix_trace(quad_form(Z %*% alpha %*% t(lambda) %*% s_mat %*% gz_mat),
+                           diag(nrow(df)))
+  obj <- Minimize(multiply(matrix_trace(mat), 1 / nrow(df)) + covariance))
+
+}
+
+
+```
