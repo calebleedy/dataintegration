@@ -198,11 +198,11 @@
 
 \title{Non-Monotone GLS Simulation}
 \author{Caleb Leedy}
-\date{29 January 2024}
+\date{31 January 2024}
 
 \begin{document}
 \maketitle
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, frame hidden, sharp corners, interior hidden, boxrule=0pt, breakable, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, interior hidden, borderline west={3pt}{0pt}{shadecolor}, frame hidden, boxrule=0pt, breakable, sharp corners]}{\end{tcolorbox}}\fi
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
@@ -211,14 +211,6 @@ The goal of this report is to have a good idea about the effectiveness
 of using GLS estimation to combine nonmonotone missing data. This
 document defines the GLS estimators compares them to other estimators in
 several simulation studies.
-
-\hypertarget{note-to-dr.-kim-january-29-2024}{%
-\subsection{Note to Dr.~Kim (January 29,
-2024)}\label{note-to-dr.-kim-january-29-2024}}
-
-This work does \textbf{not} reflect the updates from \texttt{note2.tex}
-in the Overleaf document. It mostly focuses on what I have been working
-on up to this point.
 
 \hypertarget{non-monotone-missingness-and-gls-estimation}{%
 \section{Non-Monotone Missingness and GLS
@@ -298,9 +290,9 @@ To conduct GLS estimation we define two estimators, \(\hat \theta_1\)
 and \(\hat \theta_2\). Let \(\delta\) define the inclusion indicator
 into a particular segment and \(\pi\) be the probability of observing
 \(\delta = 1\). We assume that the selection probabilities \(\pi\) are
-known and iid for each observation. Then{[}\^{}We follow the idea from
-Dr.~Kim's note ``Efficient estimation under non-monotone missing data
-with planned missingness''{]}, define \(\theta_0 = E[g_0(X)]\),
+known and iid for each observation. Then\footnote{We follow the idea
+  from Dr.~Kim's note ``Efficient estimation under non-monotone missing
+  data with planned missingness''}, define \(\theta_0 = E[g_0(X)]\),
 \(\theta_1 = E[g_1(X, Y_1)]\), and \(\theta_1 = E[g_2(X, Y_2)]\). Let
 \(n\) be the number of observations and define the first GLS estimator
 \(\hat \theta_1\) in Equation~\ref{eq-theta1}.
@@ -322,11 +314,23 @@ n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g(x_i, y_{1i}, y_{2i}) \\
 This makes sense as a GLS estimator because we can express this as
 solving Equation~\ref{eq-theta1eq}.
 
-\begin{equation}\protect\hypertarget{eq-theta1eq}{}{ \hat \theta_1 = 1_9 \tilde \theta + e_1 }\label{eq-theta1eq}\end{equation}
+\begin{equation}\protect\hypertarget{eq-theta1eq}{}{ \hat \theta_1 = Z \tilde \theta + e_1 }\label{eq-theta1eq}\end{equation}
 
 In this case we have,
 
 \[
+Z = 
+\begin{bmatrix}
+1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1 \\
+\end{bmatrix},
 \tilde \theta = 
 \begin{bmatrix}
 \theta_0 \\ \theta_1 \\ \theta_2 \\ E[g(Z)]
@@ -335,7 +339,78 @@ In this case we have,
 E[e_1] = 0.
 \]
 
-To compute the GLS estimator we just need to compute \(\Var(e_1)\).
+To compute the GLS estimator we just need to compute \(\Var(e_1)\). For
+a proof of the specific entries of \(\Var(e_1) := V_1\) see Appendix A.
+This covariance matrix can be expressed as
+
+\[
+V_1 = 
+\begin{bmatrix}
+V_{1A} & V_{1B} \\
+V_{1B}' & V_{1C}
+\end{bmatrix} - E[g]^2 1_9 1_9'.
+\]
+
+where
+
+\[
+V_{1A} = 
+{\small
+\begin{bmatrix}
+E[g_0^2] & E[g_0^2] & E[g_0^2] & E[g_0^2] & E[g_0^2] \\
+E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}}E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}}
+  E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2]
+  & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2] \\
+E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} +
+  \pi_{11}}E[g_1^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} +
+  \pi_{11})}E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} +
+  \pi_{11})}E[g_1g_2] \\
+E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2]
+  & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_0^2] \\
+E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2]
+  & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_1g_2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_2^2] \\
+\end{bmatrix}
+}
+\]
+
+\[
+V_{1B} = 
+\begin{bmatrix}
+E[g_0^2] & E[g_0^2] & E[g_0^2] & E[g_0^2] \\
+\frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] &
+  \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] \\
+\frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_1^2] &
+  \frac{1}{\pi_{10} + \pi_{11}} E[g_1g_2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_1^2] \\
+\frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] \\
+\frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_1g_2] &
+  \frac{1}{\pi_{01} + \pi_{11}} E[g_2^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_2^2] \\
+\end{bmatrix}
+\]
+
+\[
+V_{1C} = 
+\begin{bmatrix}
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_0^2] &
+  \frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_0^2] \\
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_1^2] &
+  \frac{1}{\pi_{11}} E[g_1g_2] & \frac{1}{\pi_{11}} E[g_1^2] \\
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_1g_2] & 
+  \frac{1}{\pi_{11}} E[g_2^2] & \frac{1}{\pi_{11}} E[g_2^2] \\
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_1^2] &
+  \frac{1}{\pi_{11}} E[g_2^2] & \frac{1}{\pi_{11}} E[g^2]\\
+\end{bmatrix}
+\]
+
+This yields an estimator
+\(\hat \theta = (\hat g_0(X), \hat g_1(X, Y_1), \hat g_2(X, Y_2), \hat g(Z))\).
+To get the GLS estimator we use,
+
+\[\hat \theta_{GLS} = (0, 0, 0, 1)'\hat\theta.\]
 
 Likewise, we can construct a different GLS estimator which is a weighted
 average of components from Equation~\ref{eq-theta2}.
@@ -358,11 +433,9 @@ This is the approach that Dr.~Fuller and I have been taking. Then,
 
 \[ \hat \theta_2 = 1_9 \theta + e_2 \text{ where } E[e_2] = 0.\]
 
-We still need to compute the covariance matrix, \(\Var(e_2)\). See
-Appendix A for the proof of the covariance matrices. Due to the strong
-non-independence of the \(\hat \theta_1\), \(V_1\) is very difficult to
-display. There are some examples of what specific values of the
-covariance matrix is in Appendix A.
+We still need to compute the covariance matrix, \(\Var(e_2)\). For a
+proof of the result of each entry of the covariance matrix see Appendix
+A.
 
 We can compute \(V_2 = \Var(e_2)\) as,
 
@@ -391,7 +464,7 @@ E[E[g \mid X]^2] & E[E[g \mid X, Y_1]^2] \\
 \]
 
 \[
-V_{3, 2} = 
+V_{2, 3} = 
 \left(\frac{1}{\pi_{01}}\right) 
 \begin{bmatrix}
 E[E[g \mid X]^2] & E[E[g \mid X]^2] \\
@@ -402,7 +475,7 @@ E[E[g \mid X]^2] & E[E[g \mid X, Y_2]^2] \\
 and
 
 \[
-V_{4, 2} = 
+V_{2, 4} = 
 \left(\frac{1}{\pi_{11}}\right) 
 \begin{bmatrix}
 E[E[g \mid X]^2] & E[E[g \mid X]^2] & E[E[g \mid X]^2] & E[E[g \mid X]^2] \\
@@ -415,9 +488,9 @@ E[E[g \mid X]^2] & E[E[g \mid X, Y_1]^2] & E[E[g \mid X, Y_2]^2] & E[g^2] \\
 \]
 
 Then the GLS estimators are
-\(\hat \theta_{1, GLS} = (1_9'V_1^{-1}1_9)^{-1} 1_9'V_1^{-1}\hat \theta_1\)
+\(\hat \theta_{1, GLS} = (0, 0, 0, 1)' (Z'V_1^{-1}Z)^{-1}ZV_1^{1}\hat \theta_1\),
 and
-\(\hat \theta_{2, GLS} = (1_9'V_2^{-2}1_9)^{-1} 1_9'V_2^{-1}\hat \theta_2\).
+\(\hat \theta_{2, GLS} = (1_9'V_2^{-1}1_9)^{-1} 1_9'V_2^{-1}\hat \theta_2\).
 
 \hypertarget{simulation-studies}{%
 \section{Simulation Studies}\label{simulation-studies}}
@@ -609,7 +682,7 @@ WLS & -0.001 & 0.040 & -0.743 & 0.229 \\
 Prop & -0.002 & 0.052 & -1.179 & 0.119 \\
 PropOpt & -0.002 & 0.052 & -1.149 & 0.125 \\
 SemiDelta & -0.002 & 0.052 & -1.162 & 0.123 \\
-GLS1 & -0.001 & 0.052 & -0.848 & 0.198 \\
+GLS1 & -0.018 & 0.343 & -1.681 & 0.047 \\
 GLS2 & -0.001 & 0.052 & -0.848 & 0.198 \\
 \end{longtable}
 
@@ -639,7 +712,7 @@ IPW & 0.018 & 0.912 & 0.626 & 0.266 \\
 Prop & -0.036 & 0.634 & -1.808 & 0.035 \\
 PropOpt & -0.034 & 0.631 & -1.704 & 0.044 \\
 SemiDelta & -0.037 & 0.637 & -1.856 & 0.032 \\
-GLS1 & -0.004 & 0.274 & -0.513 & 0.304 \\
+GLS1 & -0.031 & 0.780 & -1.273 & 0.102 \\
 GLS2 & -0.004 & 0.273 & -0.486 & 0.314 \\
 \end{longtable}
 
@@ -670,7 +743,7 @@ WLS & 0.000 & 0.054 & -0.065 & 0.474 \\
 Prop & -0.002 & 0.063 & -0.768 & 0.221 \\
 PropOpt & -0.001 & 0.063 & -0.727 & 0.234 \\
 SemiDelta & -0.001 & 0.064 & -0.342 & 0.366 \\
-GLS1 & -0.001 & 0.064 & -0.346 & 0.365 \\
+GLS1 & -0.007 & 0.417 & -0.563 & 0.287 \\
 GLS2 & -0.001 & 0.064 & -0.346 & 0.365 \\
 \end{longtable}
 
@@ -700,7 +773,7 @@ IPW & 0.023 & 1.405 & 0.520 & 0.302 \\
 Prop & -0.044 & 0.691 & -2.027 & 0.021 \\
 PropOpt & -0.038 & 0.669 & -1.784 & 0.037 \\
 SemiDelta & -0.032 & 0.674 & -1.521 & 0.064 \\
-GLS1 & -0.003 & 0.289 & -0.322 & 0.374 \\
+GLS1 & -0.026 & 1.053 & -0.788 & 0.216 \\
 GLS2 & -0.003 & 0.288 & -0.301 & 0.382 \\
 \end{longtable}
 
@@ -932,7 +1005,7 @@ Simulations}\label{appendix-b-code-for-simulations}}
 \NormalTok{  v\_gam[}\DecValTok{9}\NormalTok{, }\DecValTok{2}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ v\_gam[}\DecValTok{2}\NormalTok{, }\DecValTok{9}\NormalTok{]}
 
 \NormalTok{  v\_gam[}\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{/}\NormalTok{ ((df}\SpecialCharTok{$}\NormalTok{prob\_01[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{]) }\SpecialCharTok{*}\NormalTok{ (df}\SpecialCharTok{$}\NormalTok{prob\_10[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{])) }\SpecialCharTok{*}\NormalTok{ (EEgx2) }\SpecialCharTok{{-}}\NormalTok{ Eg}\SpecialCharTok{\^{}}\DecValTok{2}
-\NormalTok{  v\_gam[}\DecValTok{3}\NormalTok{, }\DecValTok{5}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{/}\NormalTok{ ((df}\SpecialCharTok{$}\NormalTok{prob\_01[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{]) }\SpecialCharTok{*}\NormalTok{ (df}\SpecialCharTok{$}\NormalTok{prob\_10[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{])) }\SpecialCharTok{*}\NormalTok{ (EEgxy12) }\SpecialCharTok{{-}}\NormalTok{ Eg}\SpecialCharTok{\^{}}\DecValTok{2}
+\NormalTok{  v\_gam[}\DecValTok{3}\NormalTok{, }\DecValTok{5}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{/}\NormalTok{ ((df}\SpecialCharTok{$}\NormalTok{prob\_01[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{]) }\SpecialCharTok{*}\NormalTok{ (df}\SpecialCharTok{$}\NormalTok{prob\_10[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{])) }\SpecialCharTok{*}\NormalTok{ (EEgxy1Egxy2) }\SpecialCharTok{{-}}\NormalTok{ Eg}\SpecialCharTok{\^{}}\DecValTok{2}
 \NormalTok{  v\_gam[}\DecValTok{3}\NormalTok{, }\DecValTok{6}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ (df}\SpecialCharTok{$}\NormalTok{prob\_10[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{]) }\SpecialCharTok{*}\NormalTok{ (EEgx2) }\SpecialCharTok{{-}}\NormalTok{ Eg}\SpecialCharTok{\^{}}\DecValTok{2}
 \NormalTok{  v\_gam[}\DecValTok{3}\NormalTok{, }\DecValTok{7}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ (df}\SpecialCharTok{$}\NormalTok{prob\_10[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{]) }\SpecialCharTok{*}\NormalTok{ (EEgxy12) }\SpecialCharTok{{-}}\NormalTok{ Eg}\SpecialCharTok{\^{}}\DecValTok{2}
 \NormalTok{  v\_gam[}\DecValTok{3}\NormalTok{, }\DecValTok{8}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ (df}\SpecialCharTok{$}\NormalTok{prob\_10[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{prob\_11[}\DecValTok{1}\NormalTok{]) }\SpecialCharTok{*}\NormalTok{ (EEgxy1Egxy2) }\SpecialCharTok{{-}}\NormalTok{ Eg}\SpecialCharTok{\^{}}\DecValTok{2}
@@ -984,11 +1057,22 @@ Simulations}\label{appendix-b-code-for-simulations}}
 
 \NormalTok{  v\_gam }\OtherTok{\textless{}{-}}\NormalTok{ v\_gam }\SpecialCharTok{/} \FunctionTok{nrow}\NormalTok{(df)}
 
-\NormalTok{  one\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FunctionTok{length}\NormalTok{(gam\_vec)), }\AttributeTok{ncol =} \DecValTok{1}\NormalTok{)}
+\NormalTok{  z\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{,}
+                    \DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{), }\AttributeTok{ncol =} \DecValTok{4}\NormalTok{, }\AttributeTok{byrow =} \ConstantTok{TRUE}\NormalTok{)}
 
-\NormalTok{  dmat }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{t}\NormalTok{(one\_mat) }\SpecialCharTok{\%*\%}\NormalTok{ MASS}\SpecialCharTok{::}\FunctionTok{ginv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ one\_mat)}
-\NormalTok{  nmat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(one\_mat) }\SpecialCharTok{\%*\%}\NormalTok{ MASS}\SpecialCharTok{::}\FunctionTok{ginv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ gam\_vec}
-  \FunctionTok{return}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(nmat }\SpecialCharTok{/}\NormalTok{ dmat))}
+\NormalTok{  one\_mat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+
+\NormalTok{  dmat }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{t}\NormalTok{(z\_mat) }\SpecialCharTok{\%*\%} \FunctionTok{hw\_inv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ z\_mat)}
+\NormalTok{  nmat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(z\_mat) }\SpecialCharTok{\%*\%} \FunctionTok{hw\_inv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ gam\_vec}
+\NormalTok{  ret }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(one\_mat }\SpecialCharTok{\%*\%} \FunctionTok{hw\_inv}\NormalTok{(dmat) }\SpecialCharTok{\%*\%}\NormalTok{ nmat)}
+  \FunctionTok{return}\NormalTok{(ret)}
 
 \NormalTok{\}}
 
@@ -1085,8 +1169,8 @@ Simulations}\label{appendix-b-code-for-simulations}}
 
 \NormalTok{  one\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FunctionTok{length}\NormalTok{(gam\_vec)), }\AttributeTok{ncol =} \DecValTok{1}\NormalTok{)}
 
-\NormalTok{  dmat }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{t}\NormalTok{(one\_mat) }\SpecialCharTok{\%*\%}\NormalTok{ MASS}\SpecialCharTok{::}\FunctionTok{ginv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ one\_mat)}
-\NormalTok{  nmat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(one\_mat) }\SpecialCharTok{\%*\%}\NormalTok{ MASS}\SpecialCharTok{::}\FunctionTok{ginv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ gam\_vec}
+\NormalTok{  dmat }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{t}\NormalTok{(one\_mat) }\SpecialCharTok{\%*\%} \FunctionTok{hw\_inv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ one\_mat)}
+\NormalTok{  nmat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(one\_mat) }\SpecialCharTok{\%*\%} \FunctionTok{hw\_inv}\NormalTok{(v\_gam) }\SpecialCharTok{\%*\%}\NormalTok{ gam\_vec}
   \FunctionTok{return}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(nmat }\SpecialCharTok{/}\NormalTok{ dmat))}
 
 \NormalTok{\}}

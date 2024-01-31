@@ -29,11 +29,6 @@ The goal of this report is to have a good idea about the effectiveness of using
 GLS estimation to combine nonmonotone missing data. This document defines the
 GLS estimators compares them to other estimators in several simulation studies.
 
-## Note to Dr. Kim (January 29, 2024)
-
-This work does **not** reflect the updates from `note2.tex` in the Overleaf
-document. It mostly focuses on what I have been working on up to this point.
-
 # Non-Monotone Missingness and GLS Estimation
 
 ## Non-Monotone Missingness
@@ -79,7 +74,7 @@ To conduct GLS estimation we define two estimators, $\hat \theta_1$ and
 $\hat \theta_2$. Let $\delta$ define the inclusion indicator into a particular
 segment and $\pi$ be the probability of observing $\delta = 1$. We assume that
 the selection probabilities $\pi$ are known and iid for each observation. 
-Then[^We follow the idea from Dr. Kim's note "Efficient estimation under non-monotone
+Then^[We follow the idea from Dr. Kim's note "Efficient estimation under non-monotone
 missing data with planned missingness"], define $\theta_0 = E[g_0(X)]$,
 $\theta_1 = E[g_1(X, Y_1)]$, and $\theta_1 = E[g_2(X, Y_2)]$. Let $n$ be the
 number of observations and define the first GLS estimator $\hat \theta_1$ in
@@ -102,11 +97,10 @@ $$ {#eq-theta1}
 This makes sense as a GLS estimator because we can express this as solving
 @eq-theta1eq.
 
-$$ \hat \theta_1 = 1_9 \tilde \theta + e_1 $$ {#eq-theta1eq}
+$$ \hat \theta_1 = Z \tilde \theta + e_1 $$ {#eq-theta1eq}
 
 In this case we have,
 
-<!---# Z-matrix is not used currently
 $$
 Z = 
 \begin{bmatrix}
@@ -120,10 +114,6 @@ Z =
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1 \\
 \end{bmatrix},
-$$
---->
-
-$$
 \tilde \theta = 
 \begin{bmatrix}
 \theta_0 \\ \theta_1 \\ \theta_2 \\ E[g(Z)]
@@ -132,7 +122,77 @@ $$
 E[e_1] = 0.
 $$
 
-To compute the GLS estimator we just need to compute $\Var(e_1)$.
+To compute the GLS estimator we just need to compute $\Var(e_1)$. For a proof of
+the specific entries of $\Var(e_1) := V_1$ see Appendix A. This
+covariance matrix can be expressed as
+
+$$
+V_1 = 
+\begin{bmatrix}
+V_{1A} & V_{1B} \\
+V_{1B}' & V_{1C}
+\end{bmatrix} - E[g]^2 1_9 1_9'.
+$$
+
+where 
+
+$$
+V_{1A} = 
+{\small
+\begin{bmatrix}
+E[g_0^2] & E[g_0^2] & E[g_0^2] & E[g_0^2] & E[g_0^2] \\
+E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}}E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}}
+  E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2]
+  & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2] \\
+E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} +
+  \pi_{11}}E[g_1^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} +
+  \pi_{11})}E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} +
+  \pi_{11})}E[g_1g_2] \\
+E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2]
+  & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_0^2] \\
+E[g_0^2] & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_0^2]
+  & \frac{\pi_{11}}{(\pi_{10} + \pi_{11})(\pi_{01} + \pi_{11})} E[g_1g_2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}}E[g_2^2] \\
+\end{bmatrix}
+}
+$$
+
+$$
+V_{1B} = 
+\begin{bmatrix}
+E[g_0^2] & E[g_0^2] & E[g_0^2] & E[g_0^2] \\
+\frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] &
+  \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] \\
+\frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_1^2] &
+  \frac{1}{\pi_{10} + \pi_{11}} E[g_1g_2] & \frac{1}{\pi_{10} + \pi_{11}} E[g_1^2] \\
+\frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] &
+  \frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_0^2] \\
+\frac{1}{\pi_{10} + \pi_{11}} E[g_0^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_1g_2] &
+  \frac{1}{\pi_{01} + \pi_{11}} E[g_2^2] & \frac{1}{\pi_{01} + \pi_{11}} E[g_2^2] \\
+\end{bmatrix}
+$$
+
+$$
+V_{1C} = 
+\begin{bmatrix}
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_0^2] &
+  \frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_0^2] \\
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_1^2] &
+  \frac{1}{\pi_{11}} E[g_1g_2] & \frac{1}{\pi_{11}} E[g_1^2] \\
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_1g_2] & 
+  \frac{1}{\pi_{11}} E[g_2^2] & \frac{1}{\pi_{11}} E[g_2^2] \\
+\frac{1}{\pi_{11}} E[g_0^2] & \frac{1}{\pi_{11}} E[g_1^2] &
+  \frac{1}{\pi_{11}} E[g_2^2] & \frac{1}{\pi_{11}} E[g^2]\\
+\end{bmatrix}
+$$
+
+This yields an estimator $\hat \theta = (\hat g_0(X), \hat g_1(X, Y_1), \hat g_2(X,
+Y_2), \hat g(Z))$. To get the GLS estimator we use, 
+
+$$\hat \theta_{GLS} = (0, 0, 0, 1)'\hat\theta.$$
 
 Likewise, we can construct a different GLS estimator which is a weighted average
 of components from @eq-theta2.
@@ -155,28 +215,8 @@ This is the approach that Dr. Fuller and I have been taking. Then,
 
 $$ \hat \theta_2 = 1_9 \theta + e_2 \text{ where } E[e_2] = 0.$$
 
-We still need to compute the covariance matrix, $\Var(e_2)$. See Appendix A for
-the proof of the covariance matrices. Due to the strong non-independence of the
-$\hat \theta_1$, $V_1$ is very difficult to display. There are some examples of
-what specific values of the covariance matrix is in Appendix A.
-
-<!---# 
-The result is for $V_1 := \Var(e_1)$,
-
-\begin{align*}
-&V_1 =\\ 
-&{\tiny
-\renewcommand{\arraystretch}{1}
-\begin{bmatrix}
-E[E[g \mid X]^2] & E[E[g \mid X]^2] & E[E[g \mid X]^2] & 
-E[E[g \mid X]^2] \\
-E[E[g \mid X]^2] & \left(\frac{1 - \pi_{10} - \pi_{11}}{\pi_{10} + \pi_{11}}\right) E[E[g \mid X, Y_1]^2] & \left(\frac{\pi_{11}(1 - \pi_{11})}{(\pi_{10} + \pi_{11})^2 (\pi_{01} + \pi_{11})^2}\right) E[E[g \mid X, Y_1]E[g \mid X, Y_2]] & \left(\frac{1 - \pi_{11}}{\pi_{11}(\pi_{10} + \pi_{11})^2}\right)E[E[g \mid X, Y_1]^2] \\
-E[E[g \mid X]^2] & \left(\frac{\pi_{11}(1 - \pi_{11})}{(\pi_{10} + \pi_{11})^2 (\pi_{01} + \pi_{11})^2}\right) E[E[g \mid X, Y_1]E[g \mid X, Y_2]] & \left(\frac{1 - \pi_{01} - \pi_{11}}{\pi_{01} + \pi_{11}}\right) E[E[g \mid X, Y_2]^2] & \left(\frac{1 - \pi_{11}}{\pi_{11}(\pi_{01} + \pi_{11})^2}\right) E[E[g \mid X, Y_2]^2] \\
-E[E[g \mid X]^2] & \left(\frac{1 - \pi_{11}}{\pi_{11}(\pi_{10} + \pi_{11})^2}\right)E[E[g \mid X, Y_1]^2] & \left(\frac{1 - \pi_{11}}{\pi_{11}(\pi_{01} + \pi_{11})^2}\right) E[E[g \mid X, Y_2]^2] & \left(\frac{1 - \pi_{11}}{\pi_{11}}\right)E[g^2] 
-\end{bmatrix} }\\
-&- E[g]^2 1_4 1_4'
-\end{align*}
---->
+We still need to compute the covariance matrix, $\Var(e_2)$. For a proof of the
+result of each entry of the covariance matrix see Appendix A.
 
 We can compute $V_2 = \Var(e_2)$ as,
 
@@ -205,7 +245,7 @@ E[E[g \mid X]^2] & E[E[g \mid X, Y_1]^2] \\
 $$
 
 $$
-V_{3, 2} = 
+V_{2, 3} = 
 \left(\frac{1}{\pi_{01}}\right) 
 \begin{bmatrix}
 E[E[g \mid X]^2] & E[E[g \mid X]^2] \\
@@ -216,7 +256,7 @@ $$
 and 
 
 $$
-V_{4, 2} = 
+V_{2, 4} = 
 \left(\frac{1}{\pi_{11}}\right) 
 \begin{bmatrix}
 E[E[g \mid X]^2] & E[E[g \mid X]^2] & E[E[g \mid X]^2] & E[E[g \mid X]^2] \\
@@ -229,8 +269,8 @@ E[E[g \mid X]^2] & E[E[g \mid X, Y_1]^2] & E[E[g \mid X, Y_2]^2] & E[g^2] \\
 $$
 
 Then the GLS estimators are 
-$\hat \theta_{1, GLS} = (1_9'V_1^{-1}1_9)^{-1} 1_9'V_1^{-1}\hat \theta_1$ 
-and $\hat \theta_{2, GLS} = (1_9'V_2^{-2}1_9)^{-1} 1_9'V_2^{-1}\hat \theta_2$.
+$\hat \theta_{1, GLS} = (0, 0, 0, 1)' (Z'V_1^{-1}Z)^{-1}ZV_1^{1}\hat \theta_1$,
+and $\hat \theta_{2, GLS} = (1_9'V_2^{-1}1_9)^{-1} 1_9'V_2^{-1}\hat \theta_2$.
 
 # Simulation Studies
 
@@ -370,6 +410,7 @@ library(doRNG)
 library(parallelly)
 
 source("R/opt_est.R")
+source("R/utilities.R")
 source("Simulations/T3Assess_Semiparametric_Cost/compare_algs.R")
 
 ```
@@ -478,7 +519,7 @@ gls_est1 <- function(df, gfun = "Y2", theta = NA, mean_x = 0, cov_e1e2 = 0) {
   v_gam[9, 2] <- v_gam[2, 9]
 
   v_gam[3, 4] <- df$prob_11[1] / ((df$prob_01[1] + df$prob_11[1]) * (df$prob_10[1] + df$prob_11[1])) * (EEgx2) - Eg^2
-  v_gam[3, 5] <- df$prob_11[1] / ((df$prob_01[1] + df$prob_11[1]) * (df$prob_10[1] + df$prob_11[1])) * (EEgxy12) - Eg^2
+  v_gam[3, 5] <- df$prob_11[1] / ((df$prob_01[1] + df$prob_11[1]) * (df$prob_10[1] + df$prob_11[1])) * (EEgxy1Egxy2) - Eg^2
   v_gam[3, 6] <- 1 / (df$prob_10[1] + df$prob_11[1]) * (EEgx2) - Eg^2
   v_gam[3, 7] <- 1 / (df$prob_10[1] + df$prob_11[1]) * (EEgxy12) - Eg^2
   v_gam[3, 8] <- 1 / (df$prob_10[1] + df$prob_11[1]) * (EEgxy1Egxy2) - Eg^2
@@ -530,11 +571,22 @@ gls_est1 <- function(df, gfun = "Y2", theta = NA, mean_x = 0, cov_e1e2 = 0) {
 
   v_gam <- v_gam / nrow(df)
 
-  one_mat <- matrix(rep(1, length(gam_vec)), ncol = 1)
+  z_mat <- matrix(c(1, 0, 0, 0,
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    1, 0, 0, 0,
+                    0, 0, 1, 0,
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1), ncol = 4, byrow = TRUE)
 
-  dmat <- (t(one_mat) %*% MASS::ginv(v_gam) %*% one_mat)
-  nmat <- t(one_mat) %*% MASS::ginv(v_gam) %*% gam_vec
-  return(as.numeric(nmat / dmat))
+  one_mat <- t(c(0, 0, 0, 1))
+
+  dmat <- (t(z_mat) %*% hw_inv(v_gam) %*% z_mat)
+  nmat <- t(z_mat) %*% hw_inv(v_gam) %*% gam_vec
+  ret <- as.numeric(one_mat %*% hw_inv(dmat) %*% nmat)
+  return(ret)
 
 }
 
@@ -631,8 +683,8 @@ gls_est2 <- function(df, gfun = "Y2", theta = NA, mean_x = 0, cov_e1e2 = 0) {
 
   one_mat <- matrix(rep(1, length(gam_vec)), ncol = 1)
 
-  dmat <- (t(one_mat) %*% MASS::ginv(v_gam) %*% one_mat)
-  nmat <- t(one_mat) %*% MASS::ginv(v_gam) %*% gam_vec
+  dmat <- (t(one_mat) %*% hw_inv(v_gam) %*% one_mat)
+  nmat <- t(one_mat) %*% hw_inv(v_gam) %*% gam_vec
   return(as.numeric(nmat / dmat))
 
 }
@@ -1169,7 +1221,7 @@ gls_est1 <- function(df, gfun = "Y2", theta = NA, mean_x = 0, cov_e1e2 = 0) {
   v_gam[9, 2] <- v_gam[2, 9]
 
   v_gam[3, 4] <- df$prob_11[1] / ((df$prob_01[1] + df$prob_11[1]) * (df$prob_10[1] + df$prob_11[1])) * (EEgx2) - Eg^2
-  v_gam[3, 5] <- df$prob_11[1] / ((df$prob_01[1] + df$prob_11[1]) * (df$prob_10[1] + df$prob_11[1])) * (EEgxy12) - Eg^2
+  v_gam[3, 5] <- df$prob_11[1] / ((df$prob_01[1] + df$prob_11[1]) * (df$prob_10[1] + df$prob_11[1])) * (EEgxy1Egxy2) - Eg^2
   v_gam[3, 6] <- 1 / (df$prob_10[1] + df$prob_11[1]) * (EEgx2) - Eg^2
   v_gam[3, 7] <- 1 / (df$prob_10[1] + df$prob_11[1]) * (EEgxy12) - Eg^2
   v_gam[3, 8] <- 1 / (df$prob_10[1] + df$prob_11[1]) * (EEgxy1Egxy2) - Eg^2
@@ -1221,11 +1273,22 @@ gls_est1 <- function(df, gfun = "Y2", theta = NA, mean_x = 0, cov_e1e2 = 0) {
 
   v_gam <- v_gam / nrow(df)
 
-  one_mat <- matrix(rep(1, length(gam_vec)), ncol = 1)
+  z_mat <- matrix(c(1, 0, 0, 0,
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    1, 0, 0, 0,
+                    0, 0, 1, 0,
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1), ncol = 4, byrow = TRUE)
 
-  dmat <- (t(one_mat) %*% MASS::ginv(v_gam) %*% one_mat)
-  nmat <- t(one_mat) %*% MASS::ginv(v_gam) %*% gam_vec
-  return(as.numeric(nmat / dmat))
+  one_mat <- t(c(0, 0, 0, 1))
+
+  dmat <- (t(z_mat) %*% hw_inv(v_gam) %*% z_mat)
+  nmat <- t(z_mat) %*% hw_inv(v_gam) %*% gam_vec
+  ret <- as.numeric(one_mat %*% hw_inv(dmat) %*% nmat)
+  return(ret)
 
 }
 
@@ -1322,12 +1385,11 @@ gls_est2 <- function(df, gfun = "Y2", theta = NA, mean_x = 0, cov_e1e2 = 0) {
 
   one_mat <- matrix(rep(1, length(gam_vec)), ncol = 1)
 
-  dmat <- (t(one_mat) %*% MASS::ginv(v_gam) %*% one_mat)
-  nmat <- t(one_mat) %*% MASS::ginv(v_gam) %*% gam_vec
+  dmat <- (t(one_mat) %*% hw_inv(v_gam) %*% one_mat)
+  nmat <- t(one_mat) %*% hw_inv(v_gam) %*% gam_vec
   return(as.numeric(nmat / dmat))
 
 }
 
+
 ```
-
-
