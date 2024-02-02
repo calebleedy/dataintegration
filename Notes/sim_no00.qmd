@@ -1,5 +1,5 @@
 ---
-title: "Non-Monotone GLS Simulation: Simple"
+title: "Non-Monotone GLS Simulation: No $A_{00}$"
 author:
   - name: Caleb Leedy
 date: today
@@ -17,7 +17,7 @@ format:
 B <- 1000
 
 obs_seg <- 250
-true_mu <- 5
+true_mu <- 5 
 cov_e1e2 <- 0.5
 
 ```
@@ -196,50 +196,50 @@ gen_simple_data <- function(n_obs_sec, mu, rho) {
   e1 <- e_mat[, 1]
   e2 <- e_mat[, 2]
   y1 <- x + e1
-  y2 <- mu + x + e2
+  y2 <- mu + x + e1
 
   df_11 <- 
     tibble(X = x, Y1 = y1, Y2 = y2,
            delta_00 = 0, delta_10 = 0, delta_01 = 0, delta_11 = 1,
-           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+           pi_00 = 1/3, pi_10 = 1/3, pi_01 = 1/3, pi_11 = 1/3)
   # A_10
   x <- rnorm(n_obs_sec)
   e_mat <- MASS::mvrnorm(n_obs_sec, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
   e1 <- e_mat[, 1]
   e2 <- e_mat[, 2]
   y1 <- x + e1
-  y2 <- mu + x + e2
+  y2 <- mu + x + e1
 
   df_10 <- 
     tibble(X = x, Y1 = y1, Y2 = y2,
            delta_00 = 0, delta_10 = 1, delta_01 = 0, delta_11 = 0,
-           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+           pi_00 = 1/3, pi_10 = 1/3, pi_01 = 1/3, pi_11 = 1/3)
   # A_01
   x <- rnorm(n_obs_sec)
   e_mat <- MASS::mvrnorm(n_obs_sec, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
   e1 <- e_mat[, 1]
   e2 <- e_mat[, 2]
   y1 <- x + e1
-  y2 <- mu + x + e2
+  y2 <- mu + x + e1
 
   df_01 <- 
     tibble(X = x, Y1 = y1, Y2 = y2,
            delta_00 = 0, delta_10 = 0, delta_01 = 1, delta_11 = 0,
-           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+           pi_00 = 1/3, pi_10 = 1/3, pi_01 = 1/3, pi_11 = 1/3)
   # A_00
   x <- rnorm(n_obs_sec)
   e_mat <- MASS::mvrnorm(n_obs_sec, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
   e1 <- e_mat[, 1]
   e2 <- e_mat[, 2]
   y1 <- x + e1
-  y2 <- mu + x + e2
+  y2 <- mu + x + e1
 
   df_00 <- 
     tibble(X = x, Y1 = y1, Y2 = y2,
            delta_00 = 1, delta_10 = 0, delta_01 = 0, delta_11 = 0,
-           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+           pi_00 = 1/3, pi_10 = 1/3, pi_01 = 1/3, pi_11 = 1/3)
 
-  df <- bind_rows(df_11, df_10, df_01, df_00)
+  df <- bind_rows(df_11, df_10, df_01)
 
   # Return
   # X, Y_1, Y_2,
@@ -266,8 +266,7 @@ gls_est <- function(df, gfun, class = "basic", mu, rho) {
                       1, 0, 0,
                       0, 1, 0,
                       1, 0, 0,
-                      0, 0, 1,
-                      1, 0, 0), ncol = 3, byrow = TRUE)
+                      0, 0, 1), ncol = 3, byrow = TRUE)
 
     g_hat <- 
       c(mutate(df, tmp = delta_11 / pi_11 * X) |> pull(tmp) |> mean(),
@@ -276,22 +275,24 @@ gls_est <- function(df, gfun, class = "basic", mu, rho) {
         mutate(df, tmp = delta_10 / pi_10 * X) |> pull(tmp) |> mean(),
         mutate(df, tmp = delta_10 / pi_10 * Y1) |> pull(tmp) |> mean(),
         mutate(df, tmp = delta_01 / pi_01 * X) |> pull(tmp) |> mean(),
-        mutate(df, tmp = delta_01 / pi_01 * Y2) |> pull(tmp) |> mean(),
-        mutate(df, tmp = delta_00 / pi_00 * X) |> pull(tmp) |> mean())
+        mutate(df, tmp = delta_01 / pi_01 * Y2) |> pull(tmp) |> mean())
 
     v_11 <- 1 / df$pi_11[1] *
       matrix(c(1, 1, 1,
                1, 2, 1 + rho,
-               1, 1 + rho, 2), nrow = 3)
-    v_10 <- 1 / df$pi_10[1] * matrix(c(1, 1, 1, 2), nrow = 2)
-    v_01 <- 1 / df$pi_01[1] * matrix(c(1, 1, 1, 2), nrow = 2)
-    v_00 <- 1 / df$pi_00[1]
+               1, 1 + rho, mu^2 + 2), nrow = 3, byrow = TRUE) -
+      matrix(c(0, 0, 0,
+               0, 0, 0,
+               0, 0, mu^2), nrow = 3, byrow = TRUE)
+    v_10 <- 1 / df$pi_10[1] * matrix(c(1, 1, 1, 2), nrow = 2, byrow = TRUE)
+    v_01 <- 
+      1 / df$pi_01[1] * matrix(c(1, 1, 1, mu^2 + 2), nrow = 2) - 
+      matrix(c(0, 0, 0, mu^2), nrow = 2)
 
-    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat <- matrix(rep(0, 49), ncol = 7)
     v_mat[1:3, 1:3] <- v_11
     v_mat[4:5, 4:5] <- v_10
     v_mat[6:7, 6:7] <- v_01
-    v_mat[8, 8] <- v_00
 
     v_mat <- v_mat / nrow(df)
 
@@ -304,7 +305,8 @@ gls_est <- function(df, gfun, class = "basic", mu, rho) {
     stop("We have only 1 class: 'basic'.")
   }
 }
-``` 
+
+```
 
 
 ```{r}
@@ -312,7 +314,7 @@ gls_est <- function(df, gfun, class = "basic", mu, rho) {
 #| echo: false
 #| tbl-cap: |
 #|   Results from simulations study with independent equally sized segments
-#|   $A_{11}$, $A_{10}$, $A_{01}$, and $A_{00}$ all of size $n = 250$. In this
+#|   $A_{11}$, $A_{10}$, and $A_{01}$ all of size $n = 250$. In this
 #|   simulation we have the true mean of $Y_2$ equal to $\mu = 5$ and the covariance
 #|   between $e_1$ and $e_2$ is $\rho = 0.5$. The goal is to estimate 
 #|   $E[Y_2] = \mu$. For the GLS estimation, we use the
@@ -359,7 +361,7 @@ mc_theta |>
   summarize(
     across(everything(),
     list(Bias = ~mean(.) - true_mu,
-         SD = ~sd(.),
+         SD = sd,
          Tstat = ~(mean(.) - true_mu) / sqrt(var(.) / B)),
     .names = "{.fn}_{.col}")) |> 
   tidyr::pivot_longer(cols = everything(),
@@ -370,44 +372,7 @@ mc_theta |>
 
 ```
 
-The theoretical variance of $\hat g_{GLS}$ is 
-
-```{r}
-#| echo: false
-
-z_mat <- matrix(c(1, 0, 0,
-                  0, 1, 0,
-                  0, 0, 1,
-                  1, 0, 0,
-                  0, 1, 0,
-                  1, 0, 0,
-                  0, 0, 1,
-                  1, 0, 0), ncol = 3, byrow = TRUE)
-
-v_11 <- 1 / 0.25 *
-  matrix(c(1, 1, 1,
-           1, 2, 1 + cov_e1e2,
-           1, 1 + cov_e1e2, 2), nrow = 3)
-v_10 <- 1 / 0.25 * matrix(c(1, 1, 1, 2), nrow = 2)
-v_01 <- 1 / 0.25 * matrix(c(1, 1, 1, 2), nrow = 2)
-v_00 <- 1 / 0.25
-
-v_mat <- matrix(rep(0, 64), ncol = 8)
-v_mat[1:3, 1:3] <- v_11
-v_mat[4:5, 4:5] <- v_10
-v_mat[6:7, 6:7] <- v_01
-v_mat[8, 8] <- v_00
-
-v_mat <- v_mat / (4 * obs_seg)
-ones_v <- t(c(0, 0, 1))
-
-theo_var <- 
-  ones_v %*% MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% t(ones_v)
-
-```
-
-$$ V(\hat g_{GLS}) = [0, 0, 1] (Z'V^{-1}Z)^{-1} [0, 0, 1]'.$$ 
-
-This is equal to `{r} theo_var` which means that the standard deviation 
-is `{r} sqrt(theo_var)`.
-
+A quick comparison between the standard deviation of the GLS estimator and the
+standard deviation of the GLS estimator in `gls_sim.qmd` shows that this
+standard deviation is slightly larger, which means that we do lose efficiency by
+not including $A_{00}$.

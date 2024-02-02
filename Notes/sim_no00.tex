@@ -136,7 +136,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
-  pdftitle={Non-Monotone GLS Simulation: Simple},
+  pdftitle={Non-Monotone GLS Simulation: No A\_\{00\}},
   pdfauthor={Caleb Leedy},
   colorlinks=true,
   linkcolor={blue},
@@ -145,9 +145,9 @@
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
-\title{Non-Monotone GLS Simulation: Simple}
+\title{Non-Monotone GLS Simulation: No \(A_{00}\)}
 \author{Caleb Leedy}
-\date{2 February 2024}
+\date{1 February 2024}
 
 \begin{document}
 \maketitle
@@ -321,13 +321,13 @@ independently.
 
 \begin{longtable}[]{@{}lrrrr@{}}
 \caption{Results from simulations study with independent equally sized
-segments \(A_{11}\), \(A_{10}\), \(A_{01}\), and \(A_{00}\) all of size
-\(n = 250\). In this simulation we have the true mean of \(Y_2\) equal
-to \(\mu = 5\) and the covariance between \(e_1\) and \(e_2\) is
-\(\rho = 0.5\). The goal is to estimate \(E[Y_2] = \mu\). For the GLS
-estimation, we use the true known covariance matrix (using the true
-values of \(\mu\) and \(\rho\)), and we use g-functions \(g_1 = X\),
-\(g_2 = Y_1\) and \(g_3 = Y_2\).}\tabularnewline
+segments \(A_{11}\), \(A_{10}\), and \(A_{01}\) all of size \(n = 250\).
+In this simulation we have the true mean of \(Y_2\) equal to \(\mu = 5\)
+and the covariance between \(e_1\) and \(e_2\) is \(\rho = 0.5\). The
+goal is to estimate \(E[Y_2] = \mu\). For the GLS estimation, we use the
+true known covariance matrix (using the true values of \(\mu\) and
+\(\rho\)), and we use g-functions \(g_1 = X\), \(g_2 = Y_1\) and
+\(g_3 = Y_2\).}\tabularnewline
 \toprule\noalign{}
 Algorithm & Bias & SD & Tstat & Pval \\
 \midrule\noalign{}
@@ -338,18 +338,16 @@ Algorithm & Bias & SD & Tstat & Pval \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Oracle & -0.002 & 0.044 & -1.124 & 0.131 \\
-CC & -0.005 & 0.088 & -1.820 & 0.035 \\
-IPW & -0.005 & 0.088 & -1.820 & 0.035 \\
-GLS & -0.002 & 0.053 & -1.286 & 0.099 \\
+Oracle & -0.001 & 0.049 & -0.818 & 0.207 \\
+CC & -0.004 & 0.089 & -1.317 & 0.094 \\
+IPW & -0.004 & 0.089 & -1.317 & 0.094 \\
+GLS & -0.002 & 0.053 & -1.490 & 0.068 \\
 \end{longtable}
 
-The theoretical variance of \(\hat g_{GLS}\) is
-
-\[ V(\hat g_{GLS}) = [0, 0, 1] (Z'V^{-1}Z)^{-1} [0, 0, 1]'.\]
-
-This is equal to 0.0028667 which means that the standard deviation is
-0.0535413.
+A quick comparison between the standard deviation of the GLS estimator
+and the standard deviation of the GLS estimator in \texttt{gls\_sim.qmd}
+shows that this standard deviation is slightly larger, which means that
+we do lose efficiency by not including \(A_{00}\).
 
 
 
