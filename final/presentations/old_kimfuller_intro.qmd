@@ -1,0 +1,723 @@
+---
+title: "Combining Information from Multiple Surveys Using Probability Sampling"
+author: "Caleb Leedy"
+date: "August 15, 2023"
+date-format: long
+format: 
+  revealjs:
+    slide-number: c/t
+    theme: [default, pres.scss]
+bibliography: references.bib
+---
+<!---
+Outline:
+* Introduce notation
+
+* Introduce problem:
+  * semiparametrically efficient estimator to combine non-nested samples
+
+* Proposed approach:
+  * Use model-assisted semiparametric inference to get better / more robust results
+  * i.e. use both a regression estimator and a model for the response probabilities
+
+* Alternative Approaches:
+  * Modified regression estimation of Merkouris (2004), Merkouris et al. (2023)
+  * Multiphase regression estimator of Fuller (2009)
+
+* Goals:
+  * TODO:
+
+* Next steps:
+  * TODO:
+
+
+Notation:
+* Hidiroglou: Population universe (U), Sample i (s_i)
+* Merkouris: same as above
+
+* Inclusion probabilities: $\pi_k$
+* Inclusion indicator R_i
+* Variable names: x, y, z
+
+
+--->
+
+## Overall Goal
+
+* We want to combine information from separate surveys and use 
+semiparametric theory to get an optimal estimator.
+
+# Existing Work
+
+## Surveys with Missingness {.smaller}
+
+Non-monotone Missingness
+
+| Sample | $X$ | $Y_1$ | $Y_2$ | $R_1$ | $R_2$ |
+|:------:|:---:|:-----:|:-----:|:-----:|:-----:|
+|$A_{11}$| ✔️   | ✔️     | ✔️     | 1     | 1     |
+|$A_{10}$| ✔️   | ✔️     |       | 1     | 0     |
+|$A_{01}$| ✔️   |       | ✔️     | 0     | 1     |
+|$A_{00}$| ✔️   |       |       | 0     | 0     |
+
+* The goal is the estimate $\theta = E[g(X, Y_1, Y_2)]$.
+
+## Estimating $\theta$ {.smaller}
+
+Then for 
+
+\begin{align*}
+b(X_i, Y_{1i}) &= E[g_i \mid X_i, Y_{1i}], \\ 
+a(X_i, Y_{2i}) &= E[g_i \mid X_i, Y_{2i}], \text{ and } \\
+i &= \{1, \dots, n\},
+\end{align*}
+
+\begin{align*}
+\hat \theta_{\text{eff}} &= n^{-1} \sum_{i = 1}^n E[g_i \mid X_i] \\ 
+&+ n^{-1} \sum_{i = 1}^n \frac{R_{1i}}{\pi_{1+}(X_i)}(b(X_i, Y_{1i}) - E[g_i \mid X_i]) \\ 
+&+ n^{-1} \sum_{i = 1}^n \frac{R_{2i}}{\pi_{2+}(X_i)}(a(X_i, Y_{2i}) - E[g_i \mid X_i]) \\ 
+&+ n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_{11}(X_i)}(g_i - b_i - a_i + E[g_i \mid X_i])
+\end{align*}
+
+# Simulation Studies
+
+## Simulation 1
+
+We use the following simulation setup 
+
+$$
+\begin{bmatrix}
+X_i \\ 
+\varepsilon_{1i} \\
+\varepsilon_{2i} \\
+\end{bmatrix} \stackrel{iid}{\sim}
+N\left(
+\begin{bmatrix}
+0 \\ 0 \\ \theta
+\end{bmatrix},
+\begin{bmatrix}
+1 & 0 & 0 \\ 
+0 & 1 & \sigma_{yy} \\
+0 & \sigma_{yy} & 1
+\end{bmatrix}
+\right)
+$$
+
+* $y_{1i} = x_i + \varepsilon_{1i}$
+* $y_{2i} = x_i + \varepsilon_{2i}$
+
+## Simulation 1
+
+* Following the graphical MAR of [@robins1997non], for Stage 1, we have,
+
+$$ p_0 = 0.2, p_1 = 0.4, \text{ and } p_2 = 0.4. $$
+
+* For Stage 2, we have,
+
+$$ p_{12} = \text{logistic}(y_1) \text{ and } p_{21} = \text{logistic}(y_2). $$
+
+* The goal is to estimate $g = Y_2 - \theta$.
+
+## Simulation 1
+
+Then we compare three estimators:
+
+* Oracle: we use both the observed and missing values.
+* IPW-Oracle: we use 
+$$ \hat \theta_{IPW} = n^{-1} \sum_{i = 1}^n \frac{R_{1i} R_{2i}}{\pi_i}y_{2i}.$$
+* The proposed estimator $\hat \theta_{eff}$.
+
+## Results
+
+```{r}
+
+library(MASS)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(purrr)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+# *****************
+# * Generate Data *
+# *****************
+
+source("../Simulations/generate_data.R")
+
+# ************************
+# * Estimating Functions *
+# ************************
+
+source("../Simulations/nmono_est_funs.R")
+
+
+run_init_sims <- function(n_sim, B, true_mean, cor_y1y2,
+                          miss_out, est_weights, seed, r_ind_y = FALSE) {
+
+
+  clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+  registerDoParallel(clust)
+
+  mc_theta <- 
+    foreach(b = 1:B, 
+            .options.RNG = seed,
+            .export = c("nonmono_mar", "ipw_cc_oracle", "est_nonmono", "expit"),
+            .packages = c("dplyr")) %dorng% {
+
+    # Parameters
+    df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
+                      r_ind_y = r_ind_y, miss_out = miss_out)
+
+    # Estimation
+    # We want to compute:
+    # 1. Oracle estimate
+    # 2. pi_11 estimate (ipw using fully observed cases)
+    # 3. New estimate
+
+    tibble(oracle = mean(df$y2),
+           ipworacle = ipw_cc_oracle(df),
+           proposed = est_nonmono(df, oracle = !est_weights))
+
+  } %>% bind_rows()
+
+  stopCluster(clust)
+
+  # ****************
+  # * Analyze Data *
+  # ****************
+
+  mc_theta %>%
+   summarize(
+     bias_oracle = mean(oracle) - true_mean,
+     bias_ipworacle = mean(ipworacle) - true_mean,
+     bias_proposed = mean(proposed) - true_mean,
+     sd_oracle = sd(oracle),
+     sd_ipworacle = sd(ipworacle),
+     sd_proposed = sd(proposed),
+     tstat_oracle = (mean(oracle) - true_mean) / sqrt(var(oracle) / B),
+     tstat_ipworacle = (mean(ipworacle) - true_mean) / sqrt(var(ipworacle) / B),
+     tstat_proposed = (mean(proposed) - true_mean) / sqrt(var(proposed) / B))%>%
+    tidyr::pivot_longer(cols = everything(),
+                 names_to = c(".value", "algorithm"),
+                 names_pattern = "(.*)_(.*)") %>%
+    mutate(pval = pt(-abs(tstat), df = B)) 
+
+}
+
+# **********************************
+# * Simulations: Sim 1 Nonmonotone *
+# **********************************
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = -5, cor_y1y2 = 0,
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = "True Value is -5. Cor(eps1, eps2) = 0")
+
+```
+
+## Results
+
+```{r}
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0,
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(eps1, eps2) = 0") 
+
+```
+
+## Results
+
+```{r}
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 5, cor_y1y2 = 0,
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = "True Value is 5. Cor(eps1, eps2) = 0") 
+
+```
+
+## Simulation 2
+
+Simulation 2 follows the same structure are Simulation 1 except that 
+instead of testing variation win the mean, we test differences in the covariance
+of $\varepsilon_1$ and $\varepsilon_2$.
+
+## Results
+
+
+```{r}
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.1,
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.1")
+
+```
+
+## Results
+
+```{r}
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.5,
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.5")
+
+```
+
+## Results
+
+```{r}
+
+run_init_sims(n_sim = 2000, B = 2000,
+              true_mean = 0, cor_y1y2 = 0.9,
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = "True Value is 0. Cor(Y1, Y2) = 0.9") 
+
+```
+
+
+## Simulation 3
+
+<!--- FIXME: -->
+
+## Results
+
+```{r}
+
+
+library(dplyr)
+library(CVXR)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+# *****************************
+# * Data Generation Functions *
+# *****************************
+source("generate_data.R")
+
+# *************************************
+# * Non/monotone Estimation Functions *
+# *************************************
+source("nmono_est_funs.R")
+
+
+run_cali_sims <- function(n_sim, B, true_mean, cor_y1y2,
+                          miss_out, est_weights, seed, r_ind_y = FALSE) {
+
+
+  clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+  registerDoParallel(clust)
+
+  mc_theta <- 
+    foreach(b = 1:B, 
+           .options.RNG = seed,
+           .export = c("nonmono_mar", "ipw_cc_oracle", "est_nonmono", "expit",
+                       "nonmono_est_weights", "twophase_reg", "threephase_reg"),
+           .packages = c("dplyr", "CVXR")) %dorng% {
+
+    # Parameters
+    df <- nonmono_mar(n_sim, mean_y2 = true_mean, cor_y1y2 = cor_y1y2,
+                      r_ind_y = r_ind_y, miss_out = miss_out)
+
+    # Estimation
+    # We want to compute:
+    # 1. Oracle estimate
+    # 2. pi_11 estimate (ipw using fully observed cases)
+    # 3. New estimate
+
+    tibble(oracle = mean(df$y2),
+           ipworacle = ipw_cc_oracle(df),
+           reg2p = twophase_reg(df, reg_on_y1 = FALSE),
+           reg3p = threephase_reg(df),
+           proposed = est_nonmono(df, oracle = !est_weights),
+           calib = nonmono_est_weights(df))
+
+  } %>% bind_rows()
+
+  stopCluster(clust)
+
+  # ****************
+  # * Analyze Data *
+  # ****************
+
+  mc_theta %>%
+   summarize(
+     bias_oracle = mean(oracle) - true_mean,
+     bias_ipworacle = mean(ipworacle) - true_mean,
+     bias_proposed = mean(proposed) - true_mean,
+     bias_reg2p = mean(reg2p) - true_mean,
+     bias_reg3p = mean(reg3p) - true_mean,
+     bias_calib = mean(calib) - true_mean,
+     sd_oracle = sd(oracle),
+     sd_ipworacle = sd(ipworacle),
+     sd_proposed = sd(proposed),
+     sd_reg2p = sd(reg2p),
+     sd_reg3p = sd(reg3p),
+     sd_calib = sd(calib),
+     tstat_oracle = (mean(oracle) - true_mean) / sqrt(var(oracle) / B),
+     tstat_ipworacle = (mean(ipworacle) - true_mean) / sqrt(var(ipworacle) / B),
+     tstat_proposed = (mean(proposed) - true_mean) / sqrt(var(proposed) / B),
+     tstat_reg2p = (mean(reg2p) - true_mean) / sqrt(var(reg2p) / B),
+     tstat_reg3p = (mean(reg3p) - true_mean) / sqrt(var(reg3p) / B),
+     tstat_calib = (mean(calib) - true_mean) / sqrt(var(calib) / B)) %>%
+    tidyr::pivot_longer(cols = everything(),
+                 names_to = c(".value", "algorithm"),
+                 names_pattern = "(.*)_(.*)") %>%
+    mutate(pval = pt(-abs(tstat), df = B)) 
+
+}
+
+
+tr_m <- -5
+cy1y2 <- 0
+run_cali_sims(n_sim = 1000, B = 1000,
+              true_mean = tr_m, cor_y1y2 = cy1y2,
+              miss_out = FALSE, est_weights = FALSE, seed = 1) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = paste0("True Value is ", tr_m, ". Cor(Y1, Y2) = ", cy1y2)) %>%
+
+```
+
+## Results
+
+```{r}
+
+tr_m <- 0
+cy1y2 <- 0
+run_cali_sims(n_sim = 1000, B = 1000,
+              true_mean = tr_m, cor_y1y2 = cy1y2,
+              miss_out = FALSE, est_weights = FALSE, seed = 2) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = paste0("True Value is ", tr_m, ". Cor(Y1, Y2) = ", cy1y2)) 
+
+```
+
+## Results
+
+```{r}
+
+tr_m <- 5
+cy1y2 <- 0
+run_cali_sims(n_sim = 1000, B = 1000,
+              true_mean = tr_m, cor_y1y2 = cy1y2,
+              miss_out = FALSE, est_weights = FALSE, seed = 4) %>%
+  knitr::kable(booktabs = TRUE, digits = 3,
+  caption = paste0("True Value is ", tr_m, ". Cor(Y1, Y2) = ", cy1y2)) 
+
+```
+
+
+## Problem Setup
+
+::: {.incremental}
+* Let $U$ be a finite population.
+* Let $s_1$ and $s_2$ be samples of $U$
+  - It may be the case that $s_1 \cap s_2 = \emptyset$ or $s_1 \cap s_2 \neq \emptyset$
+  but $s_1 \subsetneq s_2$ and $s_2 \subsetneq s_1$.
+  - This is an example of *non-nested* sampling [@hidiroglou2001double]
+:::
+
+## {}
+
+::: {.incremental}
+* Let $X$ be observed in both $s_1$ and $s_2$.
+* Let $Y_1$ be only observed in $s_1$.
+* Let $Y_2$ be only observed in $s_2$.
+* We denote the first-order inclusion probabilities as $\pi^{(i)}_{j}$ of 
+element $Y_j$ in survey $s_i$.
+* If element $Y_j$ is in $s_i$, then let $R_j^{(i)} = 1$. Otherwise, $R_j^{(i)} = 0$.
+:::
+
+## {}
+
+* This setup is very similar to the NRI project with $X$ consisting of core data
+points and $Y_1$ and $Y_2$ being part of the supplemental samples.
+
+## Research Problem
+
+* How to estimate $\bar Y_1$ efficiently from information in
+samples $s_1$ and $s_2$?
+
+## Similar Methods
+
+* Weight adjustment [@hidiroglou2001double]
+* GREG Estimation [@merkouris2004combining, @merkouris2023combining]
+* Projection estimator [@kim2012combining]
+* Mass imputation [@chen2022nonparametric]
+
+## Proposed Approach
+
+* Use semiparametric theory to construct an efficient estimator.
+* We fist consider the case of non-informative sampling.
+
+# Comparison with Existing Methods
+
+
+## Weight adjustment [@hidiroglou2001double]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Estimates $\bar Y_1$. 
+* Considers the non-nested sampling model.
+* Incorporates a regression model.
+
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* No $Y_2$ in $s_2$.
+* Does not have semiparametric theory.
+* Does not use a response model.
+
+:::
+
+::::
+
+
+## GREG estimator [@merkouris2004combining]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Estimates $\bar Y_1$. 
+* Considers the non-nested sampling model.
+* Constructs optimal regression model (conditions out calibrated variables).
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* No $Y_2$ in $s_2$.
+* Does not use a response model.
+
+:::
+
+::::
+
+
+## Projection estimator [@kim2012combining]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Estimates $\bar Y_1$.
+* Considers $Y_2 \in s_2$.
+* Considers a non-nested sampling model.
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* Imputes missing values of $Y_2$ with a mass imputation estimator.
+
+:::
+
+::::
+
+## Mass imputation [@chen2022nonparametric]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Can be used to estimate $\bar Y_1$.
+* Considers $Y_2 \in s_2$.
+* Non-nested model.
+
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* Nonparametric estimator.
+* No response model.
+* Considers $s_2$ to be non-probability sample.
+
+:::
+
+::::
+
+
+## Proposed Next Steps
+
+* Propose semiparametric estimator.
+
+## References
+
+
+## Simulation 2
+
+## Simulation 3
+
+## Problem Setup
+
+::: {.incremental}
+* Let $U$ be a finite population.
+* Let $s_1$ and $s_2$ be samples of $U$
+  - It may be the case that $s_1 \cap s_2 = \emptyset$ or $s_1 \cap s_2 \neq \emptyset$
+  but $s_1 \subsetneq s_2$ and $s_2 \subsetneq s_1$.
+  - This is an example of *non-nested* sampling [@hidiroglou2001double]
+:::
+
+## {}
+::: {.incremental}
+* Let $X$ be observed in both $s_1$ and $s_2$.
+* Let $Y_1$ be only observed in $s_1$.
+* Let $Y_2$ be only observed in $s_2$.
+* We denote the first-order inclusion probabilities as $\pi^{(i)}_{j}$ of 
+element $Y_j$ in survey $s_i$.
+* If element $Y_j$ is in $s_i$, then let $R_j^{(i)} = 1$. Otherwise, $R_j^{(i)} = 0$.
+:::
+
+## {}
+
+* This setup is very similar to the NRI project with $X$ consisting of core data
+points and $Y_1$ and $Y_2$ being part of the supplemental samples.
+
+## Research Problem
+
+* How to estimate $\bar Y_1$ efficiently from information in
+samples $s_1$ and $s_2$?
+
+## Similar Methods
+
+* Weight adjustment [@hidiroglou2001double]
+* GREG Estimation [@merkouris2004combining, @merkouris2023combining]
+* Projection estimator [@kim2012combining]
+* Mass imputation [@chen2022nonparametric]
+
+## Proposed Approach
+
+* Use semiparametric theory to construct an efficient estimator.
+* We fist consider the case of non-informative sampling.
+
+# Comparison with Existing Methods
+
+
+## Weight adjustment [@hidiroglou2001double]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Estimates $\bar Y_1$. 
+* Considers the non-nested sampling model.
+* Incorporates a regression model.
+
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* No $Y_2$ in $s_2$.
+* Does not have semiparametric theory.
+* Does not use a response model.
+
+:::
+
+::::
+
+
+## GREG estimator [@merkouris2004combining]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Estimates $\bar Y_1$. 
+* Considers the non-nested sampling model.
+* Constructs optimal regression model (conditions out calibrated variables).
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* No $Y_2$ in $s_2$.
+* Does not use a response model.
+
+:::
+
+::::
+
+
+## Projection estimator [@kim2012combining]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Estimates $\bar Y_1$.
+* Considers $Y_2 \in s_2$.
+* Considers a non-nested sampling model.
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* Imputes missing values of $Y_2$ with a mass imputation estimator.
+
+:::
+
+::::
+
+## Mass imputation [@chen2022nonparametric]
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Similarities with Proposed Method
+
+* Can be used to estimate $\bar Y_1$.
+* Considers $Y_2 \in s_2$.
+* Non-nested model.
+
+
+:::
+
+::: {.column width="50%"}
+Differences with Proposed Method
+
+* Nonparametric estimator.
+* No response model.
+* Considers $s_2$ to be non-probability sample.
+
+:::
+
+::::
+
+
+## Proposed Next Steps
+
+* Propose semiparametric estimator.
+
+## References
