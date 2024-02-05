@@ -116,14 +116,31 @@ However, this challenge with actually using this model is that we have to use
 the matrix $V$, which we assume to be *known*. In this write up, we will not
 make this assumption.
 
-## Proposals
+## Proposal
 
-### Proposal 1: REML
+Instead of using the known covariance matrix $V$, we estimate it instead.
+Suppose that we observe variables $Z = (X_{m_1}, Y_{m_2})$ with an objective of
+estimating $\theta = E[g(Y_{m_2})$ for some known function $g$ such that the
+variables $Z$ are subject to missingness. We assume that there are $R$ unique
+combinations of observed variables including a fully observed case. We can index
+the combinations of observed variables by $r$ and assume that the fully observed
+case occurs at $r = 1$. Let $G_r(Z)$ be the variables that are observed at a
+particular value of $r$. We can choose a sequence of functions $f_1, \dots, f_K$
+that we want to estimate. Each $f_k$ is assumed to be a function of a subset of
+$Z$ and it makes sense to assume (since these are chosen by the analyst) that
+there is at least one $f_k$ for each combination of observed variables $G_r(Z)$.
+Let $A_k$ be the sets of observed variable combinations that can be evaluate by
+the function $f_k$. If $f_k$ can be evaluated by the observed variables
+$G_r(Z)$, this will consist of all of the combinations of variables
+$r'$ such that $G_r(Z) \subseteq G_r'(Z)$. Because we assume that $G_1(Z) = Z$,
+$A_k$ is always non-empty.
 
-One potential solution would be to directly estimate $V$ and use some sort of
-$\hat V$. We can do this with a REML estimate.
+To estimate the covariance matrix $V$, we estimate the covariance between 
+$f_{k_1}$ and $f_{k_2}$ directly by computing the estimated covariance on 
+$A_{k_1} \cap A_{k_2}$.
 
-
+<!---# This did not work because the orthogonalization created variables that we
+needed to impute
 ### Proposal 2: Orthogonal g-functions
 
 For this idea we choose functions that after estimation are approximately
@@ -162,6 +179,7 @@ Then to
 achieve efficiency, we propose estimating the regression coefficients by running
 the coresponding regression on all of the data points in $A_k$ as well as
 computing the variance of $\tilde g_k$ within $A_k$.
+--->
 
 # Simulation
 
@@ -195,7 +213,7 @@ library(doParallel)
 library(doRNG)
 library(parallelly)
 
-# Run from src/
+# Run from src/ or src/explore/
 source("R/data_generation.R")
 
 ```
@@ -262,40 +280,61 @@ gls_est <- function(df, class = "basic", rho) {
 #| echo: false
 
 
-ortho_gls <- function(df, class = "basic") {
-
-  # For class == 'basic', we consider the functions f_k to be originally,
-  # f1 = X1, f2 = X2, f3 = Y.
+est_var_gls <- function(df, class = "basic") {
 
   if (class == "basic") {
 
-    # Get functions g_k
-    g1 <- df$X1 / var(df$X1)
-    df <- mutate(df, g1 = g1)
-    df_1 <- filter(df, delta_11 == 1 | delta_10 == 1)
-    t2 <- lm(X2 ~ g1, data = df_1)
-    g2 <- df_1$X2 - t2$coefficients[2] * df_1$g1
-    g2 <- g2 / var(g2)
-    df_1 <- mutate(df_1, g2 = g2)
-    df_11 <- filter(df_1, delta_11 == 1)
-    t3 <- lm(Y ~ X1 + X2, data = df_11)
-    g3 <- 
-      df_11$Y - t3$coefficients[2] * df_11$g1 - t3$coefficients[3] * df_11$g2
-    g3 <- g3 / var(g3)
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
 
     g_hat <- 
-      c(mutate(df, tmp = delta_11 / pi_11 * g1) |> pull(tmp) |> sum(),
-        mutate(df_1, tmp = delta_11 / pi_11 * g2) |> pull(tmp) |> sum(),
-        mutate(df_11, tmp = delta_11 / pi_11 * g3) |> pull(tmp) |> sum(),
-        mutate(df, tmp = delta_10 / pi_10 * g1) |> pull(tmp) |> sum(),
-        mutate(df_1, tmp = delta_10 / pi_10 * g2) |> pull(tmp) |> sum(),
-        mutate(df, tmp = delta_01 / pi_01 * g1) |> pull(tmp) |> sum(),
-        # ERROR: This does not work!
-        mutate(df_11, tmp = delta_01 / pi_01 * g3) |> pull(tmp) |> sum(),
-        mutate(df, tmp = delta_00 / pi_00 * g1) |> pull(tmp) |> sum())
+      c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
 
-    g_hat <- g_hat / nrow(df)
+    # Estimate Covariance Matrix
+    df_1p <- filter(df, delta_11 == 1 | delta_10 == 1)
+    df_p1 <- filter(df, delta_11 == 1 | delta_01 == 1)
+    df_11 <- filter(df, delta_11 == 1)
+    v_x1 <- var(df$X1)
+    v_x2 <- var(df_1p$X2)
+    v_y <- var(df_p1$Y)
+    cov_x1x2 <- cov(df_1p$X1, df_1p$X2)
+    cov_x1y <- cov(df_p1$X1, df_p1$Y)
+    cov_x2y <- cov(df_11$X2, df_11$Y)
 
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(v_x1, cov_x1x2, cov_x1y,
+               cov_x1x2, v_x2, cov_x2y,
+               cov_x1y, cov_x2y, v_y), nrow = 3)
+
+    v_10 <- 1 / df$pi_10[1] * matrix(c(v_x1, cov_x1x2, cov_x1x2, v_x2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(v_x1, cov_x1y, cov_x1y, v_y), nrow = 2)
+    v_00 <- 1 / df$pi_00[1] * v_x1
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(t(c(0, 0, 1) %*% ghat)))
   } else {
     stop("Only class == 'basic' has been implemented.")
   }
@@ -303,11 +342,79 @@ ortho_gls <- function(df, class = "basic") {
 
 ```
 
-<!---# Compare with: Best case in monotone data --->
-## Monotone Case
+```{r}
+#| label: MCMC
+#| echo: false
+#| tbl-cap: |
+#|   Results from simulations study with independent equally sized segments
+#|   $A_{11}$, $A_{10}$, $A_{01}$, and $A_{00}$ all of size $n = 250$. In this
+#|   simulation we have the true mean of $Y_2$ equal to $\mu = 5$ and the covariance
+#|   between $e_1$ and $e_2$ is $\rho = 0.5$. The goal is to estimate 
+#|   $E[Y_2] = \mu$. For the GLS estimation, we use the
+#|   estimated covariance matrix $\hat V$ with 
+#|   f-functions $f_1 = X_1$, $f_2 = X_2$ and $f_3 = Y$.
 
-# Variance Estimation
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+mc_theta <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr")) %dorng% {
+
+    # Generate Data
+    df <- gen_simple_data(obs_seg, mu = true_mu, rho = cov_e1e2)
+
+    # Estimators
+    oracle <- mean(df$Y)
+    cc <- df |>
+      filter(delta_11 == 1) |>
+      pull(Y) |>
+      mean()
+    ipw <- df |>
+      mutate(tmp = delta_11 / pi_11 * Y) |>
+      pull(tmp) |>
+      mean()
+
+    gls <- gls_est(df, rho = cov_e1e2)
+    gls_ev <- est_var_gls(df)
+
+    return(tibble(Oracle = oracle,
+                  CC = cc,
+                  IPW = ipw,
+                  GLS = gls,
+                  GLSEstVar = gls_ev
+    ))
+
+  } |>
+  bind_rows()
+
+stopCluster(clust)
+
+# Analyze Results
+mc_theta |>
+  summarize(
+    across(everything(),
+    list(Bias = ~mean(.) - true_mu,
+         SD = ~sd(.),
+         Tstat = ~(mean(.) - true_mu) / sqrt(var(.) / B)),
+    .names = "{.fn}_{.col}")) |> 
+  tidyr::pivot_longer(cols = everything(),
+                      names_to = c(".value", "Algorithm"),
+                      names_pattern = "(.*)_(.*)") |>
+  mutate(Pval = pt(-abs(Tstat), df = B)) |>
+  knitr::kable(digits = 3)
+
+```
+
+<!---# Compare with: Best case in monotone data 
+## Monotone Case--->
+
+# Optimal choice of g-functions
+
+TODO for the next set of simulations.
 
 # Conclusion
 
-Did it work?
+Did it work? Yes, estimating the covariance matrix did not produce a loss in
+efficiency.
