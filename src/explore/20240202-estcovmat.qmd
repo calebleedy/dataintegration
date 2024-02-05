@@ -1,0 +1,313 @@
+---
+title: "Estimating the Covariance Matrix"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    include-in-header: 
+      - "latex_header.tex"
+---
+
+```{r}
+#| label: global variables
+#| echo: false
+B <- 1000
+
+obs_seg <- 250
+true_mu <- 5
+cov_e1e2 <- 0.5
+
+```
+
+# Summary
+
+In this document, we 
+
+1. Propose a new technique for estimating a covariance matrix, and 
+2. Show via simulation studies that it works.
+
+# Problem and Proposal
+
+## Problem
+
+Previously, have a model $\hat g = Z g + e$ where $\hat g$ is defined by
+
+\begin{align*}
+g_1^{(11)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g_1(x_i) \\
+g_2^{(11)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g_2(y_{1i}) \\
+g_3^{(11)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g_3(y_{2i}) \\
+g_1^{(10)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{10}}{\pi_{10}} g_1(x_i) \\
+g_2^{(10)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{10}}{\pi_{10}} g_2(y_{1i}) \\
+g_1^{(01)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{01}}{\pi_{01}} g_1(x_i) \\
+g_3^{(01)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{01}}{\pi_{01}} g_2(y_{2i}) \\
+g_1^{(00)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{00}}{\pi_{00}} g_1(x_i) \\
+\end{align*}
+
+and
+
+$$\hat g = 
+\begin{bmatrix}
+g_1^{(11)} \\
+g_2^{(11)} \\
+g_3^{(11)} \\
+g_1^{(10)} \\
+g_2^{(10)} \\
+g_1^{(01)} \\
+g_3^{(01)} \\
+g_1^{(00)} \\
+\end{bmatrix},
+Z = 
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0 \\
+\end{bmatrix},
+E[e] = 0,
+\text{ and } 
+\Var(e) = n^{-1}
+\begin{bmatrix}
+V_{11} & 0 & 0 & 0 \\
+0 & V_{10} & 0 & 0 \\
+0 & 0 & V_{01} & 0 \\
+0 & 0 & 0 & V_{00} \\
+\end{bmatrix}.
+$$
+
+We also have
+
+$$
+V_{11} = 
+\begin{bmatrix}
+\frac{1}{\pi_{11}} E[g_1^2] - E[g_1]^2 & \frac{1}{\pi_{11}} E[g_1g_2] -
+E[g_1]E[g_2] & \frac{1}{\pi_{11}} E[g_1g_3] - E[g_1]E[g_3] \\
+\frac{1}{\pi_{11}} E[g_1g_2] - E[g_1]E[g_2] & \frac{1}{\pi_{11}} E[g_2^2] -
+E[g_2]^2 & \frac{1}{\pi_{11}} E[g_2g_3] - E[g_2]E[g_3] \\
+\frac{1}{\pi_{11}} E[g_1g_3] - E[g_1]E[g_3] & \frac{1}{\pi_{11}} E[g_2g_3] -
+E[g_2]E[g_3] & \frac{1}{\pi_{11}} E[g_3^2] - E[g_3]^2 \\
+\end{bmatrix},
+$$
+$$
+V_{10} = 
+\begin{bmatrix}
+\frac{1}{\pi_{10}}E[g_1^2] - E[g_1]^2 & \frac{1}{\pi_{10}}E[g_1g_2] - E[g_1]E[g_2]\\
+\frac{1}{\pi_{10}}E[g_1g_2] - E[g_1]E[g_2] & \frac{1}{\pi_{10}}E[g_2^2] - E[g_2]^2 \\
+\end{bmatrix},
+$$
+$$
+V_{01} = 
+\begin{bmatrix}
+\frac{1}{\pi_{01}}E[g_1^2] - E[g_1]^2 & \frac{1}{\pi_{01}}E[g_1g_3] - E[g_1]E[g_3]\\
+\frac{1}{\pi_{01}}E[g_1g_3] - E[g_1]E[g_3] & \frac{1}{\pi_{01}}E[g_3^2] - E[g_3]^2 \\
+\end{bmatrix}, \text{ and }
+V_{00} = 
+\begin{bmatrix}
+\frac{1}{\pi_{00}}E[g_1^2] - E[g_1]^2
+\end{bmatrix}.
+$$
+
+However, this challenge with actually using this model is that we have to use
+the matrix $V$, which we assume to be *known*. In this write up, we will not
+make this assumption.
+
+## Proposals
+
+### Proposal 1: REML
+
+One potential solution would be to directly estimate $V$ and use some sort of
+$\hat V$. We can do this with a REML estimate.
+
+
+### Proposal 2: Orthogonal g-functions
+
+For this idea we choose functions that after estimation are approximately
+independent from each
+other with a standard variance. If this is true, the covariance matrix $V$ is
+approximately the identity matrix. Not only do we not have to estimate $V$, but
+we do not even need to invert it! I now give a more detailed explanation of this
+method.
+
+Suppose that we observe variables $Z = (X_{m_1}, Y_{m_2})$ with an objective of
+estimating $\theta = E[g(Y_{m_2})$ for some function $g$ such that the
+variables are subject to missingness. We assume that there are $R$ unique
+combinations of observed variables including a fully observed case. We can index
+the combinations of observed variables by $r$ and assume that the fully observed
+case occurs at $r = 1$. Let $G_r(Z)$ be the variables that are observed at a
+particular value of $r$. We can choose a sequence of functions $f_1, \dots, f_K$
+that we want to estimate. Each $f_k$ is assumed to be a function of a subset of
+$Z$ and it makes sense to assume (since these are chosen by the analyst) that
+there is at least one $f_k$ for each combination of observed variables $G_r(Z)$.
+Let $A_k$ be the sets of observed variable combinations that can be evaluate by
+the function $f_k$. If $f_k$ can be evaluated by the observed variables
+$G_r(Z)$, this will consist of all of the combinations of variables
+$r'$ such that $G_r(Z) \subseteq G_r'(Z)$. Because we assume that $G_1(Z) = Z$,
+$A_k$ is always non-empty.
+
+Once we have the original $f_1, \dots, f_K$ we orthogonalize them using a
+Gram-Schmidt process. Let $g_1 = f_1 / \hat \Var(f_1)$. Then for $k > 1$
+we can continue using the sequence,
+
+$$\tilde g_k = f_k - \sum_{i = 1}^k \frac{\hat \Cov(f_k, g_i)}{\hat \Var(f_k)}
+g_i \text{ followed by } g_k = \tilde g_k / \hat \Var(\tilde g_k).$$
+
+However, the parameters for $\tilde g_k$ and $k > 1$ are all regression
+coefficients and the multiplier for $g_k$ is simply computing a variance.
+Then to
+achieve efficiency, we propose estimating the regression coefficients by running
+the coresponding regression on all of the data points in $A_k$ as well as
+computing the variance of $\tilde g_k$ within $A_k$.
+
+# Simulation
+
+<!---# Compare with: Known V in non-monotone case --->
+## Non-Monotone Case
+
+First, we consider the following non-monotone simulation setup. 
+
+\begin{align*}
+  \begin{bmatrix} x_1 \\ e_1 \\ e_2 \end{bmatrix} 
+  &\stackrel{ind}{\sim} N\left(\begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix}, 
+  \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & \rho \\ 0 & \rho & 1 \end{bmatrix}\right) \\
+  x_2 &= x + e_1 \\
+  y &= \mu + x + e_2 \\
+\end{align*}
+
+This yields outcome variables $X_1$ and $X_2$ that are correlated both with $Y$
+and additionally with each other. To generate the missingness pattern, we select
+`r obs_seg` observations into the four segments independently using simple
+random sampling. The goal of this estimation problem is to estimate $\theta = E[Y]$.
+
+```{r}
+#| label: setup
+#| echo: false
+#| warning: false
+#| message: false
+
+library(dplyr)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+# Run from src/
+source("R/data_generation.R")
+
+```
+
+
+```{r}
+#| label: gls functions
+#| echo: false
+
+#' This function is also used in 20240202-gls_sim.qmd. I have modified the code
+#' to account for the change from X, Y1, Y2 to X1, X2, Y.
+gls_est <- function(df, class = "basic", rho) {
+
+  if (class == "basic") {
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
+
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
+
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(1, 1, 1,
+               1, 2, 1 + rho,
+               1, 1 + rho, 2), nrow = 3)
+    v_10 <- 1 / df$pi_10[1] * matrix(c(1, 1, 1, 2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(1, 1, 1, 2), nrow = 2)
+    v_00 <- 1 / df$pi_00[1]
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(t(c(0, 0, 1) %*% ghat)))
+
+  } else {
+    stop("We have only 1 class: 'basic'.")
+  }
+}
+
+```
+
+```{r}
+#| label: proposed estimation
+#| echo: false
+
+
+ortho_gls <- function(df, class = "basic") {
+
+  # For class == 'basic', we consider the functions f_k to be originally,
+  # f1 = X1, f2 = X2, f3 = Y.
+
+  if (class == "basic") {
+
+    # Get functions g_k
+    g1 <- df$X1 / var(df$X1)
+    df <- mutate(df, g1 = g1)
+    df_1 <- filter(df, delta_11 == 1 | delta_10 == 1)
+    t2 <- lm(X2 ~ g1, data = df_1)
+    g2 <- df_1$X2 - t2$coefficients[2] * df_1$g1
+    g2 <- g2 / var(g2)
+    df_1 <- mutate(df_1, g2 = g2)
+    df_11 <- filter(df_1, delta_11 == 1)
+    t3 <- lm(Y ~ X1 + X2, data = df_11)
+    g3 <- 
+      df_11$Y - t3$coefficients[2] * df_11$g1 - t3$coefficients[3] * df_11$g2
+    g3 <- g3 / var(g3)
+
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * g1) |> pull(tmp) |> sum(),
+        mutate(df_1, tmp = delta_11 / pi_11 * g2) |> pull(tmp) |> sum(),
+        mutate(df_11, tmp = delta_11 / pi_11 * g3) |> pull(tmp) |> sum(),
+        mutate(df, tmp = delta_10 / pi_10 * g1) |> pull(tmp) |> sum(),
+        mutate(df_1, tmp = delta_10 / pi_10 * g2) |> pull(tmp) |> sum(),
+        mutate(df, tmp = delta_01 / pi_01 * g1) |> pull(tmp) |> sum(),
+        # ERROR: This does not work!
+        mutate(df_11, tmp = delta_01 / pi_01 * g3) |> pull(tmp) |> sum(),
+        mutate(df, tmp = delta_00 / pi_00 * g1) |> pull(tmp) |> sum())
+
+    g_hat <- g_hat / nrow(df)
+
+  } else {
+    stop("Only class == 'basic' has been implemented.")
+  }
+}
+
+```
+
+<!---# Compare with: Best case in monotone data --->
+## Monotone Case
+
+# Variance Estimation
+
+# Conclusion
+
+Did it work?
