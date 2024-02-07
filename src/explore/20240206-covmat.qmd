@@ -1,0 +1,189 @@
+---
+title: "Estimating the Covariance Matrix"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    include-in-header: 
+      - "latex_header.tex"
+---
+
+```{r}
+#| label: global variables
+#| echo: false
+
+B <- 2000
+obs_seg <- 250
+true_mu <- 5
+cov_e1e2 <- 0.5
+
+```
+
+# Summary
+
+In this document, we do the following:
+
+1. Verify numerically the true covariance matrix in the simple
+normal model. 
+
+# Problem
+
+In `20240202-estcovmat.pdf` and `20240202-gls_sim.pdf`, we ran simulations in
+which we used the *true* covariance matrix to get the best estimator.
+Unfortunately, further analysis suggests that the covariance matrix used
+previously was slightly incorrect. This report tests to see if this new result
+is correct.
+
+The previously accepted true variance estimate^[See Page 219 of notes] was the
+following:
+
+$$\Cov(\hat f_1, \hat f_2) = N^{-1} \pi^{-1} I(\delta_1 = \delta_2) \Cov(f_1,
+f_2) $$
+
+and the new variance estimate^[See Page 221 of notes] is 
+
+$$\Cov(\hat f_1, \hat f_2) = N^{-1}(I(\delta_1 \neq \delta_2) \Cov(f_1, f_2) +
+\pi^{-1} I(\delta_1 = \delta_2) \Cov(f_1, f_2)).$$
+
+The only difference between the estimates is the covariance terms between
+segments. Are these independent or not?
+
+# Simulation
+
+```{r}
+#| label: setup
+#| echo: false
+#| warning: false
+#| message: false
+
+library(dplyr)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+# Run from src/ or src/explore/
+source("R/data_generation.R")
+
+```
+
+
+
+```{r}
+#| label: MCMC
+#| echo: false
+
+
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+mc_g <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr")) %dorng% {
+
+# Generate Data
+  df <- gen_simple_data(obs_seg, mu = true_mu, rho = cov_e1e2)
+  g_hat <- 
+    c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
+
+  return(tibble(g1 = g_hat[1],
+                g2 = g_hat[2],
+                g3 = g_hat[3],
+                g4 = g_hat[4],
+                g5 = g_hat[5],
+                g6 = g_hat[6],
+                g7 = g_hat[7],
+                g8 = g_hat[8]))
+  } |>
+  bind_rows()
+
+stopCluster(clust)
+cov_vec <- 
+  c(cov(mc_g$g1, mc_g$g1),
+    cov(mc_g$g1, mc_g$g2),
+    cov(mc_g$g1, mc_g$g3),
+    cov(mc_g$g1, mc_g$g4),
+    cov(mc_g$g1, mc_g$g5),
+    cov(mc_g$g1, mc_g$g6),
+    cov(mc_g$g1, mc_g$g7),
+    cov(mc_g$g1, mc_g$g8),
+    cov(mc_g$g2, mc_g$g2),
+    cov(mc_g$g2, mc_g$g3),
+    cov(mc_g$g2, mc_g$g4),
+    cov(mc_g$g2, mc_g$g5),
+    cov(mc_g$g2, mc_g$g6),
+    cov(mc_g$g2, mc_g$g7),
+    cov(mc_g$g2, mc_g$g8),
+    cov(mc_g$g3, mc_g$g3),
+    cov(mc_g$g3, mc_g$g4),
+    cov(mc_g$g3, mc_g$g5),
+    cov(mc_g$g3, mc_g$g6),
+    cov(mc_g$g3, mc_g$g7),
+    cov(mc_g$g3, mc_g$g8),
+    cov(mc_g$g4, mc_g$g4),
+    cov(mc_g$g4, mc_g$g5),
+    cov(mc_g$g4, mc_g$g6),
+    cov(mc_g$g4, mc_g$g7),
+    cov(mc_g$g4, mc_g$g8),
+    cov(mc_g$g5, mc_g$g5),
+    cov(mc_g$g5, mc_g$g6),
+    cov(mc_g$g5, mc_g$g7),
+    cov(mc_g$g5, mc_g$g8),
+    cov(mc_g$g6, mc_g$g6),
+    cov(mc_g$g6, mc_g$g7),
+    cov(mc_g$g6, mc_g$g8),
+    cov(mc_g$g7, mc_g$g7),
+    cov(mc_g$g7, mc_g$g8),
+    cov(mc_g$g8, mc_g$g8))
+
+cov_f1f2 <- 
+  c(1, 1, 1, 1, 1, 1, 1, 1,
+    2, 1 + cov_e1e2, 1, 2, 1, 1 + cov_e1e2, 1,
+    2, 1, 1 + cov_e1e2, 1, 2, 1,
+    1, 1, 1, 1, 1,
+    2, 1, 1 + cov_e1e2, 1,
+    1, 1, 1,
+    2, 1,
+    1)
+exp1_cov <- 
+  c(4, 4, 4, 0, 0, 0, 0, 0,
+    4, 4, 0, 0, 0, 0, 0,
+    4, 0, 0, 0, 0, 0,
+    4, 4, 0, 0, 0,
+    4, 0, 0, 0,
+    4, 4, 0,
+    4, 0,
+    4) / (4 * obs_seg)
+exp2_cov <- 
+  c(4, 4, 4, 1, 1, 1, 1, 1,
+    4, 4, 1, 1, 1, 1, 1,
+    4, 1, 1, 1, 1, 1,
+    4, 4, 1, 1, 1,
+    4, 1, 1, 1,
+    4, 4, 1,
+    4, 1,
+    4) / (4 * obs_seg)
+
+exp1 <- exp1_cov * cov_f1f2
+exp2 <- exp2_cov * cov_f1f2
+
+tibble(Actual = cov_vec, Exp1 = exp1, Exp2 = exp2) |>
+  knitr::kable(digits = 5)
+
+```
+
+# Conclusion
+
+Which is correct? It looks like the first derivation is correct. This does make
+sense as I view the different segments as independent. The question is then what
+mistake did I make in my own analysis?

@@ -3,7 +3,8 @@ Notes/*
 !Notes/*.pdf
 !Notes/*.md
 !Notes/*.qmd
-Presentations/*
-!Presentations/*.tex
-!Presentations/*.bib
-!Presentations/*.pdf
+final/presentations/*
+!final/presentations/*.tex
+!final/presentations/*.bib
+!final/presentations/*.pdf
+!final/presentations/*.qmd

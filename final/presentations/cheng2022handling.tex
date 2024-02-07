@@ -1,0 +1,681 @@
+\documentclass{beamer} %
+\usetheme{CambridgeUS}
+\usepackage[latin1]{inputenc}
+\usefonttheme{professionalfonts}
+\usepackage{times}
+\usepackage{graphics}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{biblatex}
+
+\usetikzlibrary{shapes, positioning, arrows}
+\addbibresource{references.bib}
+
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\renewcommand{\L}{\ensuremath{\mathcal{L}}}
+\providecommand{\bY}{\ensuremath{\mathbf{Y}}}
+\providecommand{\bX}{\ensuremath{\mathbf{X}}}
+\providecommand{\bV}{\ensuremath{\mathbf{V}}}
+\providecommand{\bK}{\ensuremath{\mathbf{K}}}
+\providecommand{\bmu}{\ensuremath{\mathbf{\mu}}}
+\providecommand{\bSigma}{\ensuremath{\mathbf{\Sigma}}}
+\providecommand{\bbeta}{\ensuremath{\boldsymbol{\beta}}}
+\providecommand{\beps}{\ensuremath{\boldsymbol{\varepsilon}}}
+
+\newcommand{\MAP}{{\text{MAP}}}
+\newcommand{\argmax}{{\text{argmax}}}
+\newcommand{\argmin}{{\text{argmin}}}
+\newcommand{\Cov}{{\text{Cov}}}
+\newcommand{\Var}{{\text{Var}}}
+\newcommand{\logistic}{{\text{logistic}}}
+%\setbeamersize{text margin left=0.3mm,text margin right=0.1mm} 
+
+\author[Cheng et al.]{Gang Cheng, Yen-Chi Chen, Maureen A. Smith, and Ying-Qi Zhao}
+\title[Nonmonotone MNAR Data]{Handling Nonmonotone Missing Data with Available
+Complete-Case Missing Value Assumption}
+
+\begin{document}
+
+\everymath{\displaystyle}
+\setbeamertemplate{title page}[default][colsep=-4bp,rounded=true]
+\setbeamertemplate{itemize items}[circle]
+\setbeamercolor{block title}{bg=red!50,fg=black}
+\frame{\titlepage}
+
+% Outline:
+% 1. Give example case study: health data only observed when people come to
+% clinic -> nonmonotone and probably MNAR because people come in when they are
+% more sick.
+% 2. Problem: how are we going to analyze data? Give 3 main questions to answer.
+% 3. Notation: 
+% 4. Answer Question 1
+% 5. Explain theory
+% 6. Give proposition
+% 7. Explain regression estimation
+% 8. Give result for semiparametric and multiply-robust estimation
+% 9. Answer Question 2: Multiple Primary Variables
+% 10. Explain theory (IPW)
+% 11. Regression adjustment
+% 12. Semiparametric result and multiply robust estimation
+% 13. Answer Question 3: Marginal Parametric Model
+% 14. Explain theory (IPW)
+% 15. Regression adjustment
+% 16. Semiparametric result and multiply robust estimation
+% 17. Simulation Study
+
+\begin{frame}{Why did I choose this paper?}
+
+  \nocite{cheng2022handling}
+  \begin{itemize}
+    \item[1.] I think that this paper answers some important questions about how
+      to analyze data that is nonmonotone and missing-not-at-random.
+    \item[2.] The paper does a good job motivating the semiparametric model and
+      how one can combine a response model with an outcome model.
+    \item[3.] The main example shows a distinct use for paper's methodology.
+  \end{itemize}
+  % As always, please feel free to ask questions and interrupt.
+
+\end{frame}
+
+\begin{frame}{Outline}
+  \begin{itemize}
+    \item[1.] Motivating Example
+    \item[2.] Problem and Notation
+    \item[3.] Single Variable Case
+    \item[4.] Multiple Variable Case
+    \item[5.] Simulations
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+
+  \begin{center}
+    \Large
+    Motivating Example
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Motivating Example}
+  \begin{itemize}
+    \item Electronic health records (EHRs) data set that contains longitudinal
+      information about diabetes patients.
+    \item Primary variable of interest: glycated hemoglobin (HbA1c) measurement.
+    \item A HbA1c level of less than 7\% is known to reduce the risk of
+      microvascular complications.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivating Example}
+  \begin{itemize}
+    \item However, EHR data is \textit{incomplete} because it is only measured
+      when patients enter a clinic.
+    \item The missingness is likely to be missing-not-at-random (MNAR) because
+      a sicker patient is more likely to come into the clinic. 
+      % Since the probability of observing the value depends on the outcome
+      % itself the data is MNAR.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Monotone and Nonmonotone Data}
+  \begin{itemize}
+    \item The data also contains nonmonotone missing patterns when patients miss visits.
+    \item This data contains quarterly measurements from 10 years worth of data,
+      but the authors only consider analyzing the first year.
+  \end{itemize}
+
+  \vspace{0.5cm}
+
+  \begin{center}
+  {\footnotesize
+  \begin{tabular}{cc}
+    Monotone Data & Nonmonotone Data \\
+    \begin{tabular}{lrrrr}
+      \toprule
+      Index &  Q1 & Q2 & Q3 & Q4 \\
+      \midrule
+      1 & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\ 
+      2 & $\checkmark$ & $\checkmark$ & $\checkmark$ &\\ 
+      3 & $\checkmark$ & $\checkmark$ & & \\ 
+      4 & $\checkmark$ & $\checkmark$ & & \\ 
+      \bottomrule
+    \end{tabular} &
+    \begin{tabular}{lrrrr}
+      \toprule
+      Index & Q1 & Q2 & Q3 & Q4\\
+      \midrule
+      1 & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\ 
+      2 & $\checkmark$ &  & $\checkmark$ & \\ 
+      3 & $\checkmark$ & & $\checkmark$ & \\ 
+      4 & $\checkmark$ & & & $\checkmark$ \\ 
+      \bottomrule
+    \end{tabular}
+  \end{tabular}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}
+
+  \begin{center}
+    \Large
+    Problem and Notation
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Problem}
+  \begin{itemize}
+    \item How are we going to analyze this data?
+    \item Three questions we want to answer:
+      \vspace{0.1cm}
+      \begin{itemize}
+        \item[1.] Single Variable of Interest: $\theta = E[Y_4]$
+          \vspace{0.2cm}
+        \item[2.] Multiple Variables: Summary Measures
+          \[\theta = E[Y_3 Y_4] \text{ or } 
+          \theta = \Pr(Y_3 \leq 0.07, Y_4 \leq 0.07)\]
+        \item[3.] Multiple Variables: Marginal Parametric Model 
+          \[E[Y_4 \mid Y_2, Y_3] = \beta_0 + \beta_1 Y_2 + \beta_2 Y_3.\]
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Notation}
+  \begin{itemize}
+    \item Primary variables ($L$)
+    \item Auxiliary variables ($X$)
+    \item Parameter of interest $\theta = E[f(L)]$
+    \item Response pattern for $L$: $A \in \{0, 1\}^d$ where $A_j = 1$ if $L_j$ is
+      observed.
+    \item Response pattern for $X$: $R \in \{0, 1\}^p$ where $R_j = 1$ if $X_j$
+      is observed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Notation}
+  \begin{itemize}
+    \item We define $R \geq r$ if $R_i \geq r_i$ for all $i \in \{1, \dots,
+      p\}$.
+    \item For example, $1010 \geq 1000$ but $1010$ cannot be compared with
+      $0101$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+
+  \begin{center}
+    \Large
+    Single Variable Case
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Question 1: Single Variable of Interest}
+  \begin{itemize}
+    \item Since we have a single variable of interest $L \in \R$ and 
+      $A \in \{0, 1\}$. We want to estimate $\theta = E[f(L)]$ for some 
+      known $f$.
+  \end{itemize}
+
+  \begin{align*}
+    \theta &= E[f(L)] = \int f(\ell)p(\ell)d\ell \\ 
+    &= \underbrace{\int f(\ell)p(\ell, A = 1) d\ell}_{\theta_1} +\\ 
+    &\quad
+    \sum_r \underbrace{\int \int f(\ell)p(\ell, x_r, R= r, A = 0) dx_r d\ell}_{\theta_0, r} \\
+    &= \theta_1 + \sum_r \theta_{0,r}
+  \end{align*}
+\end{frame}
+
+\begin{frame}{Question 1: Single Variable of Interest}
+  \begin{itemize}
+    \item We know that $\theta_1$ is identifiable since $A = 1$.
+    \item To estimate $\theta_{0, r}$ we notice that
+  \end{itemize}
+
+  \begin{align*}
+    \theta_{0,r} 
+    &= \int \int f(\ell)p(\ell, x_r, R = r, A = 0) dx_r d\ell \\ 
+    &= \int \int f(\ell)p(\ell \mid x_r, R = r, A = 0) p(x_r, R = r, A = 0) d\ell dx_r
+  \end{align*}
+\end{frame}
+
+\begin{frame}{Identification}
+  \begin{itemize}
+    \item To identify $\theta_{0,r}$ we need to identify both $p(x_r, R = r, A =
+      0)$ and $p(\ell \mid x_r, R = r, A = 0)$.
+    \item The first quantity is identifiable from the data.
+    \item The second quantity requires an additional assumption.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Assumption}
+  \begin{itemize}
+    \item The available complete-case missing value (ACCMV) assumption says the
+      following:
+
+      \[p(\ell \mid x_r, R = r, A = 0) = p(\ell \mid x_r, R \geq r, A = 1).\]
+
+      % This means that we can identify p(\ell \mid x_r) using all of the
+      % missing patterns in which we full observe L and we always observe x_r.
+      % This holds whether we observe other variables as well.
+      \pause
+
+    \item The ACCMV assumption should be contrasted with the complete-case
+      missing values (CCMV) assumption \cite{tchetgen2018discrete} which is 
+
+      \[p(\ell \mid x_r, R = r, A = 0) = p(\ell \mid x_r, R = 1_p, A = 1).\]
+      % Benefit of ACCMV is that we gain efficiency from using all of the
+      % potential observations.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  \begin{itemize}
+    \item First notice that the ACCMV assumption is equivalent to
+
+      \[
+        \frac{\Pr(R = r, A = 0 \mid X_r, L)}{\Pr(R \geq r, A = 1 \mid X_r, L)} = 
+        \frac{\Pr(R = r, A = 0 \mid X_r)}{\Pr(R \geq r, A = 1 \mid X_r)} := O_r(X_r).
+      \]
+    \item We can estimate the odds ratio, $O_r(X_r)$, using logistic regression.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  \begin{itemize}
+    \item Then we have
+      \begin{align*}
+        \theta_{0, r} 
+        &= \int \int f(\ell) p(\ell, x_r, R = r, A = 0) dx_r d\ell \\
+        &= \int \int f(\ell) \frac{p(\ell, x_r, R = r, A = 0)}{p(\ell, x_r, R
+        \geq r, A = 1)} p(\ell, x_r, R \geq r, A = 1) dx_r d\ell \\
+        &= \int \int f(\ell) \frac{\Pr(R = r, A = 0 \mid x_r, \ell)}{\Pr(R \geq
+        r, A = 1 \mid x_r, \ell)} p(\ell, x_r, R \geq r, A = 1) dx_r d\ell \\
+        &= \int \int f(\ell) O_r(x_r) p(\ell, x_r, R \geq r, A = 1) dx_r d\ell \\
+        &= E[f(L)O_r(X_r)I(R \geq r, A = 1)].
+      \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  \begin{itemize}
+    \item Then we have the IPW estimator
+
+      \[\hat \theta_{0, r, IPW} = n^{-1} \sum_{i = 1}^n f(L_i)O_r(X_{ir}; \hat
+        \alpha_r) I(R_i \geq r, A_i = 1).\]
+      \item This can be combined with an estimated mean for $\theta_1$ and 
+        create
+        \[\hat \theta_{IPW} = n^{-1} \sum_{i = 1}^n f(L_i)I(A_i = 1)\left(
+            1 + \sum_{r} O_r(X_{ir}; \hat \alpha_r) I(R_i \geq r) \right)\]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{theorem}
+    Under regularity conditions,
+
+    \[\sqrt n (\hat \theta_{IPW} - \theta) \stackrel{d}{\to} N(0, \sigma_{IPW}^2).\]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{Regression Estimation}
+  \begin{itemize}
+    \item We can also use the ACCMV assumption directly to get an outcome model
+      approach.
+
+      \begin{align*}
+        \theta_{0,r} 
+        &= \int \int f(\ell)p(\ell \mid x_r, R = r, A = 0) p(x_r, R = r, A = 0) d\ell dx_r \\
+        &= \int \int f(\ell)p(\ell \mid x_r, R \geq r, A = 1) p(x_r, R = r, A = 0) d\ell dx_r \\
+        &= \int m_{r, 0}(x_r) p(x_r, R = r, A = 0) dx_r \\
+        &= E[m_{r, 0}(X_r)I(R = r, A = 0)]\\
+      \end{align*}
+
+      where $m_{r, 0}(x_r) = E[f(\ell) \mid X_r = x_r, R \geq r, A = 1]$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Regression Estimation}
+  \begin{itemize}
+    \item Then we can construct a regression estimator with
+      \[\hat \theta_{0,r, Reg} = n^{-1} \sum_{i = 1}^n m_{r,0}(X_{i,r}, \hat
+        \beta_r)I(R_i = r, A_i = 0).\]
+      \item This can be combined with the estimated mean for $\theta_1$ to get
+        \[\hat \theta_{Reg} = n^{-1} \sum_{i = 1}^n (f(L_i)A_i + m_{R_i, 0}(X_{i,
+          R_i}, \hat \beta_{R_i})(1 - A_i)).\]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{theorem}
+    Under regularity conditions,
+
+    \[\sqrt n (\hat \theta_{Reg} - \theta) \stackrel{d}{\to} N(0, \sigma_{Reg}^2).\]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{Double Robust Estimation}
+  \begin{itemize}
+    \item Since the IPW and regression estimator might not be efficient, we
+      combine the two to get a double robust estimator.
+  \end{itemize}
+
+  \begin{theorem}
+    Under the ACCMV assumption, the efficient influence function of estimating
+    $\theta_{0,r}$ is 
+    {\small
+    \[(f(L) - m_{r,0}(X_r))O_r(X_r)I(R \geq r, A = 1) + m_{r,0}(X_r)I(R = r, A =
+      0) - \theta_{0, r}.\]
+    }
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{Double Robust Estimation}
+  \begin{itemize}
+    \item Hence, an efficient estimator of $\theta_{0,r}$ is 
+      \begin{align*}
+        &\hat \theta_{0,r,DR} \\
+        &= n^{-1} \sum_{i = 1}^n \{ (f(L_i) - \hat m_{r, 0}(X_{i,r}))
+          \hat O_r(X_{i,r}) I(R_i \geq r, A_i = 1) \\
+        &\quad+ \hat m_{r, 0}(X_{i,r})I(R_i = r, A_i = 0)\}
+        \end{align*}
+    \item This lead to the double robust estimator
+
+      \[\hat \theta_{DR} = \sum_r \hat \theta_{0,r, MR} + \hat \theta_1\]
+
+      where $\hat \theta_1 = n^{-1} \sum_{i = 1}^n f(L_i)I(A_i = 1)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{theorem}
+    Under regularity conditions,
+
+    \[\sqrt n (\hat \theta_{DR} - \theta) \stackrel{d}{\to} N(0, \sigma_{eff}^2).\]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}
+
+  \begin{center}
+    \Large
+    Multiple Variable Case
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Question 2: Multiple Variables of Interest}
+  \begin{itemize}
+    \item Now, we consider the problem when $L \in \R^d$ is multivariate.
+    \item In this setup, the complete case is $A = 1_d$.
+    \item We also introduce a new notation $\bar a = 1_d - a$ and $\bar r = 1_p
+      - r$.
+      % So if a represents the observed primary variables, \bar a is the
+      % unobserved primary variables. Likewise for r and the auxiliary variables
+      % x.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{ACCMV Assumption}
+  \begin{itemize}
+    \item For a multivariate $L$, the ACCMV assumption is revised to
+
+      \[p(\ell_{\bar a} \mid \ell_{a}, x_r, A = a, R = r) = 
+        p(\ell_{\bar a} \mid \ell_{a}, x_r, A = 1_d, R \geq r).
+        \]
+
+      \item This is equivalent to
+
+      {\small
+      \[\frac{\Pr(R = r, A = a \mid x_r, \ell)}{\Pr(R \geq r, A = 1_d \mid
+        x_r, \ell)} = 
+        \frac{\Pr(R = r, A = a \mid x_r, \ell_a)}{\Pr(R \geq r, A = 1_d \mid
+        x_r, \ell_a)} := O_{r, a}(x_r, \ell_a).\]
+      }
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  \begin{itemize}
+    \item To handle the multivariate case, notice that we have
+      \[\theta = E[f(L)] = \sum_{r, a}E[f(L)I(A = a, R = r)] = \sum_{r, a}
+        \theta_{r,a}.\]
+      \item $a = 1_d$, $\theta_{r,a}$ is identifiable and 
+        \[\theta_{r,a} = E[f(L)I(A = a, R = r)].\]
+      \item When $a \neq 1_d$, we can derive
+        \[\theta_{r,a} = E[f(L)O_{r,a}(X_r, L_a)I(A = 1_d, R \geq r)].\]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  \begin{itemize}
+    \item Furthermore, we can express
+      \begin{align*}
+        &\sum_{r, a \neq 1_d} O_{r,a}(X_r, L_a)I(A = 1_d, R \geq r) \\
+        &= \sum_{r} I(A = 1_d, R = r) \sum_{\tau \leq r, a \neq 1_d}O_{\tau,a}(X_\tau, L_a) \\
+        &= \sum_{r} Q_r(X_r, L) I(R = r, A = 1_d)
+      \end{align*}
+
+      where $Q_r(X_r, L) = \sum_{\tau \leq r, a \neq 1_d} O_{\tau,a}(X_\tau, L_a)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  \begin{itemize}
+    \item Then,
+      \begin{align*}
+        \theta 
+        &= E[f(L)] \\ 
+        &= \sum_{r, a\neq 1_d} E[f(L)O_{r,a}(X_r, L_a) I(A = 1_d, R \geq r)] \\
+        &\quad+ \sum_{r} E[f(L)I(A = 1_d, R = r)] \\ 
+        &= E\Big[f(L)\sum_{r} (1 + Q_r(X_r, L)I(R = r, A = 1_d))\Big].
+      \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IPW Estimation}
+  Then IPW estimation has three steps
+  \begin{itemize}
+    \item[1.] Estimate the individual odds $O_{r,a}$
+    \item[2.] Compute the total weights $Q_r$.
+      \[\hat Q_r(X_r, L) = \sum_{\tau \leq r} \sum_{a \neq 1_d}\hat O_{\tau, a}(X_\tau, L_a).\]
+    \item[3.] Apply the IPW Approach
+      \[\hat \theta_{IPW} = n^{-1} \sum_{i = 1}^n f(L_i)(\hat Q_{R_i}(X_{i,
+        R_i}, L_i) + 1)I(A_i = 1_d).\]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{theorem}
+    Under regularity conditions,
+
+    \[\sqrt n (\hat \theta_{IPW} - \theta) \stackrel{d}{\to} N(0, \sigma_{IPW}^2).\]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{Regression Estimation}
+  \begin{itemize}
+    \item Similar to the single variable case, the ACCMV assumption implies that
+      \[\theta_{r,a} = E[m_{r,a}(X_r, L_a)I(R = r, A = a)]\]
+
+      where $m_{r,a}(X_r, L_a) = E[f(L) \mid L_a, X_r, R \geq r, A = 1_d]$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Regression Estimation}
+  \begin{itemize}
+    \item[1.] Estimate the outcome regression model.
+    \item[2.] Using the regression model to impute the missing values,
+      \[\hat \theta_{Reg} = n^{-1} \sum_{i = 1}^n (f(L_i)I(A_i = 1_d) + 
+        \hat m_{R_i,A_i}(X_{i, R_i}, L_{A_i})I(A_i \neq 1_d)).\]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{theorem}
+    Under regularity conditions,
+
+    \[\sqrt n (\hat \theta_{Reg} - \theta) \stackrel{d}{\to} N(0, \sigma_{Reg}^2).\]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{Double Robust Estimation}
+  \begin{itemize}
+    \item For exactly the same reasons as before, we can construct a double
+      robust estimator:
+
+      {\footnotesize
+      \begin{align*}
+        &\hat \theta_{DR} \\
+        &= n^{-1} \sum_{i = 1}^n \Big(
+          \sum_{r, a \neq 1_d} \{(f(L_i) - \hat m_{\tau, a}(X_i, r)) 
+            \hat O_{r,a}(X_{i,r}, L_{i,a})I(R_i \geq r, A_i = 1_d) \\ 
+        &\quad+ \hat m_{r,a}(X_{i,r}, L_{i,a})I(R_i = r, A_i = a)\} + f(L_i)I(A_i
+        = 1_d) \Big)
+      \end{align*}
+      }
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{theorem}
+    Under regularity conditions,
+
+    \[\sqrt n (\hat \theta_{DR} - \theta) \stackrel{d}{\to} N(0, \sigma_{eff}^2).\]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}
+
+  \begin{center}
+    \Large
+    Simulations
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Simulation: Single Variable}
+  \begin{itemize}
+    \item Let $L = Y_3$ and $X = (Y_1, Y_2)$.
+    \item We want to estimate $\theta = E[Y_3]$.
+    \item Let $|r| = \sum_r r_i$ be the number of observed variables in $X$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation: Single Variable}
+  We generate data with the following setup:
+  \begin{itemize}
+    \item[1.] $(L, X_r) \mid A = 1, R = r \sim N\left(\mu_{|r|+1}, \Sigma_{|r|+1}\right)$
+    \item[2.] $X_r \mid A = 0, R = r \sim N\left(\mu_{|r|}, \Sigma_{|r|}\right)$.
+      \vspace{0.3cm}
+    \item We have $\mu_1 = 1$, $\mu_2 = (1, -1)'$, $\mu_3 = (0, -1, -1)'$, and 
+      \[\Sigma_1 = 1, \Sigma_2 = \begin{bmatrix} 1 & 1/2 \\ 1/2 & 1 \end{bmatrix}
+      \text{ and } \Sigma_3 = 
+      \begin{bmatrix} 1 & 1/2 & 1/2 \\ 1/2 & 1 & 1/2 \\ 1/2 & 1/2 & 1 \end{bmatrix}.\]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation: Single Variable}
+  \begin{itemize}
+    \item We assume that $\Pr(A = j, R = r) = 1/8$ for $j = 0, 1$ and $r \in \{00,
+      01, 10, 11\}$.
+    \item We run 1000 Monte Carlo samples with the total number of observations
+      equal to $n = 2000$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation Results}
+  \begin{center}
+  \begin{tabular}{lrr}
+    \toprule
+    Method & Bias & Coverage of 95\% CI \\
+    \midrule
+    IPW             & -0.006 & 0.778 \\
+    IPW (mis.)      & -0.084 & 0.536 \\
+    Reg             & -0.001 & 0.955 \\
+    Reg (mis.)      &  0.040 & 0.857 \\
+    DR              & -0.002 & 0.931 \\
+    DR (IPW mis.)   &  0.000 & 0.939 \\
+    DR (Reg mis.)   & -0.000 & 0.920 \\
+    DR (Both mis.)  &  0.041 & 0.870 \\
+    Complete Case   & -0.178 & 0.001 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Simulation: Multiple Variables}
+  \begin{itemize}
+    \item $L = (Y_3, Y_4)$ and $X = (Y_1, Y_2)$
+    \item Goal: $\theta = E[Y_3 Y_4]$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation: Multiple Variables}
+  We generate the data using the following procedure:
+  \begin{itemize}
+    \item[1.] $(L, X_r) \mid A = 11, R = r \sim N(1_{2 + |r|, \Sigma_{2+|r|}})$
+      for $r \in \{00, 01, 10, 11\}$.
+    \item[2.] $(L_a, X_r) \mid A = a, R = r \sim N(\mu_{1 + |r|}, \Sigma_{1+|r|})$
+      for any $a \in \{01, 10\}$ and any $r \in \{00, 01, 10, 11\}$.
+    \item[3.] $X_r \mid A = 00, R = r \sim N(\mu_{|r|}, \Sigma_{|r|})$ for any
+      $r \in \{01, 10, 11\}$.
+  \end{itemize}
+
+  where $\Sigma_d = (1/2) I_d + (1/2) 1_d 1_d'$ and $\mu_1 = 0.5$, $\mu_2 = 1_2$,
+  and $\mu_3 = 1_3$.
+\end{frame}
+
+\begin{frame}{Simulation: Multiple Variables}
+  \begin{itemize}
+    \item We let $\Pr(A = a, R = r) = 1 / 16$ for $a \in \{00, 01, 10, 11\}$ and
+      for $r \in \{00, 01, 10, 11\}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation Results}
+  \begin{center}
+  \begin{tabular}{lrr}
+    \toprule
+    Method & Bias & Coverage of 95\% CI \\
+    \midrule
+    IPW             & -0.000 & 0.943 \\
+    IPW (mis.)      &  0.078 & 0.852 \\
+    Reg             & -0.001 & 0.956 \\
+    Reg (mis.)      & -0.048 & 0.892 \\
+    DR              & -0.001 & 0.948 \\
+    DR (IPW mis.)   & -0.001 & 0.949 \\
+    DR (Reg mis.)   & -0.001 & 0.952 \\
+    DR (Both mis.)  &  0.014 & 0.943 \\
+    Complete Case   &  0.131 & 0.723 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+
+  \begin{center}
+    \Large
+    Thank You
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{References}
+  \printbibliography
+\end{frame}
+
+%\begin{frame}{}
+%  \begin{itemize}
+%    \item 
+%  \end{itemize}
+%\end{frame}
+
+\end{document}

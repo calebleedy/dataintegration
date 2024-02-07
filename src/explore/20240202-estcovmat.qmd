@@ -1,5 +1,5 @@
 ---
-title: "Estimating the Covariance Matrix"
+title: "Using GLS and Estimating the Covariance Matrix"
 author:
   - name: Caleb Leedy
 date: today
