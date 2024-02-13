@@ -1,0 +1,343 @@
+---
+title: "Finding the Optimal Coefficient Forms"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    include-in-header: 
+      - "latex_header.tex"
+---
+
+```{r}
+#| label: global variables
+#| echo: false
+
+B <- 2000
+obs_seg <- 250
+true_mu <- 5
+cov_e1e2 <- 0.5
+
+```
+
+# Summary
+
+In this document, we do the following:
+
+1. Vary the functional forms of the coefficients, 
+2. Check to ensure that our estimated variance is still accurate.
+
+# Idea
+
+In `20240202-estcovmat.qmd`, we tested an estimated covariance matrix. The results
+suggest that estimating the covariance matrix suffers little penalty. In this
+report, we want to see if choosing different functional forms of $f_1$ and $f_2$ 
+(that depend on the data) cause the covariance estimation to be biased.
+
+Instead of using $f_1(X_1) = X_1$ and $f_2(X_2) = X_2$ as we did in 
+`20240202-estcovmat.qmd` we want to use $f_1(X_1) = E[Y \mid X_1]$ and 
+$f_2(X_2) = E[Y \mid X_2]$, *and* we need to also test them with estimated
+versions of these functions.
+
+# Simulation
+
+```{r}
+#| label: setup
+#| echo: false
+#| warning: false
+#| message: false
+
+library(dplyr)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+# Run from src/ or src/explore/
+source("R/data_generation.R")
+
+```
+
+
+```{r}
+#| label: gls functions
+#| echo: false
+
+#' This function is also used in 20240202-gls_sim.qmd. I have modified the code
+#' to account for the change from X, Y1, Y2 to X1, X2, Y.
+gls_est <- function(df, class = "basic", rho) {
+
+  if (class == "basic") {
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
+
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
+
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(1, 1, 1,
+               1, 2, 1 + rho,
+               1, 1 + rho, 2), nrow = 3)
+    v_10 <- 1 / df$pi_10[1] * matrix(c(1, 1, 1, 2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(1, 1, 1, 2), nrow = 2)
+    v_00 <- 1 / df$pi_00[1]
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(t(c(0, 0, 1) %*% ghat)))
+
+  } else {
+    stop("We have only 1 class: 'basic'.")
+  }
+}
+
+```
+
+```{r}
+#| label: estimated variance basic
+#| echo: false
+
+est_var_gls <- function(df, class = "basic") {
+
+  if (class == "basic") {
+
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
+
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
+
+    # Estimate Covariance Matrix
+    df_1p <- filter(df, delta_11 == 1 | delta_10 == 1)
+    df_p1 <- filter(df, delta_11 == 1 | delta_01 == 1)
+    df_11 <- filter(df, delta_11 == 1)
+    v_x1 <- var(df$X1)
+    v_x2 <- var(df_1p$X2)
+    v_y <- var(df_p1$Y)
+    cov_x1x2 <- cov(df_1p$X1, df_1p$X2)
+    cov_x1y <- cov(df_p1$X1, df_p1$Y)
+    cov_x2y <- cov(df_11$X2, df_11$Y)
+
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(v_x1, cov_x1x2, cov_x1y,
+               cov_x1x2, v_x2, cov_x2y,
+               cov_x1y, cov_x2y, v_y), nrow = 3)
+
+    v_10 <- 1 / df$pi_10[1] * matrix(c(v_x1, cov_x1x2, cov_x1x2, v_x2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(v_x1, cov_x1y, cov_x1y, v_y), nrow = 2)
+    v_00 <- 1 / df$pi_00[1] * v_x1
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(t(c(0, 0, 1) %*% ghat)))
+
+    } else {
+    stop("Only class == 'basic' has been implemented.")
+  }
+}
+
+```
+
+```{r}
+#| label: estimated variance opt
+#| echo: false
+
+estvar_glsopt <- function(df, class = "opt") {
+
+  if (class == "opt") {
+
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
+
+    z_mat <- matrix(rep(1, 8), ncol = 1)
+
+    # Get Regression Estimates
+    mx1 <- lm(Y ~ X1, data = filter(df, delta_11 == 1 | delta_01 == 1))
+    mx2 <- lm(Y ~ X2, data = filter(df, delta_11 == 1))
+    df <- df |>
+      mutate(mx1 = predict(mx1, newdata = df)) |>
+      mutate(mx2 = predict(mx2, newdata = df))
+
+    # Put Estimates into g_hat
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * mx1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * mx2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * mx1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * mx2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * mx1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * mx1) |> pull(tmp) |> mean())
+
+    # Estimate Covariance Matrix
+    df_1p <- filter(df, delta_11 == 1 | delta_10 == 1)
+    df_p1 <- filter(df, delta_11 == 1 | delta_01 == 1)
+    df_11 <- filter(df, delta_11 == 1)
+    v_x1 <- var(df$mx1)
+    v_x2 <- var(df_1p$mx2)
+    v_y <- var(df_p1$Y)
+    cov_x1x2 <- cov(df_1p$mx1, df_1p$mx2)
+    cov_x1y <- cov(df_p1$mx1, df_p1$Y)
+    cov_x2y <- cov(df_11$mx2, df_11$Y)
+
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(v_x1, cov_x1x2, cov_x1y,
+               cov_x1x2, v_x2, cov_x2y,
+               cov_x1y, cov_x2y, v_y), nrow = 3)
+
+    v_10 <- 1 / df$pi_10[1] * matrix(c(v_x1, cov_x1x2, cov_x1x2, v_x2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(v_x1, cov_x1y, cov_x1y, v_y), nrow = 2)
+    v_00 <- 1 / df$pi_00[1] * v_x1
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(ghat))
+  } else {
+    stop("Only class == 'opt' has been implemented.")
+  }
+}
+
+```
+
+```{r}
+#| label: MCMC
+#| echo: false
+#| tbl-cap: |
+#|   Results from simulations study with independent equally sized segments
+#|   $A_{11}$, $A_{10}$, $A_{01}$, and $A_{00}$ all of size $n = 250$. In this
+#|   simulation we have the true mean of $Y_2$ equal to $\mu = 5$ and the covariance
+#|   between $e_1$ and $e_2$ is $\rho = 0.5$. The goal is to estimate 
+#|   $E[Y_2] = \mu$. For the GLS estimation, we use the
+#|   estimated covariance matrix $\hat V$ with 
+#|   f-functions $f_1 = X_1$, $f_2 = X_2$ and $f_3 = Y$. For the GLS optimal
+#|   estimation we are trying $f_1 = E[Y \mid X_1]$, $f_2 = E[Y \mid X_2]$ and 
+#|   $f_3 = Y$. Each of these expectations are estimated with using linear
+#|   regression. So $E[Y \mid X_i]$ is implemented as a regression estimator
+#|   
+
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+mc_theta <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr")) %dorng% {
+
+    # Generate Data
+    df <- gen_simple_data(obs_seg, mu = true_mu, rho = cov_e1e2)
+
+    # Estimators
+    oracle <- mean(df$Y)
+    cc <- df |>
+      filter(delta_11 == 1) |>
+      pull(Y) |>
+      mean()
+    ipw <- df |>
+      mutate(tmp = delta_11 / pi_11 * Y) |>
+      pull(tmp) |>
+      mean()
+
+    gls <- gls_est(df, rho = cov_e1e2)
+    gls_ev <- est_var_gls(df)
+    gls_opt <- estvar_glsopt(df) 
+
+    return(tibble(Oracle = oracle,
+                  CC = cc,
+                  IPW = ipw,
+                  GLS = gls,
+                  GLSEstVar = gls_ev,
+                  GLSOpt = gls_opt
+    ))
+
+  } |>
+  bind_rows()
+
+stopCluster(clust)
+
+# Analyze Results
+mc_theta |>
+  summarize(
+    across(everything(),
+    list(Bias = ~mean(.) - true_mu,
+         SD = ~sd(.),
+         Tstat = ~(mean(.) - true_mu) / sqrt(var(.) / B)),
+    .names = "{.fn}_{.col}")) |> 
+  tidyr::pivot_longer(cols = everything(),
+                      names_to = c(".value", "Algorithm"),
+                      names_pattern = "(.*)_(.*)") |>
+  mutate(Pval = pt(-abs(Tstat), df = B)) |>
+  knitr::kable(digits = 3)
+
+```
+# Conclusion
+
+Is the covariance estimation still working? (By working we mean causing the
+estimator to be unbiased.) 
+
+* It looks like estimating the variance is not causing additional bias in the
+  estimator. This is great. 
+* We may, however, need to check more complicated simulation setups because the
+  simpicity of the current setup might make it look better than it actually is.
+* One suprising thing is that the "optimal" estimator is not better than the
+  other estimators. This could be because of the simplicity of the setup, but we
+  may need to check it out.

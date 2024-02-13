@@ -1,0 +1,79 @@
+---
+title: "Inverse of 3x3 Covariance Matrix"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    include-in-header: 
+      - "latex_header.tex"
+---
+
+# Summary
+
+This document aims to figure out the inverse of a general 3x3 covariance matrix.
+
+
+```{python}
+#| echo: false
+
+import sympy
+
+# p12, p13, p23 = sympy.symbols('\\rho_{12} \\rho_{13} \\rho_{23}')
+p12, p13, p23 = sympy.symbols('p12 p13 p23')
+f1, f2, f3 = sympy.symbols('f1 f2 f3')
+x = sympy.symbols('x')
+
+# f_mat = sympy.Matrix([
+#   [f1],
+#   [f2],
+#   [f3]
+# ])
+x_mat = sympy.Matrix([
+  [x],
+  [x**2],
+  [x**3]
+])
+
+v_mat = sympy.Matrix([
+  [1, p12, p13],
+  [p12, 1, p23],
+  [p13, p23, 1]
+])
+
+v_mat**(-1)
+
+z_mat = sympy.Matrix([
+  [1, 0],
+  [1, 0],
+  [0, 1]
+])
+
+zvz = z_mat.T * v_mat**(-1) * z_mat
+zvz_inv = zvz**(-1)
+
+b_mat = zvz_inv * z_mat.T * v_mat**(-1) * x_mat
+
+res = sympy.ones(1, 2) * b_mat
+sympy.simplify(res)
+
+alt_v_mat = sympy.Matrix([
+  [1, p13 + 1, p13],
+  [p13 + 1, 1, 2 * p13],
+  [p13, 2 * p13, 1]
+])
+
+alt_v_mat = sympy.Matrix([
+  [1, p12, p12 - 1],
+  [p12, 1, 2 * (p12 - 1)],
+  [p12 - 1, 2 * (p12 - 1), 1]
+])
+
+sympy.factor(alt_v_mat.det())
+
+```
+
+This ends up *not* working because we can show that all of the range of
+acceptable answers for $\rho_{12}$ lead to a covariance matrix $V$ which is
+**not** positive definite.

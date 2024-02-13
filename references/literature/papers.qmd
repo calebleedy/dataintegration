@@ -1,0 +1,29 @@
+---
+title: "Papers Read"
+author: "Caleb Leedy"
+date: February 12, 2024
+format: pdf
+bibliography: references.bib
+---
+
+# @zhou2012efficient
+
+Title: An efficient method of estimation for longitudinal surveys with monotone
+missing data
+
+Author(s): Ming Zhou and Jae-Kwang Kim
+
+Journal (Year): Biometrika (2012)
+
+Importance: I think that this paper does something very similar to our project
+except with monotone data rather than nonmonotone data. The newness in the paper
+is that the MAR assumption depends on variables oberseved in the previous time
+period.
+
+Innovation: They use a likelihood method for estimating the propensity score. I
+am also curious about how they got Equation 9, which they claim is an optimal
+estimator.
+
+{{< pagebreak >}}
+
+# References
