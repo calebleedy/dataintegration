@@ -13,9 +13,8 @@ bibliography: references.bib
 ```{r}
 #| label: parameters
 
-B <- 10
+B <- 1000
 n_obs <- 2000
-
 
 ```
 
@@ -111,32 +110,35 @@ ipw_est <- function(df, n_tot) {
   # 2. Combine
 
   # 1. Estimate O00, O10, O01, O11
-  df_00 <- mutate(df, A = !is.na(Y3))
+  df_00 <- df |>
+    filter(!is.na(Y3)) |>
+    add_row(Y3 = rep(NA, 250), Y1 = rep(NA, 250), Y2 = rep(NA, 250)) |>
+    mutate(A = !is.na(Y3)) 
   mod00 <- glm(A ~ 1, data = df_00, family = "binomial")
-  O00_00 <- predict(mod00, filter(df, !is.na(Y3), is.na(Y1), is.na(Y2)))
-  O00_10 <- predict(mod00, filter(df, !is.na(Y3), !is.na(Y1), is.na(Y2)))
-  O00_01 <- predict(mod00, filter(df, !is.na(Y3), is.na(Y1), !is.na(Y2)))
-  O00_11 <- predict(mod00, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2)))
+  O00_00 <- exp(-predict(mod00, filter(df, !is.na(Y3), is.na(Y1), is.na(Y2))))
+  O00_10 <- exp(-predict(mod00, filter(df, !is.na(Y3), !is.na(Y1), is.na(Y2))))
+  O00_01 <- exp(-predict(mod00, filter(df, !is.na(Y3), is.na(Y1), !is.na(Y2))))
+  O00_11 <- exp(-predict(mod00, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2))))
 
   df_10 <- 
-    filter(df, !is.na(Y1)) |>
+    filter(df, (!is.na(Y1) & !is.na(Y3)) | (is.na(Y3) & !is.na(Y1) & is.na(Y2))) |>
     mutate(A = !is.na(Y3))
   mod10 <- glm(A ~ Y1, data = df_10, family = "binomial")
-  O10_10 <- predict(mod10, filter(df, !is.na(Y3), !is.na(Y1), is.na(Y2)))
-  O10_11 <- predict(mod10, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2)))
+  O10_10 <- exp(-predict(mod10, filter(df, !is.na(Y3), !is.na(Y1), is.na(Y2))))
+  O10_11 <- exp(-predict(mod10, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2))))
 
   df_01 <- 
-    filter(df, !is.na(Y2)) |>
+    filter(df, (!is.na(Y2) & !is.na(Y3)) | (is.na(Y3) & is.na(Y1) & !is.na(Y2))) |>
     mutate(A = !is.na(Y3))
   mod01 <- glm(A ~ Y2, data = df_01, family = "binomial")
-  O01_01 <- predict(mod01, filter(df, !is.na(Y3), is.na(Y1), !is.na(Y2)))
-  O01_11 <- predict(mod01, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2)))
+  O01_01 <- exp(-predict(mod01, filter(df, !is.na(Y3), is.na(Y1), !is.na(Y2))))
+  O01_11 <- exp(-predict(mod01, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2))))
 
   df_11 <- 
     filter(df, !is.na(Y1), !is.na(Y2)) |>
     mutate(A = !is.na(Y3))
   mod11 <- glm(A ~ Y1 + Y2, data = df_11, family = "binomial")
-  O11 <- predict(mod11, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2)))
+  O11 <- exp(-predict(mod11, filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2))))
 
   # 2. Combine
   y_111 <- filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2)) |> pull(Y3)
@@ -160,24 +162,25 @@ reg_est <- function(df, n_tot) {
 
   # 1. Estimate m00, m10, m01, m11
   df_00 <- filter(df, !is.na(Y3))
-  m00 <- mean(df_00$Y3)
+  mod00 <- mean(df_00$Y3)
+  m00 <- mod00 * rep(1, n_tot / 8)
 
   df_10 <- filter(df, !is.na(Y3), !is.na(Y1))
   mod10 <- lm(Y3 ~ Y1, data = df_10)
-  m10 <- predict(mod10, data = filter(df, is.na(Y3), !is.na(Y1)))
+  m10 <- predict(mod10, newdata = filter(df, is.na(Y3), !is.na(Y1), is.na(Y2)))
 
   df_01 <- filter(df, !is.na(Y3), !is.na(Y2))
   mod01 <- lm(Y3 ~ Y2, data = df_01)
-  m01 <- predict(mod01, data = filter(df, is.na(Y3), !is.na(Y2)))
+  m01 <- predict(mod01, newdata = filter(df, is.na(Y3), is.na(Y1), !is.na(Y2)))
 
   df_11 <- filter(df, !is.na(Y3), !is.na(Y1), !is.na(Y2))
-  mod01 <- lm(Y3 ~ Y1 + Y2, data = df_11)
-  m11 <- predict(mod11, data = filter(df, is.na(Y3), !is.na(Y1), !is.na(Y2)))
+  mod11 <- lm(Y3 ~ Y1 + Y2, data = df_11)
+  m11 <- predict(mod11, newdata = filter(df, is.na(Y3), !is.na(Y1), !is.na(Y2)))
 
   # 2. Combine
   obs_y3 <- filter(df, !is.na(Y3)) |> pull(Y3)
 
-  return(sum(obs_y3 + m00 + m10 + m01 + m11) / n_tot)
+  return((sum(obs_y3) + sum(m00) + sum(m10) + sum(m01) + sum(m11)) / n_tot)
 }
 
 ```
@@ -226,3 +229,9 @@ mc_theta |>
   knitr::kable(digits = 3)
 
 ```
+
+# Discussion
+
+* While I think that I implemented this correctly, the biggest problem with this
+  paper is the fact that their ACCMV assumption is almost equivalent to a MCAR
+  assumption.
