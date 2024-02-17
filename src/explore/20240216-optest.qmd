@@ -1,0 +1,786 @@
+---
+title: "Optimal Estimation with Nuisance Parameters"
+author: "Caleb Leedy"
+date: "February 16, 2024"
+format: 
+  pdf:
+    include-in-header: 
+      - "latex_header.tex"
+bibliography: references.bib
+---
+
+```{r}
+#| label: global variables
+#| echo: false
+B <- 1000
+
+obs_seg <- 250
+true_mu <- 5
+cov_e1e2 <- 0.5
+
+```
+
+# Summary
+
+In this document, we do the following:
+
+1. Estimate the optimal $\theta$ with a known covariance function,
+2. Estimate the optimal $\theta$ with an estimated covariance function, and
+3. Compare these results to other estimates.
+
+# Simulation Setup
+
+We consider a normal model for $(X_1, X_2, Y)$ where $X_1 \sim N(0, 1)$, and 
+$e_1, e_2$ are from a bivariate normal distribution each with mean zero,
+variance one, and covariance $\rho = $ `r cov_e1e2`. Then $X_2 = X_1 + e_1$ and
+$Y = \mu + X_1 + e_1$ where $\mu = $ `{r} true_mu`. Each observation is
+independent of the others. Instead of always observing all three variables, we
+observe them with missingness. The observed segments can be viewed in @tbl-segs.
+Each segment is independent of each other and of the same size. We can view each
+segment as an independent simple random sample of the superpopulation of size
+$n = $ `{r} obs_seg`.
+
+| Segment | Observed Variables |
+| --------| -------------------|
+| $A_{11}$| $X_1, X_2, Y$      |
+| $A_{10}$| $X_1, X_2$         |
+| $A_{01}$| $X_1, Y$           |
+| $A_{00}$| $X_1$              |
+: This table shows the segment names with each variable that they contain. {#tbl-segs}
+
+# Estimation
+
+The goal of the simulation is to estimate $\theta = E[Y]$. We also estimate
+several nuisance parameters $\eta_1 = E[X_1]$ and $\eta_2 = E[X_2]$. All of
+these parameters can be estimated using GLS estimation. The model that we
+propose is the following. Consider the model, for 
+$g = (\eta_1, \eta_2, \theta)'$
+
+$$ \hat f = Zg + e \text{ where } $$
+
+\begin{align*}
+f_1^{(11)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g_1(x_{1i}) \\
+f_2^{(11)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g_2(x_{2i}) \\
+f_3^{(11)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{11}}{\pi_{11}} g_3(y_{i}) \\
+f_1^{(10)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{10}}{\pi_{10}} g_1(x_{1i}) \\
+f_2^{(10)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{10}}{\pi_{10}} g_2(x_{2i}) \\
+f_1^{(01)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{01}}{\pi_{01}} g_1(x_{1i}) \\
+f_3^{(01)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{01}}{\pi_{01}} g_2(y_{i}) \\
+f_1^{(00)} &= n^{-1} \sum_{i = 1}^n \frac{\delta_{00}}{\pi_{00}} g_1(x_{1i}) \\
+\end{align*}
+
+and
+
+$$\hat f = 
+\begin{bmatrix}
+f_1^{(11)} \\
+f_2^{(11)} \\
+f_3^{(11)} \\
+f_1^{(10)} \\
+f_2^{(10)} \\
+f_1^{(01)} \\
+f_3^{(01)} \\
+f_1^{(00)} \\
+\end{bmatrix},
+Z = 
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0 \\
+\end{bmatrix},
+E[e] = 0,
+\text{ and } 
+\Var(e) = n^{-1}
+\begin{bmatrix}
+V_{11} & 0 & 0 & 0 \\
+0 & V_{10} & 0 & 0 \\
+0 & 0 & V_{01} & 0 \\
+0 & 0 & 0 & V_{00} \\
+\end{bmatrix}.
+$$
+
+We also have
+
+$$
+V_{11} = 
+\begin{bmatrix}
+\frac{1}{\pi_{11}} E[g_1^2] - E[g_1]^2 & \frac{1}{\pi_{11}} E[g_1g_2] -
+E[g_1]E[g_2] & \frac{1}{\pi_{11}} E[g_1g_3] - E[g_1]E[g_3] \\
+\frac{1}{\pi_{11}} E[g_1g_2] - E[g_1]E[g_2] & \frac{1}{\pi_{11}} E[g_2^2] -
+E[g_2]^2 & \frac{1}{\pi_{11}} E[g_2g_3] - E[g_2]E[g_3] \\
+\frac{1}{\pi_{11}} E[g_1g_3] - E[g_1]E[g_3] & \frac{1}{\pi_{11}} E[g_2g_3] -
+E[g_2]E[g_3] & \frac{1}{\pi_{11}} E[g_3^2] - E[g_3]^2 \\
+\end{bmatrix},
+$$
+$$
+V_{10} = 
+\begin{bmatrix}
+\frac{1}{\pi_{10}}E[g_1^2] - E[g_1]^2 & \frac{1}{\pi_{10}}E[g_1g_2] - E[g_1]E[g_2]\\
+\frac{1}{\pi_{10}}E[g_1g_2] - E[g_1]E[g_2] & \frac{1}{\pi_{10}}E[g_2^2] - E[g_2]^2 \\
+\end{bmatrix},
+$$
+$$
+V_{01} = 
+\begin{bmatrix}
+\frac{1}{\pi_{01}}E[g_1^2] - E[g_1]^2 & \frac{1}{\pi_{01}}E[g_1g_3] - E[g_1]E[g_3]\\
+\frac{1}{\pi_{01}}E[g_1g_3] - E[g_1]E[g_3] & \frac{1}{\pi_{01}}E[g_3^2] - E[g_3]^2 \\
+\end{bmatrix}, \text{ and }
+V_{00} = 
+\begin{bmatrix}
+\frac{1}{\pi_{00}}E[g_1^2] - E[g_1]^2
+\end{bmatrix}.
+$$
+
+Using GLS directly, yields an estimator
+$\hat g = (\hat \eta_1, \hat \eta_2, \hat \theta)$. Previously, we have used 
+the estimator^[The "M" is short for marginal.]
+
+$$ \hat \theta_{M} := [0, 0, 1] \cdot \hat g. $$
+
+However, we can do better if we assume that the distribution of $\hat g$ is a
+joint multivariate normal model and compute $\hat \theta \mid \hat \eta_1, \hat
+\eta_2$. We can represent this model^[The "C" is for conditional.] as 
+$\hat \theta_C := E[\hat \theta \mid \hat \eta]$. For each of these models we
+use the true covariance matrix and the estimated covariance matrix. For a full
+discussion of the derivation of $\hat \theta_C$ see Appendix A.
+
+# Simulation Study
+
+
+```{r}
+#| label: setup
+#| echo: false
+#| warning: false
+#| message: false
+
+library(dplyr)
+
+library(doParallel)
+library(doRNG)
+library(parallelly)
+
+# Run from src/ or src/explore/
+source("R/data_generation.R")
+
+```
+
+```{r}
+#| label: gls M, true
+#| echo: false
+
+#' This function is also used in 20240202-gls_sim.qmd. I have modified the code
+#' to account for the change from X, Y1, Y2 to X1, X2, Y.
+gls_m_true <- function(df, class = "basic", rho) {
+
+  if (class == "basic") {
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
+
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
+
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(1, 1, 1,
+               1, 2, 1 + rho,
+               1, 1 + rho, 2), nrow = 3)
+    v_10 <- 1 / df$pi_10[1] * matrix(c(1, 1, 1, 2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(1, 1, 1, 2), nrow = 2)
+    v_00 <- 1 / df$pi_00[1]
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(t(c(0, 0, 1) %*% ghat)))
+
+  } else {
+    stop("We have only 1 class: 'basic'.")
+  }
+}
+
+```
+
+```{r}
+#| label: GLS M est
+#| echo: false
+
+gls_m_est <- function(df, class = "basic") {
+
+  if (class == "basic") {
+
+    z_mat <- matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0,
+                      0, 1, 0,
+                      1, 0, 0,
+                      0, 0, 1,
+                      1, 0, 0), ncol = 3, byrow = TRUE)
+
+    g_hat <- 
+      c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean(),
+        mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean())
+
+    # Estimate Covariance Matrix
+    df_1p <- filter(df, delta_11 == 1 | delta_10 == 1)
+    df_p1 <- filter(df, delta_11 == 1 | delta_01 == 1)
+    df_11 <- filter(df, delta_11 == 1)
+    v_x1 <- var(df$X1)
+    v_x2 <- var(df_1p$X2)
+    v_y <- var(df_p1$Y)
+    cov_x1x2 <- cov(df_1p$X1, df_1p$X2)
+    cov_x1y <- cov(df_p1$X1, df_p1$Y)
+    cov_x2y <- cov(df_11$X2, df_11$Y)
+
+    v_11 <- 1 / df$pi_11[1] *
+      matrix(c(v_x1, cov_x1x2, cov_x1y,
+               cov_x1x2, v_x2, cov_x2y,
+               cov_x1y, cov_x2y, v_y), nrow = 3)
+
+    v_10 <- 1 / df$pi_10[1] * matrix(c(v_x1, cov_x1x2, cov_x1x2, v_x2), nrow = 2)
+    v_01 <- 1 / df$pi_01[1] * matrix(c(v_x1, cov_x1y, cov_x1y, v_y), nrow = 2)
+    v_00 <- 1 / df$pi_00[1] * v_x1
+
+    v_mat <- matrix(rep(0, 64), ncol = 8)
+    v_mat[1:3, 1:3] <- v_11
+    v_mat[4:5, 4:5] <- v_10
+    v_mat[6:7, 6:7] <- v_01
+    v_mat[8, 8] <- v_00
+
+    v_mat <- v_mat / nrow(df)
+
+    ghat <- MASS::ginv(t(z_mat) %*% MASS::ginv(v_mat) %*% z_mat) %*% 
+      t(z_mat) %*% MASS::ginv(v_mat) %*% g_hat
+
+    return(as.numeric(t(c(0, 0, 1) %*% ghat)))
+  } else {
+    stop("Only class == 'basic' has been implemented.")
+  }
+}
+
+```
+
+```{r}
+#| label: GLS C true
+#| echo: false
+
+gls_c <- function(df, case = "true") {
+
+  # Steps:
+  # 1. Get fhat
+  # 2. Get covariance matrix
+  # 3. Solve for eta1
+  # 4. Solve for eta2
+  # 5. Solve for theta
+
+  # 1. Get fhat
+  fhat <- 
+    c(mutate(df, tmp = delta_11 / pi_11 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_10 / pi_10 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_01 / pi_01 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_00 / pi_00 * X1) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_11 / pi_11 * X2) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_10 / pi_10 * X2) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_11 / pi_11 * Y) |> pull(tmp) |> mean(),
+      mutate(df, tmp = delta_01 / pi_01 * Y) |> pull(tmp) |> mean()
+    )
+
+  # 2. Get covariance matrix
+
+  if (case == "true") {
+
+    Ex1 <- 0
+    Ex2 <- 0
+    Ey <- true_mu
+    Ex12 <- 1
+    Ex22 <- 2
+    Ey2 <- true_mu^2 + 2
+    Ex1x2 <- 1
+    Ex1y <- 1
+    Ex2y <- 1 + cov_e1e2
+
+  } else if (case == "est") {
+
+    Ex1 <- mean(df$X1)
+    Ex2 <- 
+      mutate(df, tmp = (delta_10 + delta_11) * X2) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+    Ey <-
+      mutate(df, tmp = (delta_01 + delta_11) * Y) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+    Ex12 <- mean(df$X1^2)
+    Ex22 <-
+      mutate(df, tmp = (delta_10 + delta_11) * X2^2) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+    Ey2 <-
+      mutate(df, tmp = (delta_01 + delta_11) * Y^2) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+    Ex1x2 <-
+      mutate(df, tmp = (delta_10 + delta_11) * X1 * X2) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+    Ex1y <-
+      mutate(df, tmp = (delta_01 + delta_11) * X1 * Y) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+    Ex2y <-
+      mutate(df, tmp = (delta_11) * X2 * Y) %>%
+      filter(tmp != 0) %>% 
+      pull(tmp) %>% 
+      mean()
+
+  } else {
+    stop("We have only implemented case == 'true' and 'est'.")
+  }
+
+  big_v <- matrix(0, nrow = 8, ncol = 8)
+  big_v[1:4, 1:4] <- 
+    diag(c(1 / df$pi_11[1] * Ex12 - Ex1^2,
+           1 / df$pi_10[1] * Ex12 - Ex1^2,
+           1 / df$pi_01[1] * Ex12 - Ex1^2,
+           1 / df$pi_00[1] * Ex12 - Ex1^2))
+  big_v[5:6, 5:6] <- 
+  diag(c(1 / df$pi_11[1] * Ex22 - Ex2^2,
+         1 / df$pi_10[1] * Ex22 - Ex2^2))
+  big_v[7:8, 7:8] <- 
+    diag(c(1 / df$pi_11[1] * Ey2 - Ey^2,
+           1 / df$pi_01[1] * Ey2 - Ey^2))
+
+  big_v[1, 5] <- 1 / df$pi_11[1] * Ex1x2 - Ex1 * Ex2
+  big_v[1, 7] <- 1 / df$pi_11[1] * Ex1y - Ex1 * Ey
+  big_v[5, 7] <- 1 / df$pi_11[1] * Ex2y - Ex2 * Ey
+  big_v[2, 6] <- 1 / df$pi_10[1] * Ex1x2 - Ex1 * Ex2
+  big_v[3, 8] <- 1 / df$pi_01[1] *  Ex1y - Ex1 * Ey
+
+  big_v[5, 1] <- big_v[1, 5]
+  big_v[7, 1] <- big_v[1, 7]
+  big_v[7, 5] <- big_v[5, 7]
+  big_v[6, 2] <- big_v[2, 6]
+  big_v[8, 3] <- big_v[3, 8]
+
+  # 3. Solve for eta1
+  x <- t(t(c(1, 1, 1, 1)))
+  v <- big_v[1:4, 1:4]
+  y <- fhat[1:4]
+
+  eta1 <- 
+    MASS::ginv(t(x) %*% MASS::ginv(v) %*% x) %*% t(x) %*% MASS::ginv(v) %*% y
+
+  # 4. Solve for eta2
+  x <- t(t(c(1, 1)))
+  v <- 
+  big_v[5:6, 5:6] - big_v[5:6, 1:4] %*% MASS::ginv(big_v[1:4, 1:4]) %*% big_v[1:4, 5:6]
+  y <- 
+    fhat[5:6] - big_v[5:6, 1:4] %*% MASS::ginv(big_v[1:4, 1:4]) %*% 
+    (fhat[1:4] - c(eta1, eta1, eta1, eta1))
+
+  eta2 <- 
+    MASS::ginv(t(x) %*% MASS::ginv(v) %*% x) %*% t(x) %*% MASS::ginv(v) %*% y
+
+  # 5. Solve for theta
+  x <- t(t(c(1, 1)))
+  v <-
+  big_v[7:8, 7:8] - big_v[7:8, 1:6] %*% MASS::ginv(big_v[1:6, 1:6]) %*% big_v[1:6, 7:8]
+  y <-
+    fhat[7:8] - big_v[7:8, 1:6] %*% MASS::ginv(big_v[1:6, 1:6]) %*% 
+    (fhat[1:6] - c(eta1, eta1, eta1, eta1, eta2, eta2))
+
+  theta <- 
+    MASS::ginv(t(x) %*% MASS::ginv(v) %*% x) %*% t(x) %*% MASS::ginv(v) %*% y
+
+  return(as.numeric(theta))
+}
+
+```
+
+```{r}
+#| label: MCMC
+#| echo: false
+#| tbl-cap: |
+#|   Results from simulations study with independent equally sized segments
+#|   $A_{11}$, $A_{10}$, $A_{01}$, and $A_{00}$ all of size $n = 250$. In this
+#|   simulation we have the true mean of $Y_2$ equal to $\mu = 5$ and the covariance
+#|   between $e_1$ and $e_2$ is $\rho = 0.5$. The goal is to estimate 
+#|   $E[Y_2] = \mu$. For the estimators with 'est', we use the
+#|   estimated covariance matrix $\hat V$ with 
+#|   f-functions $f_1 = X_1$, $f_2 = X_2$ and $f_3 = Y$. For the estimators
+#|   without we use the true covariance matrix. GLSM is the marginal model while
+#|   GLSC is the conditional model.
+clust <- parallel::makeCluster(min(parallelly::availableCores() - 2, 100))
+registerDoParallel(clust)
+
+mc_theta <-
+  foreach(iter = 1:B,
+          .options.RNG = 1,
+          .packages = c("dplyr", "stringr")) %dorng% {
+
+    # Generate Data
+    df <- gen_simple_data(obs_seg, mu = true_mu, rho = cov_e1e2)
+
+    # Estimators
+    oracle <- mean(df$Y)
+    cc <- df |>
+      filter(delta_11 == 1) |>
+      pull(Y) |>
+      mean()
+    ipw <- df |>
+      mutate(tmp = delta_11 / pi_11 * Y) |>
+      pull(tmp) |>
+      mean()
+
+    est_m_true <- gls_m_true(df, rho = cov_e1e2)
+    est_m_est <- gls_m_est(df)
+    est_c_true <- gls_c(df, case = "true")
+    est_c_est <- gls_c(df, case = "est")
+
+    return(tibble(Oracle = oracle,
+                  CC = cc,
+                  IPW = ipw,
+                  GLSM = est_m_true,
+                  GLSMEst = est_m_est,
+                  GLSC = est_c_true,
+                  GLSCEst = est_c_est
+    ))
+
+  } |>
+  bind_rows()
+
+stopCluster(clust)
+
+# Analyze Results
+mc_theta |>
+  summarize(
+    across(everything(),
+    list(Bias = ~mean(.) - true_mu,
+         SD = ~sd(.),
+         Tstat = ~(mean(.) - true_mu) / sqrt(var(.) / B)),
+    .names = "{.fn}_{.col}")) |> 
+  tidyr::pivot_longer(cols = everything(),
+                      names_to = c(".value", "Algorithm"),
+                      names_pattern = "(.*)_(.*)") |>
+  mutate(Pval = pt(-abs(Tstat), df = B)) |>
+  knitr::kable(digits = 3)
+
+```
+
+# Results and Discussion
+
+1. Estimating the covariance in our conditional model cause dependence issues.
+2. This particular simulation does not differentiate between the GLS models. We
+   might need a different setup to distinguish between the models (such as
+   unequal segment size).
+
+# Next Steps
+
+1. Find the minimum variance estimator GLSC as a function of $g$.
+2. Estimate the covariance matrix so that it does not interfere with estimation
+   of $\hat f$.
+
+{{< pagebreak >}}
+
+# Appendix A: Derivation of $\hat \theta_C$
+
+The derivation in this appendix follows the idea in @zhou2012efficient. The
+initial goal is to minimize $Q(\eta_1, \eta_2, \theta)$ where 
+
+$$
+Q(\eta_1, \eta_2, \theta) = z'V^{-1}z \text{ for }
+z = 
+\begin{bmatrix}
+f_1^{(11)} - \eta_1 \\
+f_1^{(10)} - \eta_1 \\
+f_1^{(01)} - \eta_1 \\
+f_1^{(00)} - \eta_1 \\
+f_2^{(11)} - \eta_2 \\
+f_2^{(10)} - \eta_2 \\
+f_3^{(11)} - \theta \\
+f_3^{(01)} - \theta \\
+\end{bmatrix} \text{ and }
+V = V(z).
+$$
+
+We can notice that $Q$ is the kernel of a multivariate normal distribution,
+which means that we can decompose it into a marginal and conditional part,
+
+$$ 
+\min_{\eta, \theta} Q(\eta_1, \eta_2, \theta) = 
+\min_{\eta, \theta} (Q(\eta) + Q(\theta \mid \eta)).
+$$
+
+Since $Q(\eta)$ is the kernal of a normal distribution we can apply the same
+technique to get
+
+$$ 
+\min_{\eta, \theta} Q(\eta_1, \eta_2, \theta) = 
+\min_{\eta, \theta} \{Q(\eta_1) + Q(\eta_2 \mid \eta_1) + Q(\theta \mid \eta_1,
+\eta_2)\}.
+$$
+
+Then we can solve these sequentially. 
+
+1. We find $\hat \eta_1 = \argmin Q(\eta_1)$.
+2. We can substitute this back into $Q(\eta_2 \mid \eta_1)$ to get the 
+  optimal $\hat \eta_2$ of 
+  $$ \hat \eta_2 = \argmin Q(\eta_2 \mid \hat \eta_1). $$
+3. We can use the results of the previous two steps to get,
+  $$ \hat \theta = \argmin Q(\theta \mid \hat \eta_1, \hat \eta_2).$$
+
+Unfortunately, the nonmonotone case does not have any nice simplifications like
+how the monotone case reduces to a regression estimator. This is due to the fact
+that the marginal and conditional distributions are generally multivariate
+normal distributions instead of a one-dimensional distribution. This causes the
+result to be weighted averages instead of difference estimators.
+
+## Finding $\hat \eta_1$
+
+We start with the fact that 
+
+$$
+\hat \eta_1 = \argmin Q(\eta_1) \text{ where } 
+Q(\eta_1) = z_{1:4}' V^{-1}_{1:4, 1:4} z_{1:4}.
+$$
+
+This means that for the simulation study in this report, since each segment is
+independent, 
+
+$$
+Q(\eta_1) = 
+\begin{bmatrix}
+\hat f_1^{(11)} - \eta_1 \\
+\hat f_1^{(10)} - \eta_1 \\
+\hat f_1^{(01)} - \eta_1 \\
+\hat f_1^{(00)} - \eta_1 \\
+\end{bmatrix}'
+\begin{bmatrix}
+(\Var(\hat f_1^{(11)}))^{-1} & 0 & 0 & 0 \\
+0 & (\Var(\hat f_1^{(10)}))^{-1} & 0 & 0 \\
+0 & 0 & (\Var(\hat f_1^{(01)}))^{-1} & 0 \\
+0 & 0 & 0 & (\Var(\hat f_1^{(00)}))^{-1} \\
+\end{bmatrix}
+\begin{bmatrix}
+\hat f_1^{(11)} - \eta_1 \\
+\hat f_1^{(10)} - \eta_1 \\
+\hat f_1^{(01)} - \eta_1 \\
+\hat f_1^{(00)} - \eta_1 \\
+\end{bmatrix}.
+$$
+
+Since the dual of this problem is a GLS estimator with a diagonal variance
+matrix, $\hat \eta_1$ is the inverse-variance weighted average of all of the
+individual estimators,
+
+$$
+\hat \eta_1 = 
+\frac{\frac{\hat f_1^{(11)}}{\Var(\hat f_1^{(11)})} + 
+\frac{\hat f_1^{(10)}}{\Var(\hat f_1^{(10)})} + 
+\frac{\hat f_1^{(01)}}{\Var(\hat f_1^{(01)})} + 
+\frac{\hat f_1^{(00)}}{\Var(\hat f_1^{(00)})}}{
+\frac{1}{\Var(\hat f_1^{(11)})} + 
+\frac{1}{\Var(\hat f_1^{(10)})} + 
+\frac{1}{\Var(\hat f_1^{(01)})} + 
+\frac{1}{\Var(\hat f_1^{(00)})}
+}.
+$$
+
+## Finding $\hat \eta_2$
+
+Similar to the previous step, we can notice that $Q(\eta_2 \mid \eta_1)$ is the
+kernel of the conditional distribution 
+
+$$
+\begin{bmatrix}
+\hat f_2^{11} \\
+\hat f_2^{10}
+\end{bmatrix} 
+\sim N \left(
+\begin{bmatrix}
+\eta_2 \\ \eta_2
+\end{bmatrix}  + 
+\Sigma_{\eta_2, \eta_1} \Sigma_{\eta_1}^{-1}
+\begin{bmatrix}
+\hat f_1^{(11)} - \eta_1 \\
+\hat f_1^{(10)} - \eta_1 \\
+\hat f_1^{(01)} - \eta_1 \\
+\hat f_1^{(00)} - \eta_1 \\
+\end{bmatrix},
+\Sigma_{\eta_2} - \Sigma_{\eta_2, \eta_1} \Sigma_{\eta_1}^{-1} \Sigma_{\eta_1, \eta_2}
+\right).
+$$
+
+Since we have $\Sigma_{\eta_1} = V_{1:4, 1:4}$ and 
+
+$$
+\Sigma_{\eta_2, \eta_1} = 
+\begin{bmatrix}
+\Cov(\hat f_1^{(11)}, \hat f_2^{(11)}) & 0 & 0 & 0 \\
+0 & \Cov(\hat f_1^{(10)}, \hat f_2^{(10)}) & 0 & 0 \\
+\end{bmatrix},
+$$
+
+we have 
+
+$$
+\Sigma_{\eta_2} - \Sigma_{\eta_2, \eta_1} \Sigma_{\eta_1}^{-1} 
+\Sigma_{\eta_2, \eta_1} = 
+\begin{bmatrix}
+\Var(\hat f_2^{(11)}) - \frac{\Cov(\hat f_1^{(11)}, \hat{f}_2^{(11)})^2}{\Var(\hat f_1^{(11)})} & 0 \\
+0 & \Var(\hat f_2^{(10)}) - \frac{\Cov(\hat f_1^{(10)}, \hat{f}_2^{(10)})^2}{\Var(\hat f_1^{(10)})} \\
+\end{bmatrix}.
+$$
+
+This means that 
+
+$$
+\footnotesize
+\hat \eta_2 =
+\left(\begin{bmatrix} 1 & 1 \end{bmatrix} 
+(\Sigma_{\eta_2} - \Sigma_{\eta_2, \eta_1} \Sigma_{\eta_1}^{-1}\Sigma_{\eta_1, \eta_2})^{-1} 
+\begin{bmatrix} 1 \\ 1 \end{bmatrix} 
+\right)^{-1}
+\begin{bmatrix} 1 & 1 \end{bmatrix} 
+(\Sigma_{\eta_2} - \Sigma_{\eta_2, \eta_1} \Sigma_{\eta_1}^{-1}\Sigma_{\eta_1, \eta_2})^{-1} 
+\begin{bmatrix} 
+\hat f_2^{(11)} - \frac{\Cov(\hat f_2^{(11)}, \hat f_1^{(11)})}{\Var(\hat f_1^{(11)})} (\hat f_1^{(11)} -
+\hat \eta_1) \\
+\hat f_2^{(10)} - \frac{\Cov(\hat f_2^{(10)}, \hat f_1^{(10)})}{\Var(\hat f_1^{(10)})} (\hat f_1^{(10)} -
+\hat \eta_1) \\
+\end{bmatrix}.
+$$
+
+## Finding $\hat \theta$
+
+Finally, to find $\hat \theta$ we use a similar process as shown in the previous
+step. This time it is used to compute $Q(\theta \mid \hat \eta_1, \hat \eta_2)$.
+We can notice that $Q(\theta \mid \hat \eta)$ is the kernel of a conditional
+multivariate normal distribution,
+
+$$
+\begin{bmatrix}
+\hat f_3^{(11)} \\
+\hat f_3^{(01)}
+\end{bmatrix} 
+\sim N \left(
+\begin{bmatrix}
+\theta \\ \theta
+\end{bmatrix}  + 
+\Sigma_{\theta, \eta} \Sigma_{\eta}^{-1}
+\begin{bmatrix}
+\hat f_1^{(11)} - \eta_1 \\
+\hat f_1^{(10)} - \eta_1 \\
+\hat f_1^{(01)} - \eta_1 \\
+\hat f_1^{(00)} - \eta_1 \\
+\hat f_2^{(11)} - \eta_2 \\
+\hat f_2^{(10)} - \eta_2 \\
+\end{bmatrix},
+\Sigma_{\theta} - \Sigma_{\theta, \eta} \Sigma_{\eta}^{-1} \Sigma_{\eta, \theta}
+\right).
+$$
+
+In this case we have,
+
+$$
+\Sigma_{\theta} = 
+\begin{bmatrix}
+V(\hat f_3^{(11)}) & 0 \\
+0 & V(\hat f_3^{(10)})
+\end{bmatrix},
+\Sigma_{\theta, \eta} = 
+\begin{bmatrix}
+\Cov(\hat f_3^{(11)}, \hat f_1^{(11)}) & 0 & 0 & 0 & \Cov(\hat f_3^{(11)}, \hat
+f_2^{(10)}) & 0 \\
+0 & 0 & \Cov(\hat f_3^{(01)}, \hat f_1^{(01)}) & 0 & 0 & 0
+\end{bmatrix},
+$$
+
+and,
+
+$$
+\Sigma_{\eta} = 
+\begin{bmatrix}
+V(\hat f_1^{(11)}) & 0 & 0 & 0 & \Cov(\hat f_1^{(11)}, \hat f_2^{(11)}) & 0 \\
+0 & V(\hat f_1^{(10)}) & 0 & 0 & 0 & \Cov(\hat f_1^{(10)}, \hat f_2^{(10)}) \\
+0 & 0 & V(\hat f_1^{(01)}) & 0 & 0 & 0 \\
+0 & 0 & 0 & V(\hat f_1^{(00)}) & 0 & 0 \\
+\Cov(\hat f_1^{(11)}, \hat f_2^{(11)}) & 0 & 0 & 0 & V(\hat f_2^{(11)}) & 0 \\
+0 & \Cov(\hat f_1^{(10)}, \hat f_2^{(10)}) & 0 & 0 & 0 & V(\hat f_2^{(10)}) \\
+\end{bmatrix}.
+$$
+
+Hence,
+
+$$
+\footnotesize
+\hat \theta =
+\left(\begin{bmatrix} 1 & 1 \end{bmatrix} 
+(\Sigma_{\theta} - \Sigma_{\theta, \eta} \Sigma_{\eta}^{-1}\Sigma_{\eta, \theta})^{-1} 
+\begin{bmatrix} 1 \\ 1 \end{bmatrix} 
+\right)^{-1}
+\begin{bmatrix} 1 & 1 \end{bmatrix} 
+(\Sigma_{\theta} - \Sigma_{\theta, \eta} \Sigma_{\eta}^{-1}\Sigma_{\eta, \theta})^{-1} 
+\left(
+\begin{bmatrix}
+\hat f_3^{(11)} \\
+\hat f_3^{(01)}
+\end{bmatrix}
+-\Sigma_{\theta, \eta} \Sigma_{\eta}^{-1}
+\begin{bmatrix}
+\hat f_1^{(11)} - \hat \eta_1 \\
+\hat f_1^{(10)} - \hat \eta_1 \\
+\hat f_1^{(01)} - \hat \eta_1 \\
+\hat f_1^{(00)} - \hat \eta_1 \\
+\hat f_2^{(11)} - \hat \eta_2 \\
+\hat f_2^{(10)} - \hat \eta_2 \\
+\end{bmatrix}
+\right).
+$$
+
+While this might still be slightly unclear, I have been able to write down the
+closed form solution to this estimator, which is given below in @fig-sympy as a
+function of $\eta_1$. (Including $\hat \eta_1$ made it too big for the page.)
+
+![A closed form solution to $\hat \theta$.](sympy_opttheta.png){#fig-sympy}
+
+{{< pagebreak >}}
+
+# References

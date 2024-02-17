@@ -1,0 +1,101 @@
+---
+title: "SymPy Calculations"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    classoption: [landscape]
+    include-in-header: 
+      - "latex_header.tex"
+---
+
+# Summary
+
+This document records computations that I think would be easier to make in SymPy
+than on paper. For now it does the following:
+
+1. Compute the optimal values of $\theta$, $\eta_1$ and $\eta_2$ for the simple
+nonmonotone GLS estimator (Notes: Pages 237-243+).
+
+\tiny
+```{python}
+#| label: sympyres1
+#| echo: false
+#| output: asis
+
+import sympy
+
+# Steps:
+# 1. Solve for eta_1
+# 2. Solve for eta_2
+# 3. Solve for theta
+
+# We need variables for what we observe:
+x1_1, x2_1, x3_1, x4_1 = sympy.symbols('X^1_1 X^2_1 X^3_1 X^4_1')
+x1_2, x2_2, y1, y2 = sympy.symbols('X^1_2 X^2_2 Y^1 Y^2')
+
+# Variances 
+vx1_1, vx2_1 = sympy.symbols('V(X^1_{1}) V(X^2_{1})')
+vx3_1, vx4_1 = sympy.symbols('V(X^3_{1}) V(X^4_{1})')
+vx1_2, vx2_2, vy1, vy2 = sympy.symbols('V(X^1_{2}) V(X^2_{2}) V(Y^{1}) V(Y^{2})')
+
+# Covariances
+cx11x12, cx21x22 = sympy.symbols('C(X^1_{1}X^1_{2}) C(X^2_{1}X^2_{2})')
+cx11y1 = sympy.symbols('C(X^1_{1}Y^{1})')
+cx12y1, cx31y2 = sympy.symbols('C(X^1_{2}Y^{1}) C(X^3_{1}Y^{2})')
+
+# 1. Solve for eta_1
+x_1_mat = sympy.Matrix([[x1_1], [x2_1], [x3_1], [x4_1]])
+vq1 = sympy.diag(vx1_1, vx2_1, vx3_1, vx4_1)
+denom_q1 = (sympy.ones(1, 4) * (vq1**(-1)) * sympy.ones(4, 1))**(-1)
+numer_q1 = sympy.ones(1, 4) * (vq1**(-1)) * x_1_mat
+eta1 = (denom_q1 * numer_q1)[0, 0]
+
+eta1 = sympy.symbols('\eta_1')
+
+# 2. Solve for eta_2
+x_2_mat = sympy.Matrix([[x1_2], [x2_2]])
+q2adj_mat = sympy.Matrix([
+  [cx11x12 / vx1_1 * (x1_1 - eta1)],
+  [cx21x22 / vx2_1 * (x2_1 - eta1)]
+])
+vq2 = sympy.diag(vx1_2 - cx11x12**2 / vx1_1, vx2_2 - cx21x22**2 / vx2_1)
+denom_q2 = (sympy.ones(1, 2) * (vq2**(-1)) * sympy.ones(2, 1))**(-1)
+numer_q2 = sympy.ones(1, 2) * (vq2**(-1)) * (x_2_mat - q2adj_mat)
+eta2 = (denom_q2 * numer_q2)[0, 0]
+
+# 3. Solve for theta
+qv11 = sympy.diag(vx1_1, vx2_1, vx3_1, vx4_1, vx1_2, vx2_2)
+qv11[0, 4] = cx11x12
+qv11[4, 0] = cx11x12
+qv11[1, 5] = cx21x22
+qv11[5, 1] = cx21x22
+
+qv11_inv = qv11**(-1)
+qv21 = sympy.Matrix([
+  [cx11y1, 0, 0, 0, cx12y1, 0],
+  [0, 0, cx31y2, 0, 0, 0]
+])
+qv22 = sympy.diag(vy1, vy2)
+qv = qv22 - qv21 * qv11_inv * qv21.T
+
+denom_q = (sympy.ones(1, 2) * qv**(-1) * sympy.ones(2, 1))**(-1)
+diff_mat = sympy.Matrix([
+  [x1_1 - eta1],
+  [x2_1 - eta1],
+  [x3_1 - eta1],
+  [x4_1 - eta1],
+  [x1_2 - eta2],
+  [x2_2 - eta2]
+])
+y_mat = sympy.Matrix([[y1], [y2]])
+numer_q = sympy.ones(1, 2) * qv**(-1) * (y_mat - qv21 * qv11_inv * diff_mat)
+theta = (denom_q * numer_q)[0, 0]
+# sympy.simplify(theta)
+
+print(sympy.latex(sympy.simplify(theta), itex = True, mode = "inline"))
+
+```
+
