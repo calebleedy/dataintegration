@@ -24,6 +24,69 @@ Innovation: They use a likelihood method for estimating the propensity score. I
 am also curious about how they got Equation 9, which they claim is an optimal
 estimator.
 
+# @patterson1971recovery
+
+Title: Recovery of inter-block information when block sizes are unequal
+
+Author(s): H.D. Patterson and R. Thompson
+
+Journal (Year): Biometrika (1971)
+
+Importance: This describes REML for unbalanced designs.
+
+Innovation: They decompose the likelihood into error constrasts and other. (These
+are the $S$ and $Q$ matrices.)
+
+# @harville1977maximum
+
+Title: Maximum Likelihood Approaches to Variance Component Estimation and to
+Related Problems
+
+Author(s): David A. Harville
+
+Journal (Year): JASA (1977)
+
+Importance: This paper summarizes the use of ML and REML methods and focuses on
+their use and computation.
+
+Innovation: This is a good summary of the problems that REML solves.
+
+
+Title:
+
+Author(s): 
+
+Journal (Year): 
+
+Importance: 
+
+Innovation: 
+
+
+Title:
+
+Author(s): 
+
+Journal (Year): 
+
+Importance: 
+
+Innovation: 
+
+
+Title:
+
+Author(s): 
+
+Journal (Year): 
+
+Importance: 
+
+Innovation: 
+
+
+
+
 {{< pagebreak >}}
 
 # References

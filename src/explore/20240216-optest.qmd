@@ -52,8 +52,11 @@ $n = $ `{r} obs_seg`.
 
 The goal of the simulation is to estimate $\theta = E[Y]$. We also estimate
 several nuisance parameters $\eta_1 = E[X_1]$ and $\eta_2 = E[X_2]$. All of
-these parameters can be estimated using GLS estimation. The model that we
-propose is the following. Consider the model, for 
+these parameters can be estimated using GLS estimation. 
+
+## The Marginal GLS Model
+
+The model that we propose is the following. Consider the model, for 
 $g = (\eta_1, \eta_2, \theta)'$
 
 $$ \hat f = Zg + e \text{ where } $$
@@ -142,12 +145,33 @@ the estimator^[The "M" is short for marginal.]
 
 $$ \hat \theta_{M} := [0, 0, 1] \cdot \hat g. $$
 
+## The Conditional GLS Model
+
 However, we can do better if we assume that the distribution of $\hat g$ is a
 joint multivariate normal model and compute $\hat \theta \mid \hat \eta_1, \hat
 \eta_2$. We can represent this model^[The "C" is for conditional.] as 
-$\hat \theta_C := E[\hat \theta \mid \hat \eta]$. For each of these models we
-use the true covariance matrix and the estimated covariance matrix. For a full
-discussion of the derivation of $\hat \theta_C$ see Appendix A.
+$\hat \theta_C := E[\hat \theta \mid \hat \eta]$. In this representation, 
+the initial goal is to minimize $Q(\eta_1, \eta_2, \theta)$ where 
+
+$$
+Q(\eta_1, \eta_2, \theta) = z'V^{-1}z \text{ for }
+z = 
+\begin{bmatrix}
+f_1^{(11)} - \eta_1 \\
+f_1^{(10)} - \eta_1 \\
+f_1^{(01)} - \eta_1 \\
+f_1^{(00)} - \eta_1 \\
+f_2^{(11)} - \eta_2 \\
+f_2^{(10)} - \eta_2 \\
+f_3^{(11)} - \theta \\
+f_3^{(01)} - \theta \\
+\end{bmatrix} \text{ and }
+V = V(z).
+$$
+
+More details about how we solve this model in in Appendix A.
+For each of these models we use the true covariance matrix and the estimated
+covariance matrix. 
 
 # Simulation Study
 
@@ -517,6 +541,18 @@ mc_theta |>
 2. Estimate the covariance matrix so that it does not interfere with estimation
    of $\hat f$.
 
+Comment on the second bullet point. Currently, I estimate the covariance matrix
+by estimating the corresponding expected values separately using all of the
+available data. See Appendix B for more details. For example, to estimate 
+$E[X_1 X_2]$ we use
+
+$$\hat E[X_1 X_2] = 
+\frac{\sum_{i = 1}^n (\delta_{10} + \delta_{11})(x_{1i}x_{2i})}{\sum_{i = 1}^n
+\delta_{10} + \delta_{11}}.
+$$
+
+I think that this may be overcome using REML. I will be working on this.
+
 {{< pagebreak >}}
 
 # Appendix A: Derivation of $\hat \theta_C$
@@ -780,6 +816,52 @@ closed form solution to this estimator, which is given below in @fig-sympy as a
 function of $\eta_1$. (Including $\hat \eta_1$ made it too big for the page.)
 
 ![A closed form solution to $\hat \theta$.](sympy_opttheta.png){#fig-sympy}
+
+{{< pagebreak >}}
+
+# Appendix B: Computing the Conditional Covariance Matrix
+
+For the simulation study in this report the covariance matrix for the
+conditional model $\hat \theta_C$. Since each segment is considered to be
+independent, using the current estimator $\hat \theta_C$ we only need to compute
+the variance of each $\hat f_j$ and the following covariances: 
+$\Cov(\hat f_1^{(11)}, \hat f_2^{(11)})$,
+$\Cov(\hat f_1^{(11)}, \hat f_3^{(11)})$,
+$\Cov(\hat f_2^{(11)}, \hat f_3^{(11)})$,
+$\Cov(\hat f_1^{(10)}, \hat f_2^{(10)})$, and 
+$\Cov(\hat f_1^{(01)}, \hat f_3^{(01)})$.
+
+The variances of each $\hat f_j$ are relatively straightforward. As an example,
+I will derive $\Var(\hat f_1^{(11)})$.
+
+$$
+\Var(\hat f_1^{(11)}) = n^{-1}(\pi_{11}^{-1} E[X_1^2] - E[X_1]^2).
+$$
+
+For other values of $\hat f_j$ we simply use the correct $\pi_{ij}$ and variable
+from $Z = (X_1, X_2, Y)$. In a similar manner, the covariance 
+$\Cov(\hat f_1^{(11)}, \hat f_2^{(11)})$, can be computed as
+
+$$
+\Cov(\hat f_1^{(11)}, \hat f_2^{(11)}) =
+n^{-1}(\pi_{11}^{-1} E[X_1 X_2] - E[X_1]E[X_2]).
+$$
+
+For the other covariances, we can substitute the corresponding $\pi_{ij}$ and
+other variables from $Z$.
+
+We using the true covariance, I use the population covariance that I know from
+the construction of the problem. To estimate the covariance matrix, I estimate
+each required expectation (such as $E[X_1 X_2]$, $E[X_1]$, and $E[X_2]$ for the
+previous covariance) using all of the available data. This means that 
+
+$$
+\hat E[X_1 X_2] = \frac{\sum_{i = 1}^n (\delta_{11} + \delta_{10})x_{1i}x_{2i}}{
+\sum_{i = 1}^n (\delta_{11} + \delta_{10})},
+\hat E[X_1] = n^{-1} \sum_{i = 1}^n x_{1i} \text{ and } 
+\hat E[X_2] = \frac{\sum_{i = 1}^n (\delta_{01} + \delta_{11})x_{2i}}{\sum_{i =
+1}^n \delta_{01} + \delta_{11}}.
+$$
 
 {{< pagebreak >}}
 
