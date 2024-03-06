@@ -1,0 +1,190 @@
+---
+title: "Alternate: Proof of Optimal Variance Estimators"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+\newcommand{\Var}{\text{Var}}
+\newcommand{\argmin}{\text{argmin}}
+
+# Summary
+
+This report contains my current progress in establishing the optimal variance
+estimators for the nonmonotone GLS estimation. I think that I got it.
+
+# Report (Monday, March 3)
+
+Previously^[See 20240223-optvar.html.] we argued that the conditional
+expectation of $Y$ on the observed variables is the optimal form of $f(X)$. We
+showed this by allowing $f(X) = E[Y \mid X] + \ell(X)$ where $E[\ell(X)] = 0$.
+Then the minimal variance estimator of $E[Y]$ yielded $\Var(\ell(X)) = 0$, which
+indicated that the optimal function of $f(X) = E[Y \mid X]$. Unfortunately, the
+details in this proof made it difficult to scale beyond the case of having two
+variables, and so we sought an alternative method which could scale better.
+
+One approach is to use semiparametric theory for parametric models. In the
+monotone case, the problem that we want to solve is to find the functional form
+of $f(X)$ such that we have the minimum variance of $\hat \beta = E[Y]$ for the
+following model, which holds if $n_{11} = n_{10}$,
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11}
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+\mu_f \\
+\mu_f \\
+\mu_y \\
+\end{bmatrix},
+n^{-1}
+\begin{bmatrix}
+\sigma_f^2 & 0 & \rho_{fy} \sigma_f \sigma_y \\ 
+0 & \sigma_f^2 & 0 \\ 
+\rho_{fy} \sigma_f \sigma_y & 0 & \sigma_y^2 \\
+\end{bmatrix}
+\right).
+$$
+
+We now have a parametric model with $\beta = \mu_y$ and $\eta = (\mu_f,
+\sigma_y, \sigma_f, \rho_{fy})^T$. Previously, we were thinking about how the
+choice of $f(X)$ determines $\mu_f$, $\sigma_f$, and $\rho_{fy}$, which is true.
+However, since these parameters are the only things that we need for the model,
+we can find the efficient influence function by letting $\theta = (\beta,
+\eta^T)^T$ and then we have, 
+
+$$ \varphi_{eff} = \left(\frac{\partial \theta}{\partial \beta}\right)^{-1}
+E[S_\theta S_\theta^T]^{-1} S_\theta.$$
+
+This looks promising. However, the inverse information matrix, $E[S_\theta
+S_\theta^T]^{-1}$ is very difficult to compute. Even for the monotone case that
+we currently consider it is a 5x5 matrix.^[Technically, it is a block diagonal
+matrix with blocks of size 1 and size 4. The 4x4 block is very challenging
+because it requires the actual expectations of difference squared terms.] This
+means that this technique also does not generalize well.
+
+We have learned that we can work with the model directly, but this will require
+slightly more advanced techniques like something similar to the partial linear
+model (PLM).
+
+# Update (Tuesday, March 4)
+
+I think that I have a good method of proof. However, I want to check to make
+sure that the details are correct. I argue that the optimal function for $f(X)$
+in the GLS estimator is $f(X) = E[Y \mid X]$. It takes three steps:
+
+1. We argue that $\alpha(X) = E[Y \mid X]$ is optimal in the PLM,
+2. Then we show that the PLM holds for each independent segment, and
+3. Finally, we combine the segment estimators using the variance weighted
+   average.
+
+::: {#lem-plm}
+Let $Y$ and $X$ be random variables that are possibly vector valued with finite
+variance, and denote $\mu_Y = E[Y]$. Then, for
+
+$$ \alpha^*(X) = \argmin_{\alpha(X)} E[(Y - \mu_Y - \alpha(X))^2] \text{ such
+that } E[\alpha(X)] = 0$$
+
+we have $\alpha^*(X) = E[Y \mid X] - \mu_Y$.
+:::
+
+::: {.proof}
+Let $\hat \alpha(X) = E[Y \mid X] - \mu_Y$. Notice, that 
+
+$$ E[\hat \alpha(X)] = E[E[Y \mid X]] - \mu_Y = 0. $$
+
+Furthermore, let $\ell(X)$ satisfy $\alpha(X) = \hat \alpha(X) + \ell(X)$. Then,
+
+\begin{align*}
+E[(Y - \mu_y - \alpha(X))^2] 
+&= E[(Y - \mu_y - \hat \alpha(X) - \ell(X))^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] - 2 E[(Y - \mu_Y - \hat \alpha(X))\ell(X)]
++ E[\ell(X)^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] - 2 E[E[(Y - E[Y \mid X])\ell(X)
+\mid X]] + E[\ell(X)^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] - 2 E[(E[Y \mid X] - E[Y \mid X])\ell(X)] +
+E[\ell(X)^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] + E[\ell(X)^2].
+\end{align*}
+
+Hence, $\alpha^*(X) = \hat \alpha(X) = E[Y \mid X] - \mu_Y$.
+:::
+
+## Step 1
+
+Now consider the following partial linear model 
+
+
+$$Y = \mu_Y + \alpha(X) + \varepsilon$$
+
+where $E[\alpha(X)] = 0$.^[Note that this partial linear model is different than
+the one used by @robinson1988root.] By @lem-plm, the function of $\alpha$ that
+minimizes the variance of $\varepsilon$ is $\alpha(X) = E[Y \mid X] - \mu_Y$.
+
+## Step 2
+
+Consider a single segment where we observe $Y$ and some variables $X$ where $X$
+could be a vector. We consider the sample superpopulation model, 
+
+$$
+\begin{bmatrix} X \\ Y \end{bmatrix} \sim \left(
+\begin{bmatrix} \mu_X \\ \mu_Y \end{bmatrix},
+\begin{bmatrix} 
+\Sigma_{XX} & \Sigma_{XY} \\ \Sigma_{YX} & \sigma_Y^2
+\end{bmatrix}
+\right).
+$$
+
+The goal is to find the function of $X$, $f(X)$, such that we have the minimum
+variance. Mathematically, this is 
+
+$$f^*(X) = \argmin_{f(X)} \Var(Y - \mu_Y - f(X)).$$
+
+For identification purposes we also require that $E[f(X)] = 0$. This makes the
+problem the same as Step 1, in which case the optimal form of $f(X)$ is $E[Y
+\mid X] - \mu_Y$.^[If our model is assumed to be normal, then we can see what
+the form of $f(X)$ is from the conditional distribution: $f(X) =
+\Sigma_{YX}\Sigma_{XX}^{-1}(X - \mu_X)$.] Note that we define the
+optimal form of $f(X)$ in the sample *superpopulation* model. We will worry
+about estimating $f(X)$ later.
+
+## Step 3
+
+The overall goal is to find the optimal functional form of $f(G_r(X))$ where
+$G_r(X)$ is the set of $X$ variables observed in the $r$-th segment. However,
+since we assume that each segment is independent of the rest, and that $X$ and
+$Y$ follow a normal model, by the Gauss-Markov theorem, the inverse-variance
+weighted average of each segment contains best linear unbiased estimator of
+$\theta = E[Y]$. This means that if we have the problem,
+
+$$
+\begin{bmatrix} f(G_0(X)) \\ f(G_1(X)) \\ \vdots \\ Y_0 \\ \vdots \end{bmatrix} \sim \left(
+\begin{bmatrix} \mu_{G_0(X)} \\ \mu_{G_1(X)} \\ \vdots \\ \mu_Y \\ \vdots \end{bmatrix},
+V
+\right).
+$$
+
+The optimal form of $f(G_r(X))$ is $E[Y \mid G_r(X)] - \mu_Y$.
+
+# Questions
+
+1. I am not totally sure how to cover segments that do not contain $Y$. Should I
+   say that the best estimator for $Y - \mu_Y$ is $E[Y \mid X] - \mu_Y$?
+
+# Next Steps
+
+* Try estimating the variance with REML so that we have unbiased estimation.
+* Extend proof to semiparametric case where we do not necessarily assume a
+normal model.
+* Find the optimal estimator under MAR instead of missing by design.

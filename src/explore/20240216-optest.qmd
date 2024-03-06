@@ -400,22 +400,22 @@ gls_c <- function(df, case = "true") {
 
   big_v <- matrix(0, nrow = 8, ncol = 8)
   big_v[1:4, 1:4] <- 
-    diag(c(1 / df$pi_11[1] * Ex12 - Ex1^2,
-           1 / df$pi_10[1] * Ex12 - Ex1^2,
-           1 / df$pi_01[1] * Ex12 - Ex1^2,
-           1 / df$pi_00[1] * Ex12 - Ex1^2))
+    diag(c(1 / df$pi_11[1] * (Ex12 - Ex1^2),
+           1 / df$pi_10[1] * (Ex12 - Ex1^2),
+           1 / df$pi_01[1] * (Ex12 - Ex1^2),
+           1 / df$pi_00[1] * (Ex12 - Ex1^2)))
   big_v[5:6, 5:6] <- 
-  diag(c(1 / df$pi_11[1] * Ex22 - Ex2^2,
-         1 / df$pi_10[1] * Ex22 - Ex2^2))
+  diag(c(1 / df$pi_11[1] * (Ex22 - Ex2^2),
+         1 / df$pi_10[1] * (Ex22 - Ex2^2)))
   big_v[7:8, 7:8] <- 
-    diag(c(1 / df$pi_11[1] * Ey2 - Ey^2,
-           1 / df$pi_01[1] * Ey2 - Ey^2))
+    diag(c(1 / df$pi_11[1] * (Ey2 - Ey^2),
+           1 / df$pi_01[1] * (Ey2 - Ey^2)))
 
-  big_v[1, 5] <- 1 / df$pi_11[1] * Ex1x2 - Ex1 * Ex2
-  big_v[1, 7] <- 1 / df$pi_11[1] * Ex1y - Ex1 * Ey
-  big_v[5, 7] <- 1 / df$pi_11[1] * Ex2y - Ex2 * Ey
-  big_v[2, 6] <- 1 / df$pi_10[1] * Ex1x2 - Ex1 * Ex2
-  big_v[3, 8] <- 1 / df$pi_01[1] *  Ex1y - Ex1 * Ey
+  big_v[1, 5] <- 1 / df$pi_11[1] * (Ex1x2 - Ex1 * Ex2)
+  big_v[1, 7] <- 1 / df$pi_11[1] * (Ex1y - Ex1 * Ey)
+  big_v[5, 7] <- 1 / df$pi_11[1] * (Ex2y - Ex2 * Ey)
+  big_v[2, 6] <- 1 / df$pi_10[1] * (Ex1x2 - Ex1 * Ex2)
+  big_v[3, 8] <- 1 / df$pi_01[1] *  (Ex1y - Ex1 * Ey)
 
   big_v[5, 1] <- big_v[1, 5]
   big_v[7, 1] <- big_v[1, 7]
@@ -835,7 +835,7 @@ The variances of each $\hat f_j$ are relatively straightforward. As an example,
 I will derive $\Var(\hat f_1^{(11)})$.
 
 $$
-\Var(\hat f_1^{(11)}) = n^{-1}(\pi_{11}^{-1} E[X_1^2] - E[X_1]^2).
+\Var(\hat f_1^{(11)}) = n^{-1}\pi_{11}^{-1} (E[X_1^2] - E[X_1]^2).
 $$
 
 For other values of $\hat f_j$ we simply use the correct $\pi_{ij}$ and variable
@@ -844,7 +844,7 @@ $\Cov(\hat f_1^{(11)}, \hat f_2^{(11)})$, can be computed as
 
 $$
 \Cov(\hat f_1^{(11)}, \hat f_2^{(11)}) =
-n^{-1}(\pi_{11}^{-1} E[X_1 X_2] - E[X_1]E[X_2]).
+n^{-1}\pi_{11}^{-1} (E[X_1 X_2] - E[X_1]E[X_2]).
 $$
 
 For the other covariances, we can substitute the corresponding $\pi_{ij}$ and

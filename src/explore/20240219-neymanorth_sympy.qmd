@@ -1,0 +1,18 @@
+---
+title: "SymPy Calculations for Neyman Orthogonalization"
+author:
+  - name: Caleb Leedy
+date: today
+date-format: "D MMMM YYYY"
+format:
+  pdf:
+    include-in-header: 
+      - "latex_header.tex"
+---
+
+# Summary
+
+This document computes the following.
+
+Unfortunately, SymPy does not currently know matrix calculus. So I am going to
+work through some of the differentiation myself.

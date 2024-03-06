@@ -1,0 +1,52 @@
+---
+title: "SymPy Representation for Efficient Score Functions"
+author: "Caleb Leedy"
+date: "March 1, 2024"
+format: html
+jupyter:
+  kernel: sagemath
+---
+
+# Summary: Part 1
+
+This part determines the efficient score function for the simple monotone model.
+
+```{python}
+#| label: sage score 1
+
+from sage.symbolic.integration.integral import definite_integral
+
+f11, f10, y = var('f11 f10 y')
+muy, muf, sy, sf, pfy = var('muy muf sy sf pfy')
+
+loglikefun = -3/2 * log(2 * pi) - 1/2 * log(sy^2 * (1 - pfy^2)) - 1 / (2 * sy^2
+* (1 - pfy^2)) * (y - muy - (pfy * sy / sf) * (f11 - muf))^2 - log(sf^2) - 1/2 * (
+  (f11 - muf)^2 + (f10 - muf)^2) / sf^2
+
+S_muy = loglikefun.derivative(muy)
+S_muf = loglikefun.derivative(muf)
+S_sy = loglikefun.derivative(sy)
+S_sf = loglikefun.derivative(sf)
+S_pfy = loglikefun.derivative(pfy)
+
+v_mat = matrix([
+  [sf^2, 0 , pfy * sf * sy],
+  [0, sf^2, 0],
+  [pfy * sf * sy, 0, sy^2]
+])
+
+mean_diff = matrix([
+  [f11 - muf],
+  [f10 - muf],
+  [y - muy]
+])
+
+dens_fy = (2 * pi)^(3/2) * (v_mat.det())^(-1/2) * exp(-1 / 2 * mean_diff.transpose() * v_mat.inverse() * mean_diff)[0, 0]
+
+dens_y = (2 * pi * sy^2)^(-1/2) * exp(-1/(2 * sy^2) * (y - muy)^2)
+
+
+
+res = definite_integral(dens_y, y, -infinity, infinity)
+res.full_simplify()
+```

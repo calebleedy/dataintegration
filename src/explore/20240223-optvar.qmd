@@ -1,0 +1,459 @@
+---
+title: "Proof of Optimal Variance Estimators"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+comments:
+  hypothesis: true
+---
+
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Cov}{\text{Cov}}
+\newcommand{\argmin}{\text{argmin}}
+
+# Summary
+
+This report contains my current progress in establishing the optimal variance
+estimators for the nonmonotone GLS estimation. 
+
+# General Notation
+
+For now, we assume that we have a superpopulation model and a sampling
+model. I would first like to establish optimality results using the simpliest
+models, but it is not always clear what is simple in the nonmonotone case.
+If we also consider a monotone model, we can have simple models based on if we
+want to have complete cases (observations in which every variable is observed),
+which I denote `CC`,
+or if we want to have complete variables (variables which are never missing),
+which I denote `CV`.
+This leads to the following set of simple cases:
+
+::: {#tbl-panel layout-ncol=4}
+| $X$ | $Y$ |
+|---|---|
+| ✔️ | ✔️ |
+| :heavy_check_mark: |  |
+: Monotone {#tbl-one}
+
+| $X$ | $Y$ |
+|---|---|
+| ✔️ | ✔️ |
+| :heavy_check_mark: |  |
+|  | ✔️ |
+: Nonmonotone: CC {#tbl-two}
+
+| $X_1$ | $X_2$ | $Y$ |
+|-------|-------|---|
+| ✔️     | ✔️     |   |
+| ✔️     |       | :heavy_check_mark: | 
+: Nonmonotone: CV {#tbl-three}
+
+| $X_1$ | $X_2$ | $Y$ |
+|-------|-------|---|
+| ✔️     | ✔️     | :heavy_check_mark: |
+| ✔️     | ✔️     |   |
+| ✔️     |       | :heavy_check_mark: | 
+: Nonmonotone: CC + CV {#tbl-four}
+
+Set of Simple Monotone and Nonmonotone Cases
+:::
+
+For each of these cases, we can construct a GLS estimator from the corresponding
+missingness model (I am giving the
+monotone model in @tbl-one) like the following:
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11}
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+\mu_X \\
+\mu_X \\
+\mu_Y \\
+\end{bmatrix},
+\begin{bmatrix}
+\Sigma_{11} & 0 & \Sigma_{fy} \\ 
+0 & \Sigma_{10} & 0 \\ 
+\Sigma_{yf} & 0 & \Sigma_y \\
+\end{bmatrix}
+\right).
+$$
+
+
+# Goals
+
+I would like to establish the following:
+
+1. For the corresponding missingness model, I would like to find all of the 
+   $f(X)$ with $E[f(X)] = \mu_f$ such that the final estimator of $\hat \mu_y$
+   has minimal variance.
+2. Find the conditions under which the GLS estimator based on a superpopulation
+   model is design consistent.
+
+The second task is proving a result that is very similar to 
+[@fuller2009sampling, Theorem 2.3.1].
+
+
+# Results
+
+::: {#thm-mono}
+Assume that we have the simple monotone case in @tbl-one with independent
+segments $A_{11}$ and $A_{10}$ having a sample size of $n_{11}$ and $n_{10}$
+respectively. We assume that $n_{11} = n_{10}$. Then for GLS estimators in the
+form,
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11}
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+\mu_X \\
+\mu_X \\
+\mu_Y \\
+\end{bmatrix},
+V
+\right)
+$$
+
+where 
+$\hat f_{11}(X) = n_{11}^{-1} \sum_{i = 1}^n \frac{\delta_{11i}f(x_i)}{\pi_{11i}}$,
+$\hat f_{10}(X) = n_{10}^{-1} \sum_{i = 1}^n \frac{\delta_{10i}f(x_i)}{\pi_{10i}}$,
+$\hat Y_{11} = n_{11}^{-1} \sum_{i = 1}^n \frac{\delta_{11i}y_i}{\pi_{11i}}$,
+and the function $f(X) = E[Y \mid X]$ minimizes the variance of $\hat \mu_Y$.
+
+:::
+
+::: {.proof}
+The goal is to show that 
+
+$$ E[Y \mid X] = \argmin_{f} \hat \mu_Y(f). $$
+
+Our approach is the following. Consider $f(X) = E[Y \mid X] + \ell(X)$ where
+$E[\ell(X)] = 0$. With this formulation of $f(X)$ we can compute the variance
+matrix $V$. Define the following notation:
+
+| Label | Symbol |
+| :----- | ------: |
+| $\Var(E[Y \mid X])$ | $\sigma_x^2$ |
+| $\Var(Y)$ | $\sigma_y^2$ |
+| $\Var(\ell(X))$ | $\sigma_\ell^2$ |
+| $\Cov(E[Y \mid X], Y)$ | $\rho_{xy} \sigma_x \sigma_y$ |
+| $\Cov(E[Y \mid X], \ell(X))$ | $\rho_{x\ell} \sigma_x \sigma_\ell$ |
+| $\Cov(Y, \ell(X))$ | $\rho_{y\ell} \sigma_y \sigma_\ell$ |
+: A table to define the notation used in the rest of the proof. {#tbl-lab1}
+
+Notice that,
+
+$$ \Cov(E[Y \mid X], Y) = E[E[Y \mid X]^2] - E[Y]^2 = \Var(E[Y \mid X]) $$
+
+and
+
+$$ \Cov(E[Y \mid X], \ell(X)) = E[E[Y \mid X]\ell(X)] = \Cov(Y, \ell(X)). $$
+
+This means that $\sigma_x = \rho_{xy} \sigma_y$ and 
+$\rho_{x\ell} \sigma_x = \rho_{y\ell} \sigma_y$. Hence, we have the following
+covariance matrix $V$,
+
+[The constant in front of the matrix is equal to $n^{-1}$ because $n_{11} = n_{10}$. Since each segment is chosen via simple random sampling, the overall variance of 
+$\hat f_{11}(X)$ is $(n_{11}^{-1} - n^{-1})S_{f_{11}}^2 = (2/n - 1/n)S_{f_{11}}^2
+= S^2_{f_{11}}/n$. Since $n_{11} = n_{10}$ the variance of $\hat f_{10}(X)$ is
+also equal to $S_{f_{10}}^2 / n$. This holds for all of the variance and
+covariance terms which allows us to factor it out of the matrix.]{.aside}
+
+$$V =  \frac{1}{n}
+\begin{bmatrix}
+\rho_{xy}^2\sigma_y^2 + \sigma_\ell^2 + 2 \rho_{y\ell} \sigma_y \sigma_\ell & 0
+& \rho_{xy}^2\sigma_y^2 + \rho_{y\ell} \sigma_y \sigma_\ell \\
+0 & \rho_{xy}^2\sigma_y^2 + \sigma_\ell^2 + 2 \rho_{y\ell} \sigma_y \sigma_\ell & 0 \\
+\rho_{xy}^2\sigma_y^2 + \rho_{y\ell} \sigma_y \sigma_\ell & 0 & \sigma_y^2
+\end{bmatrix}.
+$$
+
+The goal is now to show that minimizing the variance of $\hat \mu_Y$ yields
+$\sigma_\ell^2 = 0$. Using GLS results in a variance estimate of $\hat \mu$ of 
+
+$$ V(\hat \mu) = (X'V^{-1}X)^{-1}$$
+
+where 
+
+$$ X = 
+\begin{bmatrix}
+1 & 1 \\
+1 & 1 \\
+1 & 0
+\end{bmatrix}
+\text{ for }
+\mu = 
+\begin{bmatrix}
+\mu_Y \\ \mu_\ell
+\end{bmatrix}.
+$$
+
+Evaluating this matrix expression and then viewing the first entry yields an
+expression of the variance of $\mu_Y$,
+
+$$\Var(\mu_Y) = n^{-1} \sigma_y^2 \left(1 + 
+\frac{\rho_{xy}^4 \sigma_y^2 + 2\rho_{y\ell}\sigma_\ell \sigma_y \rho_{xy}^2 +
+\rho_{y\ell}^2\sigma_{\ell}^2}{2(\rho_{xy}^2\sigma_y^2 + 2\rho_{y\ell}\sigma_\ell
+\sigma_y + \sigma_\ell^2)}\right).$$
+
+Then we can solve the equation,
+
+$$ \frac{\partial V(\hat \mu_Y)}{\partial \sigma_\ell} = 0. $$
+
+This yields (after some cancelations), the equation
+
+$$ \sigma_\ell \rho_{y\ell} \sigma_y (\rho_{xy}^2 (\sigma_y - \sigma_\ell) +
+\rho_{y\ell}^2 (1 - \rho_{xy}\sigma_y)) = 0.$$
+
+Hence, the candidates for the minimum value of $V(\hat \mu_Y)$ are ($\rho_{y\ell}
+= 0$, $\sigma_\ell = \sigma_y$), $\rho_{y\ell} = 0$, and $\sigma_\ell = 0$.
+Plugging each of these back into $V(\hat \mu_Y)$ shows that $\sigma_\ell = 0$ is
+actually the minimum. Hence, $\sigma_\ell^2 = 0$ yields the minimum variance of
+$V(\hat \mu_Y)$ which means that since $E[\ell(X)] = 0$ that $\ell(X) = 0$. This
+means that the optimal function of $f(X)$ is $E[Y \mid X]$. :black_medium_square:
+
+:::
+
+We can use the same technique to get a result for the nonmonotone case where we
+have complete cases.
+
+::: {#thm-nmcc}
+Assume that we have the simple monotone case in @tbl-two with independent
+segments $A_{11}$, $A_{10}$, and $A_{01}$ having sample sizes of $n_{11}$,
+$n_{10}$, and $n_{01}$ respectively. We assume that $n_{11} = n_{10} = n_{01}$.
+Then for GLS estimators in the form,
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11} \\
+\hat Y_{10}
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+\mu_X \\
+\mu_X \\
+\mu_Y \\
+\mu_Y \\
+\end{bmatrix},
+V
+\right)
+$$
+
+where 
+$\hat f_{11}(X) = n_{11}^{-1} \sum_{i = 1}^n \frac{\delta_{11i}f(x_i)}{\pi_{11i}}$,
+$\hat f_{10}(X) = n_{10}^{-1} \sum_{i = 1}^n \frac{\delta_{10i}f(x_i)}{\pi_{10i}}$,
+$\hat Y_{11} = n_{11}^{-1} \sum_{i = 1}^n \frac{\delta_{11i}y_i}{\pi_{11i}}$, 
+$\hat Y_{10} = n_{10}^{-1} \sum_{i = 1}^n \frac{\delta_{10i}y_i}{\pi_{10i}}$,
+and the function $f(X) = E[Y \mid X]$ minimizes the variance of $\hat \mu_Y$.
+
+:::
+
+::: {.proof}
+This proof follows the same approach as @thm-mono. Using the same notation, we
+have the following GLS model,
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11} \\
+\hat Y_{10} \\
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+1 & 1 \\
+1 & 1 \\
+1 & 0 \\
+1 & 0 \\
+\end{bmatrix},
+\begin{bmatrix}
+\mu_Y \\
+\mu_\ell
+\end{bmatrix}, \frac{2}{n}
+\begin{bmatrix}
+\rho_{xy}^2\sigma_y^2 + \sigma_\ell^2 + 2 \rho_{y\ell} \sigma_y \sigma_\ell & 0
+& \rho_{xy}^2\sigma_y^2 + \rho_{y\ell} \sigma_y \sigma_\ell & 0\\
+0 & \rho_{xy}^2\sigma_y^2 + \sigma_\ell^2 + 2 \rho_{y\ell} \sigma_y \sigma_\ell & 0 & 0 \\
+\rho_{xy}^2\sigma_y^2 + \rho_{y\ell} \sigma_y \sigma_\ell & 0 & \sigma_y^2 & 0 \\
+0 & 0 & 0 & \sigma_y^2 \\
+\end{bmatrix}.
+\right)
+$$
+
+[The constant in front of the matrix is equal to $2/n$ because $n_{11} = n_{10}
+= n_{01}$. Since each segment is chosen via simple random sampling, the overall
+variance of 
+$\hat f_{11}(X)$ is $(n_{11}^{-1} - n^{-1})S_{f_{11}}^2 = (3/n - 1/n)S_{f_{11}}^2
+= 2S^2_{f_{11}}/n$. This holds for all of the variance and
+covariance terms which allows us to factor it out of the matrix.]{.aside}
+
+The variance of $\hat \mu_Y$ is 
+
+$$V(\hat \mu_Y) = 2n^{-1} \sigma_y^2 \left(1 + 
+\frac{2 \rho_{xy}^2 \sigma_y^2 + 4 \rho_{y\ell} \sigma_\ell \sigma_y +
+2\sigma_\ell^2}{\rho_{xy}^4 \sigma_y^2 + 2 \rho_{xy}^2 \rho_{y\ell} \sigma_\ell
+\sigma_y - 4\rho_{xy}^2 \sigma_y^2 + \rho_{y\ell}^2 \sigma_\ell^2 - 8
+\rho_{y\ell}\sigma_{\ell} \sigma_{y} - 4 \sigma_{\ell}^2}
+\right).$$
+
+Solving $\frac{\partial V(\hat \mu_Y)}{\partial \sigma_y} = 0$ yields (after
+simplification),
+
+$$ \sigma_{\ell} \sigma_y (\rho_{xy}^4 \sigma_y + \rho_{xy}^2 \rho_{y\ell}(\sigma_\ell
+- \rho_{y\ell}\sigma_y) - \rho_{y\ell}^3 \sigma_\ell) = 0. $$
+
+This implies that the minimum variance occurs at $\sigma_{\ell} = 0$ which means
+that $\ell(X) = 0$. Hence, the optimal value of $f(X) = E[Y \mid X]$.
+:black_medium_square:
+
+:::
+
+# Discussion
+
+This current approach seems to be working. However, I am using SymPy [@meurer2017sympy]
+to assist with and check the computational algebra. I have started to find the
+optimal functions of $f(X_1), f(X_2)$, and $f(X_1, X_2)$ from @tbl-three but
+inverting a $4 \times 4$ matrix is difficult to approach computationally. Since
+this is very similar to the semiparametric literature, I am going to try to see
+if I can use some of their techniques to simplify my work.
+
+<!---
+# Current Progress
+
+The first thing that I have tried to consider is the optimal function $f(X)$ in
+the monotone case (@tbl-one). For this missingness set, we have the GLS model:
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11}
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+\mu_f \\
+\mu_f \\
+\mu_y \\
+\end{bmatrix},
+\begin{bmatrix}
+\Sigma_{11} & 0 & \Sigma_{fy} \\ 
+0 & \Sigma_{10} & 0 \\ 
+\Sigma_{yf} & 0 & \Sigma_y \\
+\end{bmatrix}
+\right).
+$$
+
+::: {.column-margin}
+
+I also compared this result to the case in which we have $E[f(X)] = \mu_y$ which
+occurs if $f(X) = E[Y \mid X]$. In this case, we have the model
+
+$$
+\begin{bmatrix}
+\hat f_{11}(X) \\
+\hat f_{10}(X) \\
+\hat Y_{11}
+\end{bmatrix} \sim
+\left(
+\begin{bmatrix}
+\mu_y \\
+\mu_y \\
+\mu_y \\
+\end{bmatrix},
+\begin{bmatrix}
+\Sigma_{11} & 0 & \Sigma_{fy} \\ 
+0 & \Sigma_{10} & 0 \\ 
+\Sigma_{yf} & 0 & \Sigma_y \\
+\end{bmatrix}
+\right).
+$$
+
+Then using GLS (it is not too hard to invert the covariance matrix because it is
+a block diagonal), we get 
+
+$$
+\hat \mu_y =
+\frac{\hat f_{10}(X)(\Sigma_{11}\Sigma_y - \Sigma_{fy}^2) - \hat f_{11}(X)
+\Sigma_{10}(\Sigma_{fy} - \Sigma_y) + Y_{11} \Sigma_{10}(\Sigma_{11} - \Sigma_{fy})}{
+\Sigma_{10}(\Sigma_{11} - 2\Sigma_{fy} + \Sigma_y) + \Sigma_{11}\Sigma_y - \Sigma_{fy}^2
+}.
+$$ 
+
+The variance of this is
+
+$$
+\Var(\mu_y) = 
+\left(\frac{\Sigma_{11} - 2\Sigma_{fy} + \Sigma_y}{\Sigma_{11}\Sigma_y -
+\Sigma_{fy}^2} + \frac{1}{\Sigma_{10}}\right)^{-1}.
+$$
+
+We can notice that if we let all of the variances 
+($\Sigma_{11}, \Sigma_{10}, \Sigma_y = 1$) then we can compare this variance
+result to @eq-condvarymono. If this case this marginal variance is always lower
+than @eq-condvarymono unless $\Sigma_{fy} = 1$. In this case they are the same.
+
+
+However, I do not think that this is a problem because in this marginal model we
+are assuming that $f(X)$ is correctly specified for $E[Y \mid X]$. 
+**Is this correct Dr. Kim?**
+
+:::
+
+
+Using the technique of @zhou2012efficient, we can first solve for the optimal
+estimator of $\mu_f$, which is
+
+$$
+\hat \mu_f = 
+\frac{\frac{\hat f_11(X)}{\Sigma_{11}} + \frac{\hat f_10(X)}{\Sigma_{10}}}{
+\Sigma_{11}^{-1} + \Sigma_{10}^{-1}}.
+$$
+
+Then the conditional distribution of $Y_{11}$ given $f(X)$ is 
+
+$$
+Y_{11} \mid \hat f(X) \sim \left(
+\mu_y + \Sigma_{yf}\Sigma_{11}^{-1}(\hat f_11(X) - \hat \mu_f),
+\Sigma_y - \Sigma_{yf} \Sigma_{11}^{-1} \Sigma_{fy}\right).
+$$
+
+This means that
+
+$$
+\hat \mu_y = Y_{11} - 
+\left(\frac{\Sigma_{yf}}{\Sigma_{11} + \Sigma_{10}}\right)
+(\hat f_{11}(X) - \hat f_{10}(X))
+$$
+
+and this has a variance of 
+
+$$ \Sigma_{y} - \frac{\Sigma_{yf}^2}{\Sigma_{11} + \Sigma_{10}}. $$ {#eq-condvarymono}
+
+From semiparametric theory, I think that this result should be expected because
+$\Sigma_{11} + \Sigma_{10} = \Var(\hat f_{11}(X) + \hat f_{10}(X))$. This does
+generate follow up questions for me:
+
+1. It seems like we want to find the function $f(X)$ such that $|\Sigma_{fy}|$ 
+   is maximized. Does this mean that $f(X)$ should be $E[Y \mid X]$?
+2. In this analysis, I am not using the superpopulation model directly. Is the
+   only purpose of a superpopulation model to assert that the GLS estimator is
+   optimal for a proposed model?
+
+--->
+
+
+# References
