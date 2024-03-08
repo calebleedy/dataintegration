@@ -1,0 +1,261 @@
+---
+title: "Proof of the Optimal f function being the conditional expectation"
+author: "Caleb Leedy"
+date: "March 6, 2024"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+\newcommand{\Var}{\text{Var}}
+\newcommand{\argmin}{\text{argmin}}
+\newcommand{\P}{\mathcal{P}}
+
+# Summary
+
+This gives the formal proof as to why the conditional expectation for the f
+function is optimal.
+
+# Result
+
+::: {#lem-plm}
+Let $Y$ and $X$ be random variables that are possibly vector valued with finite
+variance, and denote $\mu_Y = E[Y]$. Then, for
+
+$$ \alpha^*(X) = \argmin_{\alpha(X)} E[(Y - \mu_Y - \alpha(X))^2] \text{ such
+that } E[\alpha(X)] = 0$$
+
+we have $\alpha^*(X) = E[Y \mid X] - \mu_Y$.
+:::
+
+::: {.proof}
+Let $\hat \alpha(X) = E[Y \mid X] - \mu_Y$. Notice, that 
+
+$$ E[\hat \alpha(X)] = E[E[Y \mid X]] - \mu_Y = 0. $$
+
+Furthermore, let $\ell(X)$ satisfy $\alpha(X) = \hat \alpha(X) + \ell(X)$. Then,
+
+\begin{align*}
+E[(Y - \mu_y - \alpha(X))^2] 
+&= E[(Y - \mu_y - \hat \alpha(X) - \ell(X))^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] - 2 E[(Y - \mu_Y - \hat \alpha(X))\ell(X)]
++ E[\ell(X)^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] - 2 E[E[(Y - E[Y \mid X])\ell(X)
+\mid X]] + E[\ell(X)^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] - 2 E[(E[Y \mid X] - E[Y \mid X])\ell(X)] +
+E[\ell(X)^2] \\
+&= E[(Y - \mu_y - \hat \alpha(X))^2] + E[\ell(X)^2].
+\end{align*}
+
+Hence, $\alpha^*(X) = \hat \alpha(X) = E[Y \mid X] - \mu_Y$.
+:::
+
+Notice, that this says that the optimal predictor of $Y - \mu_Y$ is 
+$E[Y \mid X] - \mu_Y$.
+
+::: {#thm-optf}
+Consider a superpopulation model
+
+$$
+\begin{bmatrix} X \\ Y \end{bmatrix} \sim 
+\left(\begin{bmatrix} \mu_X \\ \mu_Y \end{bmatrix}, V \right)
+$$
+
+in which we have $R$ independent segments $\{A_r\}_{r = 1}^R$ where in each
+segment we observe $G_r(X, Y) \subseteq (X, Y)$ such that $G_r(X, Y)$ is
+non-empty. For each segment, we have a sample model
+
+$$
+\begin{bmatrix} G_r(X, Y) \end{bmatrix} \stackrel{ind}{\sim} 
+\left(G_r(\mu_X, \mu_Y), V_{rr}\right).
+$$
+
+If $Z := (X^T, Y)^T$ and $Ind(Z, r)$ are the indices of $Z$ that are observed in
+the $r$-th segment, then $V_{rr}$ are the $Ind(Z, r)$ rows and columns of the
+matrix $V$. Let $G_r(X)$ be the subset of $X$ in $G_r(X, Y)$. We consider a
+class of estimators,
+
+$$
+\begin{bmatrix}
+\hat f_1(G_1(X, Y)) \\
+\hat f_2(G_2(X, Y)) \\
+\vdots \\
+\hat f_R(G_R(X, Y)) \\
+\end{bmatrix} 
+\sim \left(
+\begin{bmatrix}
+f_1(G_1(\mu_X, \mu_Y)) \\
+f_2(G_2(\mu_X, \mu_Y)) \\
+\vdots \\
+f_R(G_R(\mu_X, \mu_Y)) \\
+\end{bmatrix},
+\begin{bmatrix}
+V_{f_1f_1} & 0 & 0 & \dots & 0 \\
+0 & V_{f_2f_2} & 0 & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & \dots &  & V_{f_Rf_R}\\
+\end{bmatrix}
+\right)
+$$ {#eq-fclass}
+
+where $\hat f_r(G_r(X, Y)) = n_r^{-1} \sum_{i = 1}^n \frac{\delta_{ir}f_r(G_r(X_i,
+Y_i))}{\pi_{ri}}$ and 
+
+$$ f_r(G_r(X, Y)) = 
+\begin{cases}
+\begin{bmatrix}
+f_r(G_r(X)) \\
+Y_r
+\end{bmatrix} 
+& \text{ if } Y \in G_r(X, Y) \text{ and } G_r(X) \neq \emptyset \\
+\begin{bmatrix}
+f_r(G_r(X)) \\
+\end{bmatrix} 
+& \text{ if } Y \notin G_r(X, Y)\\
+\begin{bmatrix}
+Y_r
+\end{bmatrix} 
+& \text{ if } G_r(X) = \emptyset \\
+\end{cases}
+$$
+
+for $n_r = |A_r|$, $\pi_{ri}$ equal to the sample inclusion probability of
+element $i$, and $\delta_{ir} = I(i \in A_r)$.
+
+Let $\P(G_r(X))$ be the power set of elements $G_r(X)$ without the empty set. We
+can impose and ordering on $\P(G_r(X))$ for $p = 1, \dots, P_r = |\P(G_r(X))|$.
+We define $G_r(X)_p$ to be the $p$-th element of $\P(G_r(X))$. Then we have
+
+$$f_r(G_r(X)) = (f_r(G_r(X)_1), \dots, f_r(G_r(X)_{P_r}))^T.$$
+
+Let $\theta_N$ be the finite population mean of $Y$. We claim that the
+functional form of $f_r(G_r(X)_p)$ that minimizes the variance of an unbiased
+estimator of $\hat \theta_N$ from the class of models in @eq-fclass occurs when
+
+$$f_r(G_r(X)_p) = E[Y \mid G_r(X)_p] - \mu_Y.$$
+
+:::
+
+::: {.proof}
+Since every segment is independent, it suffices to find the best predictor in
+each segment $r$. By @lem-plm, the functional form of $f_r(G_r(X)_p)$ that
+minimizes the variance of $\hat \theta_N$ is 
+
+$$f_r(G_r(X)_p) = E[Y \mid G_r(X)_p] - \mu_Y.$$
+:::
+
+# Examples
+
+## Monotone Case
+
+
+| Segment | $X$ | $Y$ |
+|-----|---|---|
+| $A_1$ | ✔️ | ✔️ |
+| $A_2$ | :heavy_check_mark: |  |
+: Monotone {#tbl-one}
+
+For the monotone case in @tbl-one, the estimating vector is the following
+
+$$
+\begin{bmatrix} \hat f_1(X) \\ \hat Y_1 \\ \hat f_2(X) \end{bmatrix} =
+\begin{bmatrix}
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_i]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}y_i}{\pi_{1i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_i]}{\pi_{2i}} \\
+\end{bmatrix}.
+$$
+
+
+## Nonmonotone: Complete Case
+
+| Segment | $X$ | $Y$ |
+|----|---|---|
+| $A_1$ | ✔️ | ✔️ |
+| $A_2$ | :heavy_check_mark: |  |
+| $A_3$ |  | ✔️ |
+: Nonmonotone: Complete Case {#tbl-two}
+
+For the nonmonotone case in @tbl-two, the estimating vector is the following
+
+$$
+\begin{bmatrix} \hat f_1(X) \\ \hat Y_1 \\ \hat f_2(X) \\ \hat Y_3 \end{bmatrix} =
+\begin{bmatrix}
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_i]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}y_i}{\pi_{1i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_i]}{\pi_{2i}} \\
+n_3^{-1} \sum_{i = 1}^n \frac{\delta_{3i}y_i}{\pi_{3i}} \\
+\end{bmatrix}.
+$$
+
+
+## Nonmonotone: Complete Variable
+
+| Segment | $X_1$ | $X_2$ | $Y$ |
+|----|-------|-------|---|
+| $A_1$ | ✔️     | ✔️     |   |
+| $A_2$ | ✔️     |       | :heavy_check_mark: | 
+: Nonmonotone: Complete Variable {#tbl-three}
+
+For the nonmonotone case in @tbl-three, the estimating vector is the following
+
+$$
+\begin{bmatrix} 
+\hat f_1(X_1) \\ 
+\hat f_1(X_2) \\ 
+\hat f_1(X_1, X_2) \\ 
+\hat f_2(X_1) \\ 
+\hat Y_2 
+\end{bmatrix} =
+\begin{bmatrix}
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{1i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{2i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{1i}, x_{2i}]}{\pi_{1i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{1i}]}{\pi_{2i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}y_i}{\pi_{2i}} \\
+\end{bmatrix}.
+$$
+
+## Nonmonotone: Complete Case and Variable
+
+| Segment | $X_1$ | $X_2$ | $Y$ |
+|----|-------|-------|---|
+| $A_1$ | ✔️     | ✔️     | :heavy_check_mark: |
+| $A_2$ | ✔️     | ✔️     |   |
+| $A_3$ | ✔️     |       | :heavy_check_mark: | 
+: Nonmonotone: Complete Case + Complete Variable {#tbl-four}
+
+For the nonmonotone case in @tbl-four, the estimating vector is the following
+
+$$
+\begin{bmatrix} 
+\hat f_1(X_1) \\ 
+\hat f_1(X_2) \\ 
+\hat f_1(X_1, X_2) \\ 
+\hat Y_1 \\ 
+\hat f_2(X_1) \\ 
+\hat f_2(X_2) \\ 
+\hat f_2(X_1, X_2) \\ 
+\hat f_3(X_1) \\ 
+\hat Y_3 
+\end{bmatrix} =
+\begin{bmatrix}
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{1i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{2i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{1i}, x_{2i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}y_i}{\pi_{1i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{1i}]}{\pi_{2i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{2i}]}{\pi_{2i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{1i}, x_{2i}]}{\pi_{2i}} \\
+n_3^{-1} \sum_{i = 1}^n \frac{\delta_{3i}E[Y \mid x_{1i}]}{\pi_{3i}} \\
+n_3^{-1} \sum_{i = 1}^n \frac{\delta_{3i}y_i}{\pi_{3i}} \\
+\end{bmatrix}.
+$$
+
