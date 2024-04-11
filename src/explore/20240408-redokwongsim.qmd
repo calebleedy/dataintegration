@@ -1,0 +1,257 @@
+---
+title: "Debiased Calibration Simulation"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+# Summary
+
+This report simulates part of the debiased calibration setup. I need to do this
+to ensure that I understand how to use their package. I will compare their
+method with the @deville1992calibration as done in the simulation section of 
+@kwon2024debiased.
+
+# Simulation Setup
+
+```{r}
+#| label: setup
+
+N_obs <- 10000
+sample_draws <- 1000
+
+library(dplyr)
+library(sampling)
+library(GECal)
+library(doParallel)
+library(doRNG)
+
+```
+
+```{r}
+#| label: data generation
+
+gen_pop <- function(obs, method = 1) {
+  x1 <- rnorm(obs, 2, 1)
+  x2 <- runif(obs, 0, 4)
+  mu_x <- x1 + x2
+  z <- rnorm(obs, 0, 1)
+  if (method == 1) {
+    y <- mu_x + z + rnorm(obs, 0, 1)
+  } else if (method == 2) {
+    y <- mu_x + z^2 + rnorm(obs, 0, 1)
+  } else {
+    stop("method must be 1 or 2")
+  }
+
+  pi_vec <- ifelse(pt(-z - 2, 3) > 0.7, 0.7, pt(-z - 2, 3))
+
+  return(tibble(X1 = x1, X2 = x2, Y = y, Prob_i = pi_vec))
+}
+
+gen_samp <- function(pop_df) {
+  delta <- sampling::UPpoisson(pop_df$Prob_i)
+  return(filter(pop_df, row_number() %in% which(delta == 1)))
+}
+
+
+```
+
+
+```{r}
+#| label: temp
+
+f = function(lambda, d, Xs, total, entropy, del, ..., returnw = F){
+  # w = d * ginv(drop(Xs %*% lambda), entropy = entropy)
+  if(entropy == "HD" & any(Xs %*% lambda >= 0)) return(rep(Inf, length(lambda)))
+  if(entropy == "PH" & any(abs(Xs %*% lambda) >= del)) return(rep(Inf, length(lambda)))
+  
+  if(entropy == "SL"){
+    w = d * drop(Xs %*% lambda)
+  }else if(entropy == "EL"){
+    w = -d / drop(Xs %*% lambda)
+  }else if(entropy == "ET"){
+    w = d * exp(drop(Xs %*% lambda))
+  }else if(entropy == "CE"){
+    w = d / (1 - exp(drop(Xs %*% lambda)))
+  }else if(entropy == "HD"){
+    w = d / drop(Xs %*% lambda)^2
+  }else if(entropy == "PH"){
+    w = d / sqrt(1 / drop(Xs %*% lambda)^2 - 1 / del^2)
+  }
+  if(entropy != "SL" & any(w <= 0)) return(rep(Inf, length(lambda)))
+  if(entropy == "CE" & any(w <= 1)) return(rep(Inf, length(lambda)))
+  if(returnw == T){
+    return(w)
+  }else{
+    return(colSums(Xs * w) - total)
+  }
+}
+
+h = function(lambda, d, Xs, total, entropy, del){
+  # return(t(Xs) %*% (Xs * d * ginvprime(drop(Xs %*% lambda), entropy = entropy)))
+  if(entropy == "SL"){
+    return(t(Xs) %*% (Xs * d))
+  }else if(entropy == "EL"){
+    w = -d / drop(Xs %*% lambda)
+    return(t(Xs) %*% (Xs * (w^2 / d)))
+  }else if(entropy == "ET"){
+    w = d * exp(drop(Xs %*% lambda))
+    return(t(Xs) %*% (Xs * w))
+  }else if(entropy == "CE"){
+    p_Stmp = 1 / (1 - exp(drop(Xs %*% lambda)))
+    return(t(Xs) %*% (Xs * d * p_Stmp * (p_Stmp - 1)))
+  }else if(entropy == "HD"){
+    return(t(Xs) %*% (Xs * (-2 * d / drop(Xs %*% lambda)^3)))
+  }else if(entropy == "PH"){
+    return(t(Xs) %*% (Xs * (d * (1 - (drop(Xs %*% lambda) / del)^2)^(-1.5))))
+  }
+}
+#' @export
+GEcalib = function(Xs, d, total, entropy = c("SL", "EL", "ET", "CE", "HD", "PH"), ...,
+       DS = T, method = "Newton", control = list(maxit = 1e5, allowSingular = T)){
+  
+  del = quantile(d, 0.80) 
+  
+  init = rep(0, length(total))
+  if(!DS){
+    init[length(init)] = 1
+    # init = c(0, 0, 1)
+  }else{
+    if(entropy == "EL"){
+      init[1] = -1
+    }else if(entropy == "ET"){
+      # init[1] = 0
+    }else if(entropy == "SL"){
+      init[1] = 1
+    }else if(entropy == "CE"){
+      init[1] = -1
+    }else if(entropy == "HD"){
+      init[1] = -1
+    }else if(entropy == "PH"){
+      init[1] = 1 / sqrt(1 + 1 / del^2)
+    }
+  }
+  
+  nleqslv_res = nleqslv(init, f, jac = h, d = d, Xs = Xs, 
+                        total = total, entropy = entropy, del = del,
+                        method = method, control = control)
+  if(nleqslv_res$termcd != 1){
+    if(max(abs(f(nleqslv_res$x, d = d, Xs = Xs, total = total,
+                 entropy = entropy, del = del))) > 1e-5)
+      print(nleqslv_res)
+      w = NA
+  }else{
+    w = f(nleqslv_res$x, d = d, Xs = Xs, total = total,
+          entropy = entropy, del = del, returnw = T)             
+  }
+  return(w)
+}
+
+
+```
+
+
+```{r}
+#| label: estimation
+
+set.seed(1)
+pop_df <- gen_pop(N_obs)
+pop_Xtot <- c(nrow(pop_df), sum(pop_df$X1), sum(pop_df$X2))
+pop_d <- 1 / pop_df$Prob_i
+
+clust <- makeCluster(min(detectCores() - 2, 100))
+registerDoParallel(clust)
+
+mc_res <- foreach(ind = 1:sample_draws, .packages = c("dplyr", "GECal")) %dorng% {
+
+# Sample
+samp_df <- gen_samp(pop_df)
+samp_X <- samp_df %>% select(X1, X2) %>% as.matrix()
+samp_X <- cbind(rep(1, nrow(samp_X)), samp_X)
+d_weights <- 1 / samp_df$Prob_i
+
+## Method: EL
+method = "EL"
+if (method == "EL") {
+  dtot <- sum(-1 / pop_d)
+  dsamp <- -1 / d_weights
+  samp_df <- samp_df %>%
+    mutate(gdi = dsamp) %>%
+    mutate(gpinv = 1 / Prob_i^2)
+  ds_w <- GEcalib(cbind(samp_X, dsamp), d = d_weights, c(pop_Xtot, dtot),
+    entropy = "EL", DS = TRUE)
+  dc_w <- GEcalib(cbind(samp_X, dsamp), d = rep(1, nrow(samp_df)), c(pop_Xtot, dtot),
+   entropy = "EL", DS = FALSE)
+} else if (method == "ET") {
+  dtot <- sum(log(d_weights))
+  dsamp <- log(d_weights)
+  samp_df <- samp_df %>%
+    mutate(gdi = dsamp) %>%
+    mutate(gpinv = 1 / Prob_i)
+  ds_w <- GEcalib(cbind(samp_X, dsamp), d = d_weights, c(pop_Xtot, dtot),
+    entropy = "ET", DS = TRUE)
+  dc_w <- GEcalib(cbind(samp_X, dsamp), d = d_weights, c(pop_Xtot, dtot),
+    entropy = "ET", DS = FALSE)
+}
+
+# Mean Estimation
+y_ds <- sum(samp_df$Y * ds_w) / N_obs
+y_dc <- sum(samp_df$Y * dc_w) / N_obs
+y_hajek <- sum(samp_df$Y / samp_df$Prob_i) / sum(1 / samp_df$Prob_i)
+
+## Variance Estimation
+#ds_mod <- lm(Y ~ X1 + X2, weights = gpinv, data = samp_df)
+#dc_mod <- lm(Y ~ X1 + X2 + gdi, weights = gpinv, data = samp_df)
+#
+#v_ds <- sum((1 - samp_df$Prob_i) * (ds_w / N_obs)^2 *
+#    (samp_df$Y - predict(ds_mod, samp_df))^2)
+#v_dc <- sum((1 - samp_df$Prob_i) * (dc_w / N_obs)^2 *
+#    (samp_df$Y - predict(dc_mod, samp_df))^2)
+v_hajek <- 1 / N_obs^2 *
+sum((samp_df$Y - y_hajek)^2 * (1 / samp_df$Prob_i^2 - 1 / samp_df$Prob_i))
+
+Pi_ds <- diag(1 - samp_df$Prob_i) * (ds_w / N_obs)^2
+z_ds <- model.matrix(~X1 + X2 + gdi, data = samp_df)
+gam_ds <- solve(t(z_ds) %*% diag(1 / samp_df$Prob_i) %*% z_ds,
+                t(z_ds) %*% diag(1 / samp_df$Prob_i) %*% samp_df$Y)
+v_ds <- (samp_df$Y - t(gam_ds) %*% t(z_ds)) %*% 
+             Pi_ds %*% t(samp_df$Y - t(gam_ds) %*% t(z_ds))
+
+Pi_dc <- diag(1 - samp_df$Prob_i) * (dc_w / N_obs)^2
+z_dc <- model.matrix(~X1 + X2 + gdi, data = samp_df)
+gam_dc <- solve(t(z_dc) %*% diag(samp_df$gpinv) %*% z_dc,
+                t(z_dc) %*% diag(samp_df$gpinv) %*% samp_df$Y)
+v_dc <- 
+  (samp_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(samp_df$Y - t(gam_dc) %*% t(z_dc))
+
+return(tibble(y_ds = y_ds, y_dc = y_dc, y_h = y_hajek,
+              v_ds = as.numeric(v_ds), v_dc = as.numeric(v_dc), v_h = v_hajek))
+
+} %>% bind_rows()
+
+stopCluster(clust)
+
+## Assessment
+bias_ds <- mean(mc_res$y_ds - mean(pop_df$Y))
+bias_dc <- mean(mc_res$y_dc - mean(pop_df$Y))
+bias_h <- mean(mc_res$y_h - mean(pop_df$Y))
+
+rmse_ds <- sqrt(mean((mc_res$y_ds - mean(pop_df$Y))^2))
+rmse_dc <- sqrt(mean((mc_res$y_dc - mean(pop_df$Y))^2))
+rmse_h <- sqrt(mean((mc_res$y_h - mean(pop_df$Y))^2))
+
+cr_ds <- mean(abs(mc_res$y_ds - mean(pop_df$Y)) < qnorm(0.975) * sqrt(mc_res$v_ds))
+cr_dc <- mean(abs(mc_res$y_dc - mean(pop_df$Y)) < qnorm(0.975) * sqrt(mc_res$v_dc))
+cr_h <- mean(abs(mc_res$y_h - mean(pop_df$Y)) < qnorm(0.975) * sqrt(mc_res$v_h))
+
+```

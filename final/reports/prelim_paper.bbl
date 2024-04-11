@@ -1,0 +1,263 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global}
+    \entry{deville1992calibration}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=b18d444f78c1202ade9ba3edd9f2d7fe}{%
+           family={Deville},
+           familyi={D\bibinitperiod},
+           given={Jean-Claude},
+           giveni={J\bibinithyphendelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=247c163f8c5be93296320c7b9cc5ac27}{%
+           family={Sarndal},
+           familyi={S\bibinitperiod},
+           given={Carl-Erik},
+           giveni={C\bibinithyphendelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Taylor \& Francis}%
+      }
+      \strng{namehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{fullhash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{bibnamehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{authorbibnamehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{authornamehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{authorfullhash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American statistical Association}
+      \field{number}{418}
+      \field{title}{Calibration estimators in survey sampling}
+      \field{volume}{87}
+      \field{year}{1992}
+      \field{pages}{376\bibrangedash 382}
+      \range{pages}{7}
+    \endentry
+    \entry{fuller2009sampling}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=c387dbcd083b0685a01bb3f63c78387a}{%
+           family={Fuller},
+           familyi={F\bibinitperiod},
+           given={Wayne\bibnamedelima A},
+           giveni={W\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {John Wiley \& Sons}%
+      }
+      \strng{namehash}{c387dbcd083b0685a01bb3f63c78387a}
+      \strng{fullhash}{c387dbcd083b0685a01bb3f63c78387a}
+      \strng{bibnamehash}{c387dbcd083b0685a01bb3f63c78387a}
+      \strng{authorbibnamehash}{c387dbcd083b0685a01bb3f63c78387a}
+      \strng{authornamehash}{c387dbcd083b0685a01bb3f63c78387a}
+      \strng{authorfullhash}{c387dbcd083b0685a01bb3f63c78387a}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Sampling statistics}
+      \field{year}{2009}
+    \endentry
+    \entry{gneiting2007strictly}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=cf94799d213c0ab2fd2012473da7440b}{%
+           family={Gneiting},
+           familyi={G\bibinitperiod},
+           given={Tilmann},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=205b9f60128ee13642fa79b6f1330d63}{%
+           family={Raftery},
+           familyi={R\bibinitperiod},
+           given={Adrian\bibnamedelima E},
+           giveni={A\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Taylor \& Francis}%
+      }
+      \strng{namehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{fullhash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{bibnamehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{authorbibnamehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{authornamehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{authorfullhash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American statistical Association}
+      \field{number}{477}
+      \field{title}{Strictly proper scoring rules, prediction, and estimation}
+      \field{volume}{102}
+      \field{year}{2007}
+      \field{pages}{359\bibrangedash 378}
+      \range{pages}{20}
+    \endentry
+    \entry{horvitz1952generalization}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=2b2fc4ee970345f2622017dc43ccf2ef}{%
+           family={Horvitz},
+           familyi={H\bibinitperiod},
+           given={Daniel\bibnamedelima G},
+           giveni={D\bibinitperiod\bibinitdelim G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f54a30dba10ccbb2dfe7aaa98e9d62e4}{%
+           family={Thompson},
+           familyi={T\bibinitperiod},
+           given={Donovan\bibnamedelima J},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Taylor \& Francis}%
+      }
+      \strng{namehash}{e13f90fc2b5771a68361e4131fba9992}
+      \strng{fullhash}{e13f90fc2b5771a68361e4131fba9992}
+      \strng{bibnamehash}{e13f90fc2b5771a68361e4131fba9992}
+      \strng{authorbibnamehash}{e13f90fc2b5771a68361e4131fba9992}
+      \strng{authornamehash}{e13f90fc2b5771a68361e4131fba9992}
+      \strng{authorfullhash}{e13f90fc2b5771a68361e4131fba9992}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American statistical Association}
+      \field{number}{260}
+      \field{title}{A generalization of sampling without replacement from a finite universe}
+      \field{volume}{47}
+      \field{year}{1952}
+      \field{pages}{663\bibrangedash 685}
+      \range{pages}{23}
+    \endentry
+    \entry{kim2024statistics}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jae\bibnamedelima Kwang},
+           giveni={J\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {arXiv}%
+      }
+      \strng{namehash}{6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}
+      \strng{fullhash}{6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}
+      \strng{bibnamehash}{6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}
+      \strng{authorbibnamehash}{6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}
+      \strng{authornamehash}{6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}
+      \strng{authorfullhash}{6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Statistics in Survey Sampling}
+      \field{year}{2024}
+    \endentry
+    \entry{kwon2024debiased}{misc}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f2e44f66cb5676ac7978b5de8513a3e7}{%
+           family={Kwon},
+           familyi={K\bibinitperiod},
+           given={Yonghyun},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jae\bibnamedelima Kwang},
+           giveni={J\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19c577e26cee5860d2a83e19c9fd6ce3}{%
+           family={Qiu},
+           familyi={Q\bibinitperiod},
+           given={Yumou},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{fullhash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{bibnamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authorbibnamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authornamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authorfullhash}{2df7493c037080a0a8d05578a9de473d}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{stat.ME}
+      \field{eprinttype}{arXiv}
+      \field{title}{Debiased calibration estimation using generalized entropy in survey sampling}
+      \field{year}{2024}
+      \verb{eprint}
+      \verb 2404.01076
+      \endverb
+    \endentry
+    \entry{narain1951sampling}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=8eda345f70ed0b5d6a5e80269fe1121f}{%
+           family={Narain},
+           familyi={N\bibinitperiod},
+           given={RD},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{8eda345f70ed0b5d6a5e80269fe1121f}
+      \strng{fullhash}{8eda345f70ed0b5d6a5e80269fe1121f}
+      \strng{bibnamehash}{8eda345f70ed0b5d6a5e80269fe1121f}
+      \strng{authorbibnamehash}{8eda345f70ed0b5d6a5e80269fe1121f}
+      \strng{authornamehash}{8eda345f70ed0b5d6a5e80269fe1121f}
+      \strng{authorfullhash}{8eda345f70ed0b5d6a5e80269fe1121f}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the Indian Society of Agricultural Statistics}
+      \field{number}{2}
+      \field{title}{On sampling without replacement with varying probabilities}
+      \field{volume}{3}
+      \field{year}{1951}
+      \field{pages}{169\bibrangedash 175}
+      \range{pages}{7}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

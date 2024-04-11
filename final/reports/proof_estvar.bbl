@@ -1,0 +1,66 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global}
+    \entry{kwon2024debiased}{misc}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f2e44f66cb5676ac7978b5de8513a3e7}{%
+           family={Kwon},
+           familyi={K\bibinitperiod},
+           given={Yonghyun},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jae\bibnamedelima Kwang},
+           giveni={J\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19c577e26cee5860d2a83e19c9fd6ce3}{%
+           family={Qiu},
+           familyi={Q\bibinitperiod},
+           given={Yumou},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{fullhash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{bibnamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authorbibnamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authornamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authorfullhash}{2df7493c037080a0a8d05578a9de473d}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{stat.ME}
+      \field{eprinttype}{arXiv}
+      \field{title}{Debiased calibration estimation using generalized entropy in survey sampling}
+      \field{year}{2024}
+      \verb{eprint}
+      \verb 2404.01076
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

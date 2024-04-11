@@ -1,0 +1,276 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, mathrsfs, fancyhdr}
+\usepackage{syntonly, lastpage, hyperref, enumitem, graphicx}
+\usepackage[style=authoryear]{biblatex}
+\usepackage{booktabs}
+\usepackage{float}
+
+\addbibresource{references.bib}
+
+\hypersetup{colorlinks = true, urlcolor = black}
+
+\headheight     15pt
+\topmargin      -1.5cm   % read Lamport p.163
+\oddsidemargin  -0.04cm  % read Lamport p.163
+\evensidemargin -0.04cm  % same as oddsidemargin but for left-hand pages
+\textwidth      16.59cm
+\textheight     23.94cm
+\parskip         7.2pt   % sets spacing between paragraphs
+\parindent         0pt   % sets leading space for paragraphs
+\pagestyle{empty}        % Uncomment if don't want page numbers
+\pagestyle{fancyplain}
+
+\newcommand{\MAP}{{\text{MAP}}}
+\newcommand{\argmax}{{\text{argmax}}}
+\newcommand{\argmin}{{\text{argmin}}}
+\newcommand{\Cov}{{\text{Cov}}}
+\newcommand{\Var}{{\text{Var}}}
+\newcommand{\logistic}{{\text{logistic}}}
+
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\R}{\mathbb{R}}
+\renewcommand{\bf}[1]{\mathbf{#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\begin{document}
+
+\title{Data Integration with Multiple Surveys}
+\author{Caleb Leedy and Jae Kwang Kim}
+\maketitle 
+
+\section*{Variance with Estimated Population Constraints}
+
+\subsection*{Setup}
+
+This summarizes the setup described in \texttt{main.tex}. Suppose that we have
+$K = 3$ surveys where we observe different variables:
+
+\begin{itemize}
+  \item $A_1$: $x_1, x_2, x_3, y_1$
+  \item $A_2$: $x_1, \hspace{0.6cm} x_3, y_2$
+  \item $A_3$: $x_1, x_2, \hspace{0.6cm} y_3$
+\end{itemize}
+
+We assume that these surveys are independent, and our estimation procedure
+consists of two steps.
+
+\textbf{Step 1: GLS Estimation}
+
+Let $\theta = (\mu_1, \mu_2, \mu_3)' = (E[x_1], E[x_2], E[x_3])'$. We first
+estimate $\theta$ using the following GLS
+
+\[
+\begin{bmatrix}
+  \hat \mu_{1,1} \\
+  \hat \mu_{1,2} \\
+  \hat \mu_{1,3} \\
+  \hat \mu_{2,1} \\
+  \hat \mu_{2,3} \\
+  \hat \mu_{3,1} \\
+  \hat \mu_{3,2} \\
+\end{bmatrix} :=
+\underbrace{\begin{bmatrix}
+  n_1^{-1} \sum_{i \in A_1} x_{1i} \\
+  n_1^{-1} \sum_{i \in A_1} x_{2i} \\
+  n_1^{-1} \sum_{i \in A_1} x_{3i} \\
+  n_2^{-1} \sum_{i \in A_2} x_{1i} \\
+  n_2^{-1} \sum_{i \in A_2} x_{3i} \\
+  n_3^{-1} \sum_{i \in A_3} x_{1i} \\
+  n_3^{-1} \sum_{i \in A_3} x_{2i} \\
+\end{bmatrix}}_{\hat{\theta}} =
+\underbrace{\begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & 1 & 0 \\
+  0 & 0 & 1 \\
+  1 & 0 & 0 \\
+  0 & 0 & 1 \\
+  1 & 0 & 0 \\
+  0 & 1 & 0 \\
+\end{bmatrix}}_{X}
+\underbrace{
+\begin{bmatrix}
+  \mu_1 \\ \mu_2 \\ \mu_3
+\end{bmatrix}}_{\theta} + 
+\bf e
+\]
+
+where $\bf e  \sim (0, V)$ and 
+
+\[V = 
+  \begin{bmatrix}
+    V_1 & 0_{3 \times 2} & 0_{3 \times 2} \\
+    0_{2 \times 3} & V_2 & 0_{2 \times 2} \\
+    0_{2 \times 3} & 0_{2 \times 2} & V_3 \\
+  \end{bmatrix}
+\]
+
+and $V_1$, $V_2$, and $V_3$ are known. Then the GLS estimator is
+
+\[\hat \theta_{GLS} = (X'V^{-1}X)^{-1}X'V^{-1}\hat \theta.\]
+
+\textbf{Step 2: Debiased Calibration}
+
+Let $H_k(X)$ output all of the observed vectors of $X$ for sample $k$. Then
+using the same notation as \cite{kwon2024debiased}, the optimal weights 
+$\hat{\bf{w}}^{(k)}$ for a sample $A_k$ solve
+
+\begin{align}\label{eq:primal}
+  \hat{\bf{w}}^{(k)} 
+  =& \argmin_{\bf w} \sum_{i \in A_k}G(w_i) \\ 
+  &\text{such that } 
+  \sum_{i \in A_k} w_i^{(k)} H_k(x_i) = H_k(\hat \theta_{GLS})N \text{ and }
+  \sum_{i \in A_k} w_i^{(k)} g(d_i) = \sum_{i \in U} g(d_i). \nonumber
+\end{align}
+
+\subsection*{Result}
+
+Before deriving the variance, I reintroduce some of the notation from
+\cite{kwon2024debiased}. Let $G: \mathcal{V} \to \R$ be a strictly convex and
+differentiable function with derivative $g(w) = dG(w) / dw$ and define the
+convex conjugate function of $G(w)$ as $F(w) = -G(g^{-1}(w)) + g^{-1}(w)w$ with
+a derivative $f(w) = dF(w) / dw$. Note, that $f(w) = g^{-1}(w)$. The primal
+problem of Equation \ref{eq:primal} has a dual formulation of 
+
+\[\hat \lambda = \argmin_{\lambda \in \Lambda_{A_k}} \sum_{i \in A_k} F(\lambda^T
+  \bf z_i^{(k)}) - \lambda^T \sum_{i \in U}\bf z_i^{(k)}.\]
+
+In this case $z^{(k)} = (H_k(X), g(d_i))$, $d_i = \pi_i^{-1}$, 
+$\hat \lambda = (\hat \lambda_1^T, \hat \lambda_2)^T$, and 
+$\Lambda_A = \{\lambda : \lambda^T z_i^{(k)} \in g(\mathcal{V}) 
+\text{ for all } i \in A\}$. We still define $\lambda$  as having dimension 
+$p + 1$, but $p$ is now the dimension of $H_k(X)$. The parameter $\lambda$ is
+also a function of the sample $A_k$ and so should be $\lambda = \lambda^{(k)}$,
+but we suppress this notation for convenience. Solutions to the primal and
+dual problem satisfy
+
+\[\hat w_i^{(k)} = \hat w_i^{(k)}(\hat \lambda) = f(\hat \lambda^T z_i) = 
+  g^{-1}(\hat \lambda_1^T H_k(x_i) + \hat \lambda_2 g(d_i)).\]
+
+For now, I am only going to derive the variance for the estimate $\hat Y_1 =
+\sum_{i \in A_1} \hat w_i^{(1)} y_{1i}$. In this case we have $H_1(X) = X$,
+however, other samples can be derived in a similar manner. 
+We define that matrix
+
+\[
+\begin{bmatrix} 
+  \Sigma_{xx} & \Sigma_{xg} \\
+  \Sigma_{gx} & \Sigma_{gg} \\ 
+\end{bmatrix} =
+N^{-1} \sum_{i \in U} \frac{\pi_i}{g'(d_i)}
+\begin{bmatrix}
+  x_i x_i^T & g(d_i) x_i^T \\
+  x_i g(d_i) & g(d_i)^2
+\end{bmatrix}.
+\]
+
+Now we can find the derivative of $\hat \Lambda$ with respect to $\theta$.
+
+
+\begin{lemma}
+  \[\frac{\partial \hat \lambda(\theta_N)}{\partial \theta_N} = 
+\begin{bmatrix} 
+  \Sigma_{xx} & \Sigma_{xg} \\
+  \Sigma_{gx} & \Sigma_{gg} \\ 
+\end{bmatrix}^{-1}
+\begin{bmatrix} 1 \\ 0 \end{bmatrix}.\]
+
+\end{lemma}
+
+\begin{proof}
+This follows the approach of \cite{kwon2024debiased} in Appendix A.3.
+Notice that taking a derivative with respect to $\theta$ in the
+constraints yields
+
+\[
+\left[N^{-1} \sum_{i \in A_1}f'(\hat \lambda(\theta)^T\bf z_i^{(1)}) 
+(z_i^{(1)})^T\right]
+\begin{bmatrix}
+  \hat \lambda_1'(\theta) \\
+  \hat \lambda_2'(\theta) \\
+\end{bmatrix} =
+\begin{bmatrix} 1 \\ 0 \end{bmatrix}.
+\]
+
+This means that 
+\[
+\begin{bmatrix}
+  \hat \lambda_1'(\theta_N) \\
+  \hat \lambda_2'(\theta_N) \\
+\end{bmatrix} =
+\left[N^{-1} \sum_{i \in A_1}f'(\hat \lambda(\theta_N)^T\bf z_i^{(1)}) 
+(z_i^{(1)})^T\right]^{-1}
+\begin{bmatrix} 1 \\ 0 \end{bmatrix} \to
+\begin{bmatrix} 
+  \Sigma_{xx} & \Sigma_{xg} \\
+  \Sigma_{gx} & \Sigma_{gg} \\ 
+\end{bmatrix}^{-1}
+\begin{bmatrix} 1 \\ 0 \end{bmatrix}.
+\]
+
+\end{proof}
+
+Since the GLS estimator satisfies $\hat \theta_{GLS} - \theta_N = o_p(n^{-1/2})$,
+we have
+
+\begin{align*}
+  N^{-1} &\sum_{i \in A_1}\hat w_i^{(1)}(\hat \theta_{GLS})y_{1i}\\
+  &= N^{-1} \sum_{i \in A_1} \hat w_i^{(1)}(\theta_N)y_{1i} + 
+  \left(N^{-1} \sum_{i \in A_1} \frac{\partial w_i^{(k)}(\theta_N)}{\partial
+  \theta} y_{1i}\right) (\hat \theta_{GLS} - \theta_N) + o_p(n^{-1/2})\\
+  &= \hat \theta_{DC} + \left(N^{-1} \sum_{i \in A_1} 
+    f'(\hat \lambda^T(\theta_N) z_i^{(1)}) 
+    \frac{\partial \lambda(\theta_N)^T}{\partial \theta} z_i^{(1)} y_{1i} \right)
+    (\hat \theta_{GLS} - \theta_N) + o_p(n^{-1/2})\\
+  &= \hat \theta_{DC} + \gamma_{N, 1:p}' (\hat \theta_{GLS} - \theta_N) + o_p(n^{-1/2})
+\end{align*}
+
+where $\hat \theta_{DC}$ is the debiased calibration estimator of
+\cite{kwon2024debiased} with the population $\theta_N$ and 
+
+\[\gamma_N = \left[\sum_{i \in U} \frac{\pi_i z_i^{(1)}(z_i^{(1)})^T}{g'(d_i)}
+  \right]^{-1} \sum_{i \in U} \frac{\pi_i z_i^{(1)}y_{1i}}{g'(d_i)}\]
+
+and $\gamma_{N, 1:p}$ is the first $p$ elements of $\gamma_N$. This means that
+the variance of the estimator of $Y_1$ is 
+
+\begin{align*}
+  \Var(\hat Y_1) &= \Var\left(\sum_{i \in A_1}w_i^{(1)y_{1i}}\right) \\
+  &= 
+  \Var(\hat \theta_{DC}) + \gamma_{N, 1:p}' (X'V^{-1}X)^{-1} \gamma_{n,1:p} +
+  2 \gamma_{N, 1:p}'\Cov(\hat \theta_{DC}, \hat \theta_{GLS} - \theta_{N}).
+\end{align*}
+
+\textcolor{red}{Dr. Kim, I think this is the point of departure from your proposed
+idea and what I do. I probably could use a linearization to estimate the
+variance but instead I do it directly. Please let me know what you think.}
+Finally,
+
+\begin{align*}
+  \Cov&(\hat \theta_{DC}, \hat \theta_{GLS} - \theta_N)
+  = \Cov(\hat \theta_{DC}, \hat \theta_{GLS}) \\
+  &= (X'V^{-1}X)^{-1}X'V^{-1}n_1^{-1} \sum_{i \in U} \sum_{j \in U} 
+  \Cov\left(\frac{\delta_{1i} y_{1i}}{g(\hat \lambda_1 H_1(x_i) + \hat \lambda_2
+    g(d_i))}, \delta_{1j}H_1(x_j)\right)\\
+  &= (X'V^{-1}X)^{-1}X'V^{-1}n_1^{-1} \sum_{i \in U} 
+  \Cov\left(\frac{\delta_{1i} y_{1i}}{g(\hat \lambda_1 H_1(x_i) + \hat \lambda_2
+    g(d_i))}, \delta_{1i}H_1(x_i)\right)\\
+  &= (X'V^{-1}X)^{-1}X'V^{-1}n_1^{-1} \sum_{i \in U} 
+  \frac{H_1(x_i) y_{1i}}{g(\hat \lambda_1 H_1(x_i) + \hat \lambda_2 g(d_i))}
+  \Cov\left(\delta_{1i}, \delta_{1i}\right)\\
+  &= (X'V^{-1}X)^{-1}X'V^{-1}n_1^{-1} \sum_{i \in U} 
+  \frac{H_1(x_i) y_{1i}}{g(\hat \lambda_1 H_1(x_i) + \hat \lambda_2 g(d_i))}
+  (\pi_{1i}(1 - \pi_{1i})) \\
+\end{align*}
+
+If we note that $\pi_{1i} g^{-1}(\hat \lambda_1 H_1(x_i) + \hat \lambda_2 g(d_i))
+\to 1$ as $N \to \infty$ then we have
+
+\[\Cov(\hat \theta_{DC}, \hat \theta_{GLS} - \theta_N)
+  = (X'V^{-1}X)^{-1}X'V^{-1}n_1^{-1} \sum_{i \in U} 
+  H_1(x_i) y_{1i} ((1 - \pi_{1i})).
+\]
+
+\end{document}

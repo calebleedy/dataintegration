@@ -1,0 +1,306 @@
+---
+title: "Steps in Estimation Process of Optimal GLS Estimator"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+```{r}
+#| label: global variables
+B <- 1000
+
+obs_seg <- 250
+true_mu <- 5
+rho <- 0.5
+
+```
+
+```{r}
+#| label: setup
+
+library(dplyr)
+
+```
+
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Cov}{\text{Cov}}
+
+# Summary
+
+For the nonmonotone GLS estimation we need to estimate the following:
+
+1. The functional form of $f(G_r(X)) = E[Y \mid G_r(X)]$,
+2. The variance, $\hat{V}(E[Y \mid G_r(X)])$,
+3. The function, $\hat E[Y \mid G_r(X)]$, and 
+4. The goal, $\hat \theta = E[Y]$.
+
+In [Optimal Estimation with Nuisance Parameters](20240216-optest.qmd), we tested
+to see if we could
+get an unbiased estimate of $\hat \theta$ when we estimated the covariance
+matrix. This report is similar. We compare the following:
+
+* The Oracle estimator of $\hat \theta$ $ = E[Y] = n^{-1} \sum_{i = 1}^n y_i$,
+* The Complete case estimator of $\hat \theta$,
+* The IPW estimator of $\hat \theta$,
+* The GLS estimate with correctly specified $E[Y \mid G_r(X)]$, and correctly
+specified $V(E[Y \mid G_r(X)])$,
+* The GLS estimate with estimated $\hat E[Y \mid G_r(X)]$, and correctly
+specified $V(E[Y \mid G_r(X)])$, and 
+* The GLS estimate with estimated $\hat E[Y \mid G_r(X)]$, and estimated
+$\hat V(E[Y \mid G_r(X)])$.
+
+These estimators are compared to each other under the nonmonotone complete case
+and variable setting.
+
+# Simulation Setup
+
+## Nonmonotone Complete Case and Variable
+
+For this nonmonotone case, we have three segments $A_1$, $A_2$, and $A_3$ with
+missing patterns shown in @tbl-four.
+
+| Segment | $X_1$ | $X_2$ | $Y$ |
+|----|-------|-------|---|
+| $A_1$ | ✔️     | ✔️     | :heavy_check_mark: |
+| $A_2$ | ✔️     | ✔️     |   |
+| $A_3$ | ✔️     |       | :heavy_check_mark: | 
+: Nonmonotone: Complete Case + Complete Variable {#tbl-four}
+
+The estimating vector is the following
+
+$$
+\begin{bmatrix} 
+\hat f_1(X_1) \\ 
+\hat f_1(X_2) \\ 
+\hat f_1(X_1, X_2) \\ 
+\hat Y_1 \\ 
+\hat f_2(X_1) \\ 
+\hat f_2(X_2) \\ 
+\hat f_2(X_1, X_2) \\ 
+\hat f_3(X_1) \\ 
+\hat Y_3 
+\end{bmatrix} =
+\begin{bmatrix}
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{1i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{2i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}E[Y \mid x_{1i}, x_{2i}]}{\pi_{1i}} \\
+n_1^{-1} \sum_{i = 1}^n \frac{\delta_{1i}y_i}{\pi_{1i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{1i}]}{\pi_{2i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{2i}]}{\pi_{2i}} \\
+n_2^{-1} \sum_{i = 1}^n \frac{\delta_{2i}E[Y \mid x_{1i}, x_{2i}]}{\pi_{2i}} \\
+n_3^{-1} \sum_{i = 1}^n \frac{\delta_{3i}E[Y \mid x_{1i}]}{\pi_{3i}} \\
+n_3^{-1} \sum_{i = 1}^n \frac{\delta_{3i}y_i}{\pi_{3i}} \\
+\end{bmatrix}.
+$$
+
+## Implementation Details
+
+For this setup, we consider segments of equal size 
+$n_1 = n_2 = n_3 =$ `{r} obs_seg` and a
+data generating process of 
+
+$$
+\begin{bmatrix} X_1 \\ \varepsilon_1 \\ \varepsilon_2 \end{bmatrix} \sim 
+\left(
+\begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix},
+\begin{bmatrix} 
+1 & 0 & 0 \\ 
+0 & 1 & \rho \\ 
+0 & \rho & 1 \\
+\end{bmatrix}
+\right)
+$$
+
+in which $X_2 = X_1 + \varepsilon_1$ and $Y = \mu_Y + X_1 + \varepsilon_2$.
+While we can vary the parameters of $\mu_Y$ and $\rho$, for this study we have,
+$\mu_Y =$ `{r} true_mu`, and $\rho =$ `{r} rho`.
+
+```{r}
+#| label: data generating process
+
+#' A data generation function to create a simple random sample of equally sized
+#' segments of X_1, X_2, and Y. There variables are correlated but all normal.
+#'
+#' @param n_obs_seg - An integer greater than zero. This is the number of
+#' observations in each segment
+#' @param mu - The true mean of Y
+#' @param rho - The correlation between (X_1 - X_2) and (Y - X_1).
+#'
+#' @details We always observe X1 but X2 and Y are only observed depending on the
+#' value of \delta_{ij}. If i = 1 then X2 is observed. If j = 1 then Y is
+#' observed.
+gen_simple_data <- function(n_obs_seg, mu, rho) {
+
+  # This code is modified from the case where we had X, Y_1, and Y_2. It only
+  # changes at the end to X_1, X_2, and Y.
+  # A_11
+  x <- rnorm(n_obs_seg)
+  e_mat <- MASS::mvrnorm(n_obs_seg, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
+  e1 <- e_mat[, 1]
+  e2 <- e_mat[, 2]
+  y1 <- x + e1
+  y2 <- mu + x + e2
+
+  df_11 <- 
+    tibble(X1 = x, X2 = y1, Y = y2,
+           delta_00 = 0, delta_10 = 0, delta_01 = 0, delta_11 = 1,
+           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+  # A_10
+  x <- rnorm(n_obs_seg)
+  e_mat <- MASS::mvrnorm(n_obs_seg, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
+  e1 <- e_mat[, 1]
+  e2 <- e_mat[, 2]
+  y1 <- x + e1
+  y2 <- mu + x + e2
+
+  df_10 <- 
+    tibble(X1 = x, X2 = y1, Y = y2,
+           delta_00 = 0, delta_10 = 1, delta_01 = 0, delta_11 = 0,
+           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+  # A_01
+  x <- rnorm(n_obs_seg)
+  e_mat <- MASS::mvrnorm(n_obs_seg, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
+  e1 <- e_mat[, 1]
+  e2 <- e_mat[, 2]
+  y1 <- x + e1
+  y2 <- mu + x + e2
+
+  df_01 <- 
+    tibble(X1 = x, X2 = y1, Y = y2,
+           delta_00 = 0, delta_10 = 0, delta_01 = 1, delta_11 = 0,
+           pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+  # A_00
+  x <- rnorm(n_obs_seg)
+  e_mat <- MASS::mvrnorm(n_obs_seg, c(0, 0), matrix(c(1, rho, rho, 1), nrow = 2))
+  e1 <- e_mat[, 1]
+  e2 <- e_mat[, 2]
+  y1 <- x + e1
+  y2 <- mu + x + e2
+
+  # No empty segment
+  # df_00 <- 
+  #   tibble(X1 = x, X2 = y1, Y = y2,
+  #          delta_00 = 1, delta_10 = 0, delta_01 = 0, delta_11 = 0,
+  #          pi_00 = 0.25, pi_10 = 0.25, pi_01 = 0.25, pi_11 = 0.25)
+
+  df <- bind_rows(df_11, df_10, df_01)
+
+  # Return
+  # X, Y_1, Y_2,
+  # delta_00, delta_10, delta_01, delta_11,
+  # pi_00, pi_10, pi_01, pi_11
+  return(df)
+  
+}
+
+```
+
+## Estimation Details
+
+We assume that we always use the correct functional form of $E[Y \mid G_r(X)]$.
+The correctly specified and estimated forms of $f(G_r(X))$ are given in
+@tbl-meanform
+
+| Function | Correctly Specified Form | Estimated Form |
+| -------- | :----------------------: | :------------: |
+| $E[Y \mid X_1]$ | $\hat \mu + x_1$  | $\hat \beta_0 + \hat \beta_1 x_1$ |
+| $E[Y \mid X_2]$ | $\hat \mu + \left(\frac{1 + \rho}{2}\right)x_2$ | $\hat \beta_0 + \hat \beta_2 x_2$ |
+| $E[Y \mid X_1, X_2]$ | $\hat \mu + x_1 + \rho (x_2 - x_1)$ | $\hat \beta_0 +
+\hat \beta_1 x_1 + \hat \beta_2 x_2$ |
+: {#tbl-meanform}
+
+In @tbl-meanform, the estimation of $\hat \mu$ for the correctly specified form
+is always carried out as the mean of a difference. For example, to estimate 
+the $\hat \mu$ in $E[Y \mid X_1]$, we use 
+
+$$ \hat \mu = \frac{\sum_{i = 1}^n \frac{\delta_{2i}}{\pi_{2i}}(y_i -
+x_{1i})}{\sum_{i = 1}^n \frac{\delta_{2i}}{\pi_{2i}}}. $$
+
+The estimation of $\beta_i$ in the `Estimated Form` column of @tbl-meanform, is
+computed using least squares on all of the observations containing all of the
+variables $G_r(X)$ and $Y$.
+
+Likewise, we have a similar result for the covariance matrix in @tbl-covform.
+
+| Covariance | Correctly Specified Form | Estimated Form |
+| ---------- | :----------------------: | :------------: |
+| $\Var(E[Y \mid X_1])$ | $1$ | $\hat \sigma_{X_1}^2$ |
+| $\Var(E[Y \mid X_2])$ | $\frac{(1 + \rho)^2}{2}$ | $\left(\frac{1 + \rho}{2}\right)^2
+\hat \sigma_{X_2}^2$ |
+| $\Var(E[Y \mid X_1, X_2])$ | $1 + \rho^2$ | $\sigma_{X_1}^2 + \rho^2$ |
+| $\Var(Y)$ | $2$ | $\hat \sigma_y^2$ |
+| $\Cov(E[Y \mid X_1], E[Y \mid X_2])$ | $\frac{1 + \rho}{2}$ | $\left(\frac{1 +
+\rho}{2}\right)\hat \sigma_{X_1}^2$ |
+| $\Cov(E[Y \mid X_1], E[Y \mid X_1, X_2])$ | $1$ | $\hat \sigma_{X_1}^2$ |
+| $\Cov(E[Y \mid X_2], E[Y \mid X_1, X_2])$ | $\frac{(1 + \rho)^2}{2}$ | $\frac{(1 + \rho)^2}{2}$ |
+| $\Cov(E[Y \mid X_1], Y)$ | $1$ | $\hat \sigma_{X_1}^2$ |
+| $\Cov(E[Y \mid X_2], Y)$ | $\frac{(1 + \rho)^2}{2}$ | $\frac{(1 + \rho)^2}{2}$ |
+| $\Cov(E[Y \mid X_1, X_2], Y)$ | $1 + \rho^2$ | $\hat \sigma_{X_1}^2 + \rho^2$ |
+: {#tbl-covform}
+
+The estimated variances $\hat \sigma_{X_1}^2$, $\hat \sigma_{X_2}^2$, and $\hat
+\sigma_Y^2$ are estimated from all of the observations in which that value
+occurs.
+
+In @tbl-covform, I don't want to have to estimate $\rho$ because I am not sure
+what the REML estimator of $\rho$ is at the moment. If the REML estimated form
+for the variances works, then I will consider how to estimate the covariance.
+
+```{r}
+#| label: cor mean, cor var
+
+cormeancorvar <- function(df, rho) {
+
+  # Steps:
+  # 1. Separate into segments
+  # 2. Construct estimates for each segment
+  # 3. Combine estimates
+
+  # 1. Separate into segments
+  df_11 <- filter(df, delta_11 == 1)
+  df_10 <- filter(df, delta_10 == 1)
+  df_01 <- filter(df, delta_01 == 1)
+
+  # 2. Construct estimates for each segment
+  # 3. Combine estimates
+
+
+}
+
+
+```
+
+```{r}
+#| label: est mean, cor var
+
+estmeancorvar <- function(df, rho) {
+
+}
+
+```
+
+```{r}
+#| label: est mean, est var
+
+estmeanestvar <- function(df, rho) {
+
+}
+
+```
+
+```{r}
+#| label: MCMC
+
+df <- gen_simple_data(obs_seg, true_mu, rho)
+
+
+```

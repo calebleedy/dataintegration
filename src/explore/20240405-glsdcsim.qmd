@@ -1,0 +1,108 @@
+---
+title: "GLS-Debiased Calibration with Estimated Population Totals Simulation"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+# Summary
+
+This report simulates the GLS-DC setup. We check for the following:
+
+1. Bias of $\hat Y_1$ and $\hat Y_2$, and 
+2. Bias of $\hat V(\hat Y_1)$ and $\hat V(\hat Y_2)$.
+
+For each estimator $\hat Y_1$ and $\hat Y_1$, we construct 
+
+1. The two-phase regression estimator,
+2. The Deville and Sarndal (1992) estimator,
+3. The debiased calibration estimator, and
+4. The debiased calibration estimator with estimated population totals.
+
+# Simulation Setup
+
+```{r}
+#| label: setup
+
+N_obs <- 10000
+n1_obs <- 500
+n2_obs <- 500
+
+library(dplyr)
+library(GECal)
+library(doParallel)
+
+```
+
+We have the following superpopulation model:
+
+$$
+\begin{aligned}
+X_{1i} &= 1 + e_{1i} \\
+X_{2i} &= 2 + e_{2i} \\
+X_{3i} &= 3 + e_{3i} \\
+Y_{1i} &= 2 + 3x_{1i} + x_{2i} + e_{y_1, i}} \\
+Y_{2i} &= 1 + 2x_{1i} + 2 x_{2i} + x_{3i} + e_{y_2, i}\\
+\end{aligned}
+$$
+
+where $e_{m, i} \stackrel{ind}{\sim} N(0, 1)$. Then we generate a finite
+population of size $N = $`{r} N_obs`. Sample $A_1$ has size $n_1 =$`{r} n1_obs`
+and sample $A_2$ has size $n_2 =$`{r} n2_obs`. Each sample is an independent
+Poisson from the finite population.
+
+```{r}
+#| label: data generating process
+
+gen_data <- function(obs) {
+  tibble(X1 = 1 + rnorm(obs),
+         X2 = 2 + rnorm(obs),
+         X3 = 3 + rnorm(obs)) %>%
+    mutate(Y1 = 2 + 3 * X1 + X2 + rnorm(obs)) %>%
+    mutate(Y2 = 1 + 2 * X1 + 2 * X2 + X3 + rnorm(obs))
+
+}
+
+gen_samples <- function(pop_df, n1, n2) {
+
+  a1_ind <- sample(1:nrow(pop_df), n1)
+  a2_ind <- sample(1:nrow(pop_df), n2)
+
+  a1_df <- filter(pop_df, row_number() %in% a1_ind)
+  a2_df <- filter(pop_df, row_number() %in% a2_ind)
+
+  a1_df <- select(a1_df, X1, X2, Y1)
+  a2_df <- select(a2_df, X1, X3, Y2)
+
+  return(list(A1 = a1_df, A2 = a2_df))
+
+}
+
+```
+
+# Estimation
+
+```{r}
+#| label: MCMC
+
+set.seed(1)
+pop_df <- gen_data(N_obs)
+samps <- gen_samples(pop_df, n1_obs, n2_obs)
+s1_df <- samps[[1]]
+s2_df <- samps[[2]]
+
+```
+
+
+
+
+
