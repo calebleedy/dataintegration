@@ -1,15 +1,15 @@
 [0] Config.pm:307> INFO - This is Biber 2.19
 [0] Config.pm:310> INFO - Logfile is 'prelim_paper.blg'
-[81] biber:340> INFO - === Thu Apr 11, 2024, 13:31:28
-[93] Biber.pm:419> INFO - Reading 'prelim_paper.bcf'
-[144] Biber.pm:979> INFO - Found 7 citekeys in bib section 0
-[158] Biber.pm:4419> INFO - Processing section 0
-[167] Biber.pm:4610> INFO - Looking for bibtex file 'references.bib' for section 0
-[168] bibtex.pm:1713> INFO - LaTeX decoding ...
-[188] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
-[242] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[243] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[243] Biber.pm:4239> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
-[243] Biber.pm:4245> INFO - No sort tailoring available for locale 'en-US'
-[248] bbl.pm:660> INFO - Writing 'prelim_paper.bbl' with encoding 'UTF-8'
-[250] bbl.pm:763> INFO - Output to prelim_paper.bbl
+[92] biber:340> INFO - === Thu Apr 11, 2024, 14:12:53
+[114] Biber.pm:419> INFO - Reading 'prelim_paper.bcf'
+[181] Biber.pm:979> INFO - Found 7 citekeys in bib section 0
+[196] Biber.pm:4419> INFO - Processing section 0
+[206] Biber.pm:4610> INFO - Looking for bibtex file 'references.bib' for section 0
+[207] bibtex.pm:1713> INFO - LaTeX decoding ...
+[229] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[288] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[288] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[288] Biber.pm:4239> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[288] Biber.pm:4245> INFO - No sort tailoring available for locale 'en-US'
+[294] bbl.pm:660> INFO - Writing 'prelim_paper.bbl' with encoding 'UTF-8'
+[296] bbl.pm:763> INFO - Output to prelim_paper.bbl
