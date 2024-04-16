@@ -1,25 +1,59 @@
+
+
 \documentclass[12pt]{article}
 
-\usepackage{amsmath, amssymb, amsthm, mathrsfs, fancyhdr}
-\usepackage{syntonly, lastpage, hyperref, enumitem, graphicx}
-\usepackage[style=authoryear]{biblatex}
-\usepackage{booktabs}
-\usepackage{float}
 
-\addbibresource{references.bib}
+\usepackage{amssymb}
+\usepackage{amsmath,amsthm, mathtools,commath}
+\usepackage{graphics, color}
 
-\hypersetup{colorlinks = true, urlcolor = black}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{makeidx}
+\usepackage{kotex}
+\usepackage{fullpage}
+\usepackage{booktabs, arydshln}
+%\makeindex
 
-\headheight     15pt
-\topmargin      -1.5cm   % read Lamport p.163
-\oddsidemargin  -0.04cm  % read Lamport p.163
-\evensidemargin -0.04cm  % same as oddsidemargin but for left-hand pages
-\textwidth      16.59cm
-\textheight     23.94cm
-\parskip         7.2pt   % sets spacing between paragraphs
-\parindent         0pt   % sets leading space for paragraphs
-\pagestyle{empty}        % Uncomment if don't want page numbers
-\pagestyle{fancyplain}
+\hbadness=10000 \tolerance=10000 \hyphenation{en-vi-ron-ment
+in-ven-tory e-num-er-ate char-ac-ter-is-tic}
+
+\usepackage[round]{natbib}
+%\bibliographystyle{apalike2}
+% \bibliographystyle{jmr}
+
+
+\newcommand{\biblist}{\begin{list}{}
+{\listparindent 0.0cm \leftmargin 0.50cm \itemindent -0.50 cm
+\labelwidth 0 cm \labelsep 0.50 cm
+\usecounter{list}}\clubpenalty4000\widowpenalty4000}
+\newcommand{\ebiblist}{\end{list}}
+
+\newcounter{list}
+\usepackage{comment} 
+
+%\usepackage{setspace}
+\usepackage{latexsym}
+\usepackage{amsmath, amssymb, amsfonts, amsthm, bm}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+
+%\usepackage{hangpar}
+\newcommand{\lbl}[1]{\label{#1}{\ensuremath{^{\fbox{\tiny\upshape#1}}}}}
+% remove % from next line for final copy
+\renewcommand{\lbl}[1]{\label{#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+\newtheorem{result}{Result}
+
+\newtheorem{lemma}{Lemma}
+
+
+
 
 \newcommand{\MAP}{{\text{MAP}}}
 \newcommand{\argmax}{{\text{argmax}}}
@@ -32,14 +66,14 @@
 \newcommand{\R}{\mathbb{R}}
 \renewcommand{\bf}[1]{\mathbf{#1}}
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
 
 \begin{document}
 
 \title{Debiased calibration for generalized two-Phase sampling}
 \author{Caleb Leedy}
 \maketitle 
+
+\baselineskip .3in
 
 
 \section{Introduction}
@@ -49,7 +83,8 @@
 \item In many cases, we do not have direct access to the other sources. We can only obtain summary statistics (and their standard errors) for the external data sources. We wish to incorporate the information from external  sources in our in-house data effectively using calibration weighting.  
 \item We formulate the problem as a generalized two-phase sampling where the first phase sample can be obtained from multiple sources. The second-phase sample is our in-house data in which we want to construct the calibration weights. 
 \item To achieve the goal, we first consider  the  classical two-phase sampling setup where the second-phase sample is a subset of the first-phase sample. After that, we extend the setup to more general cases such as non-nested two-phase sampling or multiple independent surveys with some common measurements. 
-\item (To simplify the presentation, I wonder whether we can just use SRS in the first-phase sampling. ) 
+\item The proposed method can be called two-step calibration. In the first-step, the best linear unbiased estimators of the auxiliary variable totals are computed. In the second-step, the final calibration weights are constructed to match (benchmark) with the best estimators computed from Step 1. 
+%\item (To simplify the presentation, I wonder whether we can just use SRS in the first-phase sampling. ) 
 \end{itemize}
 \section{Topic 1: Classical Two-Phase Sampling}
 
@@ -62,7 +97,7 @@ selected and $Y_i$ is observed. This is two-phase sampling (See
 \cite{fuller2009sampling}, \cite{kim2024statistics} for general references.) The
 goal of two-phase sampling is to construct an estimator of $Y$ not
 only using the observed information from the Phase 2 sample but also
-incorporating the extra auxilary information of $X$ from the Phase 1 sample, and
+incorporating the extra auxiliary information of $X$ from the Phase 1 sample, and
 the challenge is doing this efficiently.
 
 An easy-to-implement unbiased estimator in the spirit of a Horvitz-Thompson
@@ -78,12 +113,14 @@ denoted as $A_2$,
         A_1) \Pr(A_1) \\
         &= \sum_{A_1: i \in A_1} \sum_{A_2: i \in A_2} \Pr(A_2 \mid A_1) \Pr(A_1).
 \end{align*}
+\textcolor{red}{(I am not sure whether this part is necessary.) }
 
 If we define $\pi_{2i | 1}^{(2)} = \sum_{A_2: i \in A_2} \Pr(A_2 \mid A_1)$ and
 $\pi_i^{(1)} = \sum_{A_1: i \in A_1} \Pr(A_1)$ then,
 
 $$ \pi_i = \pi_{2i | 1}^{(2)} \pi_i^{(1)}.$$
-\textcolor{red}{(note: there is an abuse of notation. You do not need to introduce superscript $(2)$ on $\pi_{2i \mid 1}$.) }
+\textcolor{red}{(note: there is an abuse of notation. You do not need to introduce superscript $(2)$ on $\pi_{2i \mid 1}$. 
+Also, the above equality is not true under two-phase sampling!)  }
 This means that we can define the $\pi^*$-estimator as the following design
 unbiased estimator:
 
@@ -97,10 +134,12 @@ additional information contained in the auxiliary Phase 1 variable $X$. The
 two-phase regression estimator $\hat Y_{reg, tp}$ does incorporate \textcolor{blue}{$\hat{X}_1$ obtained from the phase one sample. That is, we can leverage the external information $\hat{X}_1$ to improve the $\pi^*$-estimator in the second-phase sample. } 
 The two-phase 
 regression estimator has the form,
-
-$$ \hat Y_{reg, tp} 
+\begin{equation}
+\hat Y_{reg, tp} 
 = \sum_{i \in A_1} \frac{1}{\pi_i^{(1)}} x_i \hat \beta_2+ \sum_{i \in A_2}
-\frac{1}{\pi_i^{(1)}\pi_{2i|1}^{(2)}} (y_i - x_i \hat \beta_2)$$
+\frac{1}{\pi_i^{(1)}\pi_{2i|1}^{(2)}} (y_i - x_i \hat \beta_2)
+\label{reg}
+\end{equation}
 where $$\hat \beta_2 = \left(\sum_{i \in A_2} 
   \frac{x_i x_i'}{\pi_{2i|1}^{(2)}}\right)^{-1} 
   \sum_{i \in A_2} \frac{x_i y_i}{\pi_i^{(1)}\pi_{2i|1}^{(2)}}. 
@@ -113,7 +152,7 @@ $$\hat \beta_2 = \left(\sum_{i \in A_2}
   \frac{x_i x_i'}{\pi_{i}^{(1)} q_i }\right)^{-1} 
   \sum_{i \in A_2} \frac{x_i y_i}{\pi_i^{(1)} q_i }
 $$ 
-where $q_i=q(\bx_i)$ is a function of $\bx_i$. This will have some connection with model-optimal regression estimator (under superpopulation model).  
+where $q_i=q(\bx_i)$ is a function of $\bx_i$. This will have some connection with model-optimal regression estimator later (under superpopulation model).  
 }
 
   
@@ -177,7 +216,26 @@ two-phase setup where we need to estimate the finite population total of $x$
 from the Phase 1 sample. Hence, we extend this method to have a valid variance 
 estimator when including estimated Phase 1 weights.
 
-\subsection*{Methodology}
+\subsection{Methodology}
+
+The proposed method will be something like this: 
+\textcolor{red}{Minimize 
+$$
+\sum_{i \in A_2} \frac{1}{\pi_i^{(1)}}  G( w_{2i} )  q_i 
+$$
+subject to 
+$$
+\sum_{i \in A_2} w_{2i}  x_i / \pi_i^{(1)} = \sum_{i \in A_1} x_i /
+\pi_i^{(1)}$$
+and 
+$$
+\sum_{i \in A_2}  \frac{1}{\pi_i^{(1)}} w_{2i} g( \pi_{2i \mid 1}^{-1} ) q_i  = \sum_{i \in A_1}  \frac{1}{\pi_i^{(1)}}  g( \pi_{2i \mid 1}^{-1} ) q_i $$
+where $g(\omega) = \partial G( \omega)/ \partial \omega$. 
+}
+
+You need to show that the resulting calibration estimator $\hat{Y}_{\rm cal}= \sum_{i \in A_2} w_{1i} \hat{w}_{2i} y_i$ is asymptotically equivalent to the two-phase regression estimator in (\ref{reg}), where $w_{1i} = 1/ \pi_i^{(1)}$. 
+
+Also, there should be a discussion about variance estimation. Once the linearization form is obtained, the formula for linearized variance estimation should be obtained easily. 
 
 % TODO: Add detailed method for the setup of the debiased calibration method and
 % explain how we estimate the weights in two-phase sampling.
@@ -190,15 +248,138 @@ estimator when including estimated Phase 1 weights.
 % DUE: Thursday April 11 (I have already showed the proof but I might finish the
 % simulation study before writing this up.)
 
+
+
 \subsection*{Simulation Studies}
 
 % TODO: Conduct a simulation study highlighting the proposed method
 % DUE: Friday April 12
 
+
+
+
 \section*{Topic 2: Non-nested Two-Phase Sampling}
+
+\textcolor{red}{
+( Materials in Section 11.4 can be used here. I have copy-and-pasted the textbook materials below. Please modify them.  )
+} 
+
+In contrast to the classical two-phase sampling framework, non-nested two-phase sampling involves two independent surveys conducted on the same target population. The key distinction is that the two samples, denoted as $A_1$ and $A_2$, are drawn independently rather than sequentially.  Table \ref{table:11-1} presents the data structure for non-nested two-phase sampling. 
+
+In the non-nested two-phase sampling, 
+a large probability sample $A_1$ is drawn from a finite population,  collecting  only the $\bx$ variable, and  a  smaller sample $A_2$ is drawn from the same population, providing information  on both the $y$ and $\bx$ variables.
+It is assumed that the observed variable $x$ is comparable in the two surveys. \cite{renssen1997} formally addressed this non-nested two-phase sampling problem  and 
+\cite{merkouris2004} extended the idea further to develop regression estimation combining information from multiple surveys. 
+\cite{kimrao12} considered the non-nested two-phase sampling in the context of mass imputation combining two independent surveys at the population and domain levels.
+
+
+
+\begin{table}[htb]
+\caption{Data Structure for non-nested two-phase sampling}
+\label{table:1}\par
+\vskip .2cm
+\centerline{\tabcolsep=3truept\begin{tabular}{|c|cc|}
+\hline
+Sample  & $X$ & $Y$ \\
+\hline
+$A_1$ & \checkmark &  \\
+$A_2$ & \checkmark & \checkmark  \\
+\hline
+\end{tabular}}
+\label{table:11-1}
+\end{table}
+
+To illustrate the non-nested two-phase sampling approach, let's consider the data structure shown in Table \ref{table:11-1}. This setup involves two independent samples, $A_1$ and $A_2$, drawn from the same target population.
+
+From these two samples, we can compute two unbiased estimators of the population total $\mathbf{X} = \sum_{i=1}^N \bx_i$ for the auxiliary variable x: $\hat{\mathbf{X}}_1 = \sum_{i \in A_1} \pi_{1i}^{-1} \bx_i$
+and 
+$\hat{\mathbf{X}}_2 = \sum_{i \in A_2} \pi_{2i}^{-1} \bx_i$. 
+Here, $\pi_{1i}$ and $\pi_{2i}$ represent the inclusion probabilities for samples $A_1$ and $A_2$, respectively.
+
+Both $\hat{\mathbf{X}}_1$ and $\hat{\mathbf{X}}_2$ are unbiased estimators of the population total $\mathbf{X}$ under the respective sampling designs. 
+The availability of these two unbiased estimators is a key feature of the non-nested two-phase sampling design, as it provides opportunities for developing enhanced estimation procedures combining information from different sources.  
+
+We can  construct a combined estimator of X, denoted as $\widehat{\mathbf{X}}_c$, as follows:
+\begin{equation}
+\widehat{\mathbf{X}}_c = W \hat{\mathbf{X}}_1 + (I - W) \hat{\mathbf{X}}_2, 
+\label{xgls}
+\end{equation}
+where $W$ is a $p \times p$ symmetric matrix of constants, and $p = \text{dim}(\bx)$ is the dimension of the auxiliary variable x. The optimal choice of the matrix W can be determined using the Generalized Least Squares (GLS) method. However, other choices of W can also be used. The key idea is to leverage the information from these two independent surveys to obtain a more accurate and efficient estimator of the population total X for the auxiliary variable x, compared to using only one of the surveys alone. 
+
+
+Using the combined estimator  $\widehat{\mathbf{X}}_{\rm c} $ in (\ref{xgls}), we can construct the following projection estimator:  
+\begin{equation}
+ \widehat{Y}_p = \widehat{\mathbf{X}}_{\rm c}' \hat{\bm \beta}_q  
+ \label{11-proj}
+ \end{equation}
+where the regression coefficient estimator $\hat{\bm \beta}_q$ is defined as 
+$$ 
+\hat{\bm \beta}_q = \left( \sum_{i \in A_2} \bx_i \bx_i' / q_i \right)^{-1} 
+\sum_{i \in A_2} \bx_i y_i / q_i. 
+$$
+The choice of $q_i$ in the regression coefficient estimator is somewhat arbitrary. Two possible choices are:
+\begin{enumerate}
+\item Using the model variance under a regression superpopulation model.
+\item Using $q_i = \pi_{2i}^{-2} - \pi_{2i}^{-1}$ to compute the design-optimal regression estimator under Poisson sampling.
+\end{enumerate}
+The key idea is that by using the combined estimator $\widehat{\mathbf{X}}_c$ in the projection estimator $\widehat{Y}_p$, we can leverage the information from both the A1 and A2 samples to obtain a more accurate prediction of the variable of interest Y. The choice of $q_i$ allows for some flexibility in how the regression coefficient is estimated.
+
+
+To ensure the design-consistency of the projection estimator in (\ref{11-proj}), we can use the following regression estimator under non-nested two-phase sampling:
+\begin{equation}
+\widehat{Y}_{\rm tp, reg} = \widehat{Y}_2 + \left( \widehat{\mathbf{X}}_{\rm c} - \widehat{\mathbf{X}}_2 \right)' \hat{\bm \beta}_q
+\label{eq:11-28}
+\end{equation} 
+By the definition of $\widehat{\mathbf{X}}_{\rm c}$, we can also express this as: 
+\begin{equation}
+\widehat{Y}_{\rm tp, reg} = \widehat{Y}_2 + \left( \widehat{\mathbf{X}}_{1} - \widehat{\mathbf{X}}_2 \right)' \hat{\bm \alpha}_q,
+\label{eq:11-28}
+\end{equation} 
+where $\hat{\bm \alpha}_q = W \hat{\bm \beta}_q$.
+The key points are:
+\begin{enumerate}
+\item The design-consistent regression estimator $\widehat{Y}_{\rm tp, reg}$ is constructed by adding a correction term to the projection estimator $\widehat{Y}_p$ from the second sample.
+\item The regression estimator improves the efficiency of the  design unbiased estimator  $\hat{Y}_2$ by substracting the projection of $\hat{Y}_2$ onto the augmentation space \citep{tsiatis2006}, 
+the linear space generated by 
+ the difference between the combined estimator $\widehat{\mathbf{X}}_{\rm c}$ and the estimator $\widehat{\mathbf{X}}_2$ from the second sample.
+\item 
+Alternatively, the augmentation space  can be expressed using the difference between the estimators $\widehat{\mathbf{X}}_{1}$ and $\widehat{\mathbf{X}}_2$, weighted by $\hat{\bm \alpha}_q$.
+\end{enumerate} 
+The goal is to leverage the information from both samples to obtain a design-consistent regression estimator for the variable of interest Y.
+
+Using the standard argument, we can obtain 
+\begin{eqnarray}
+\widehat{Y}_{\rm tp, reg} 
+&=& \widehat{Y}_2 +  \left( \widehat{\mathbf{X}}_{1} - \widehat{\mathbf{X}}_2 \right)' {\bm \alpha}_q^* + O_p(n^{-1} N) \label{eq:11-29}
+\end{eqnarray}
+where $\bm \alpha_q^*$ is the probability limit of $\hat{\bm \alpha}_q = W \hat{\bm \beta}_q$. By (\ref{eq:11-29}), 
+ we can obtain 
+\begin{equation}
+V \left( \widehat{Y}_{\rm tp, reg}  \right) 
+= ({\bm \alpha}_q^* )' V \left( \widehat{\mathbf{X}}_{1}  \right) {\bm \alpha}_q^* + V\left( \hat{u}_2 \right) 
+\label{eq:11-31}
+\end{equation}
+where $\hat{u}_2 = \sum_{i \in A_2} \pi_{2i}^{-1} \left( y_i -  \bx_i'\bm \alpha_q^* \right) $. From the formula in (\ref{eq:11-31}), we can construct a linearized variance estimator. 
+
+Now, we can use the calibration weighting to construct the regression estimator under non-nested two-phase sampling. For  given the design weights $d_{2i} = \pi_{2i}^{-1}$, we find the minimizer of 
+    $$Q \left( {\bm \omega } \right) = \sum_{i \in A_2} \left(  {\omega_i} - d_{2i}  \right)^2 q_i $$
+    subject to 
+    $$ \sum_{i \in A_2} {\omega_i} \bx_i = \widehat{\mathbf{X}}_{\rm c} .$$
+    The solution is 
+    $$ \hat{\omega}_i = d_{2i} + \left( \widehat{\mathbf{X}}_{\rm c} - \widehat{\mathbf{X}}_{\rm 2} \right)^{-1} \left( \sum_{i \in A_2} q_i^{-1} \bx_i \bx_i' \right)^{-1} \bx_i q_i^{-1} . $$
+     Note that 
+    $$ \sum_{i \in A_2} \hat{\omega}_i y_i = \widehat{Y}_{\rm tp, reg} , $$
+    where  $\widehat{Y}_{\rm tp, reg}$ is defined in (\ref{eq:11-28}). 
+    Thus, the algebraic equivalence between the  regression estimator and the calibration weighting estimator is established under non-nested two-phase sampling. 
+
+
 
 \section*{Topic 3: Multi-source Two-Phase Sampling}
 
-\printbibliography
+
+\bibliographystyle{chicago}
+\bibliography{references}
+
+
 
 \end{document}

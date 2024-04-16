@@ -54,9 +54,12 @@ $$
 \begin{aligned}
 X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
 X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
-X_{3i} &\stackrel{ind}{\sim} N(-1, 1) \\
+X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
+X_{4i} &\stackrel{ind}{\sim} Unif(0.1, 0.9) \\
 \varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
-Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i.
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
+\pi_{1i} &= \Phi(-x_{3i} - 2)\\
+\pi_{2i|1} &= x_{4i}.
 \end{aligned}
 $$
 
@@ -71,29 +74,53 @@ $n = $`{r} n1_obs`.
 gen_pop <- function(obs) {
   x1 <- rnorm(obs, 2, 1)
   x2 <- runif(obs, 0, 4)
-  x3 <- rnorm(obs, -1, 1)
+  x3 <- rnorm(obs, 0, 1)
+  x4 <- runif(obs, 0.1, 0.9)
   eps <- rnorm(obs)
 
   y <- 3 * x1 + 2 * x2 + eps
 
-  return(tibble(X1 = x1, X2 = x2, X3 = x3, Y = y))
+  return(tibble(X1 = x1, X2 = x2, X3 = x3, X4 = x4, Y = y))
 }
 
 gen_twophase <- function(pop_df, p1_obs, p2_obs) {
 
   # Phase 1 
-  p1_ind <- sample(1:nrow(pop_df), size = p1_obs)
-  p1_df <- filter(pop_df, row_number() %in% p1_ind)
+  # Poisson sampling
+  # mean(pi_i) = 0.1
+  # ptemp <- pt(-pop_df$X3 - 2, 3)
+  # pi_i <- ifelse(ptemp > 0.7, 0.7, ptemp)
+  ptemp <- pt(-pop_df$X3, 3)
+  pi_i <- ptemp
+  del1 <- rbinom(nrow(pop_df), 1, pi_i)
+  p1_df <- pop_df %>%
+    mutate(pi1 = pi_i) %>%
+    rename(pi2 = X4) %>%
+    mutate(del1 = del1) %>%
+    filter(del1 == 1)
+
+  # SRS
+  # p1_ind <- sample(1:nrow(pop_df), size = p1_obs)
+  # p1_df <- filter(pop_df, row_number() %in% p1_ind)
 
   # Phase 2
-  p2_ind <- sample(1:nrow(p1_df), size = p2_obs)
-  p2_df <- filter(p1_df, row_number() %in% p2_ind)
+  # del2 <- rbinom(nrow(p1_df), 1, p1_df$pi2)
+  del2 <- rbinom(nrow(p1_df), 1, p1_df$pi2 / 2)
+
+  p2_df <- p1_df %>%
+    mutate(del2 = del2) %>%
+    filter(del2 == 1)
+
+  # SRS
+  # p2_ind <- sample(1:nrow(p1_df), size = p2_obs)
+  # p2_df <- filter(p1_df, row_number() %in% p2_ind)
 
   return(list(P1 = p1_df, P2 = p2_df))
 
 }
 
 ```
+
 
 ```{r}
 #| label: estimators
@@ -103,31 +130,52 @@ gen_twophase <- function(pop_df, p1_obs, p2_obs) {
 # 2. Variance estimate.
 pi_star <- function(p1_df, p2_df, pop_obs, ...) {
   extra <- list(...)
-  n1 <- nrow(p1_df)
-  n2 <- nrow(p2_df)
 
-  theta <- sum(p2_df$Y / n2)
-  vhat <- (1 / n2 - 1 / pop_obs) * var(p2_df$Y)
+  theta <- sum(p2_df$Y / (p2_df$pi1 * p2_df$pi2)) / pop_obs
+
+  # SRS Variance
+  # vhat <- (1 / n2 - 1 / pop_obs) * var(p2_df$Y)
+
+  # Poisson Variance
+  pis <- p2_df$pi1 * p2_df$pi2
+  vhat <- sum((1 / pis^2 - 1 / pis) * p2_df$Y^2) / pop_obs^2
 
   return(list(theta = theta, Var = vhat))
 }
 
 tp_reg <- function(p1_df, p2_df, pop_obs, ...) {
   extra <- list(...)
-  n1 <- nrow(p1_df)
-  n2 <- nrow(p2_df)
 
   # Step 1: Get beta
   mod <- lm(Y ~ X1 + X2, data = p2_df)
 
   # Step 2: Predict
-  theta <- mean(predict(mod, p1_df))
+  # SRS
+  # theta <- mean(predict(mod, p1_df))
+   
+  # Poisson
+  theta <- (sum(predict(mod, p1_df) / p1_df$pi1) + 
+  sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / pop_obs
 
   # Step 3: Get variance estimator
-  vhat <-
-    (1 / n1 - 1 / pop_obs) * (mod$coefficients[2]^2 * var(p1_df$X1) + 
-    mod$coefficients[3]^2 * var(p1_df$X2)) +
-    (1 / n2 - 1 / n1) * var(p2_df$Y - predict(mod, p2_df))
+  # SRS
+  # vhat <-
+  #   (1 / n1 - 1 / pop_obs) * (mod$coefficients[2]^2 * var(p1_df$X1) + 
+  #   mod$coefficients[3]^2 * var(p1_df$X2)) +
+  #   (1 / n2 - 1 / n1) * var(p2_df$Y - predict(mod, p2_df))
+   
+  # Poisson
+  p12_df <- 
+    left_join(p1_df, p2_df, by = join_by(X1, X2, X3, Y, pi1, pi2, del1)) %>%
+    mutate(del2 = ifelse(is.na(del2), 0, 1))
+  pred_12 <- predict(mod, p12_df)
+  eta <- pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - pred_12)
+
+  v1 <- sum((1 - p12_df$pi1) / p12_df$pi1^2 * eta^2)
+  v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
+           (1 / p2_df$pi2 - 1) * (p2_df$Y - predict(mod, p2_df))^2)
+
+  vhat <- (v1 + v2) / pop_obs^2
 
   return(list(theta = theta, Var = vhat))
 
@@ -135,8 +183,6 @@ tp_reg <- function(p1_df, p2_df, pop_obs, ...) {
 
 dc_poptots <- function(p1_df, p2_df, pop_obs, ...) {
   extra <- list(...)
-  n1 <- nrow(p1_df)
-  n2 <- nrow(p2_df)
 
   if ("entropy" %in% names(extra)) {
     entropy <- extra$entropy
@@ -144,37 +190,97 @@ dc_poptots <- function(p1_df, p2_df, pop_obs, ...) {
     entropy <- "EL"
   }
 
-  samp_X <- select(p2_df, X1, X2) %>% as.matrix()
-  samp_X <- cbind(rep(1, nrow(p2_df)), samp_X)
-  pop_tot <- extra$pop_tot
-  # FIXME: This does not work
-  # TODO: Change everything to Poisson sample.
+  d_vec <- 1 / (p2_df$pi2 * p2_df$pi1)
+  if (entropy == "EL") {
+    gdi <- -1 / d_vec
+    gpinv <- d_vec^2
+
+  } else if (entropy == "ET") {
+    gdi <- log(d_vec)
+    gpinv <- d_vec
+
+  } else {
+    stop("This type of entropy has not yet been implemented.")
+  }
+
+  samp_X <- cbind(rep(1, nrow(p2_df)), as.matrix(select(p2_df, X1, X2)))
   dc_w <-  
-    GEcalib(samp_X,
+    GEcalib(cbind(samp_X, gdi),
             d = rep(1, nrow(p2_df)),
-            total = pop_tot,
+            extra$pop_tot,
             entropy = entropy,
-            DS = TRUE)
+            DS = FALSE)
 
   # Mean Estimation
   theta <- sum(p2_df$Y * dc_w) / pop_obs
 
   # Variance Estimation
 
-  Pi_dc <- diag(1 - n2 / pop_obs) * (dc_w / N_obs)^2
-  z_dc <- model.matrix(~X1 + X2, data = p2_df)
-  gam_dc <- solve(t(z_dc) %*% z_dc, t(z_dc) %*% samp_df$Y)
+  Pi_dc <- diag(1 - 1 / d_vec) * (dc_w / pop_obs)^2
+  z_dc <- model.matrix(~1 + p2_df$X1 + p2_df$X2 + gdi)
+  gam_dc <- 
+    solve(t(z_dc) %*% diag(gpinv) %*% z_dc, t(z_dc) %*% diag(gpinv) %*% p2_df$Y)
   vhat <- 
-  (p2_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(p2_df$Y - t(gam_dc) %*% t(z_dc))
+    (p2_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(p2_df$Y - t(gam_dc) %*% t(z_dc))
 
-  return(list(theta = theta, Var = vhat))
+  return(list(theta = theta, Var = as.numeric(vhat)))
 }
 
 dc_esttots <- function(p1_df, p2_df, pop_obs, ...) {
   extra <- list(...)
-  n1 <- nrow(p1_df)
-  n2 <- nrow(p2_df)
 
+  # Get estimates of population totals
+  pop_est <- c(pop_obs,
+               sum(p1_df$X1 / p1_df$pi1),
+               sum(p1_df$X2 / p1_df$pi1),
+               extra$pop_gdi)
+
+  if ("entropy" %in% names(extra)) {
+    entropy <- extra$entropy
+  } else {
+    entropy <- "EL"
+  }
+
+  d_vec <- 1 / (p2_df$pi2 * p2_df$pi1)
+  if (entropy == "EL") {
+    gdi <- -1 / d_vec
+    gpinv <- d_vec^2
+
+  } else if (entropy == "ET") {
+    gdi <- log(d_vec)
+    gpinv <- d_vec
+
+  } else {
+    stop("This type of entropy has not yet been implemented.")
+  }
+
+  samp_X <- cbind(rep(1, nrow(p2_df)), as.matrix(select(p2_df, X1, X2)))
+  dc_w <-  
+    GEcalib(cbind(samp_X, gdi),
+            d = rep(1, nrow(p2_df)),
+            pop_est,
+            entropy = entropy,
+            DS = FALSE)
+
+  # Mean Estimation
+  theta <- sum(p2_df$Y * dc_w) / pop_obs
+
+  # Variance Estimation
+  ex_var_mat <- matrix(nrow = 2, ncol = 2)
+  ex_var_mat[1, 1] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1^2)
+  ex_var_mat[1, 2] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1 * p1_df$X2)
+  ex_var_mat[2, 1] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1 * p1_df$X2)
+  ex_var_mat[2, 2] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X2^2)
+
+  Pi_dc <- diag(1 - 1 / d_vec) * (dc_w / pop_obs)^2
+  z_dc <- model.matrix(~1 + p2_df$X1 + p2_df$X2 + gdi)
+  gam_dc <- 
+    solve(t(z_dc) %*% diag(gpinv) %*% z_dc, t(z_dc) %*% diag(gpinv) %*% p2_df$Y)
+  vhat <- 
+  (p2_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(p2_df$Y - t(gam_dc) %*% t(z_dc)) +
+  (gam_dc[2:3] %*% ex_var_mat %*% gam_dc[2:3] / pop_obs^2)
+
+  return(list(theta = theta, Var = as.numeric(vhat)))
 }
 
 ```
@@ -195,16 +301,32 @@ mc_res <- foreach(iter=1:B_sims, .packages = c("dplyr", "GECal")) %dorng% {
   p1_df <- samps[[1]]
   p2_df <- samps[[2]]
 
-  pistar_est <- pi_star(p1_df, p2_df, nrow(pop_df))
-  tpreg_est <- tp_reg(p1_df, p2_df, nrow(pop_df))
-  dcpop_est <- 
-    dc_poptots(p1_df, p2_df, nrow(pop_df),
-               pop_tot = c(nrow(pop_df), sum(pop_df$X1), sum(pop_df$X2)))
+  # ptemp <- pt(-pop_df$X3 - 2, 3)
+  # pop_pi1 <- ifelse(ptemp > 0.7, 0.7, ptemp)
+  ptemp <- pt(-pop_df$X3, 3)
+  pop_pi1 <- ptemp
+
+  pistar <- pi_star(p1_df, p2_df, nrow(pop_df), pop_df = pop_df)
+  tpreg <- tp_reg(p1_df, p2_df, nrow(pop_df))
+  dcpop <- 
+    dc_poptots(
+      p1_df,
+      p2_df,
+      nrow(pop_df),
+      pop_tot = c(nrow(pop_df), sum(pop_df$X1), sum(pop_df$X2), sum(-pop_pi1))
+    )
+  dcest <-
+    dc_esttots(
+      p1_df,
+      p2_df,
+      nrow(pop_df),
+      pop_gdi = sum(-pop_pi1)
+    )
 
   return(
-    tibble(Est = c("pistar", "tpreg"),
-           Theta = c(pistar_est[[1]], tpreg_est[[1]]),
-           Var = c(pistar_est[[2]], tpreg_est[[2]]))
+    tibble(Est = c("pistar", "tpreg", "dcpop", "dcest"),
+           Theta = c(pistar[[1]], tpreg[[1]], dcpop[[1]], dcest[[1]]),
+           Var = c(pistar[[2]], tpreg[[2]], dcpop[[2]], dcest[[2]]))
   )
 
 } %>% bind_rows()
@@ -217,25 +339,45 @@ stopCluster(clust)
 ```{r}
 #| label: Analysis
 
+# Find any failed estimates
+which(is.na(mc_res$Theta))
+which(is.na(mc_res$Var))
+
 # Analyze Mean
 mc_res %>%
   mutate(err = Theta - true_theta) %>%
   mutate(CI = abs(err) < qnorm(0.975) * sqrt(Var)) %>%
   group_by(Est) %>%
-  summarize(bias = mean(err),
-            rmse = sqrt(mean(err^2)),
-            EmpCI = mean(CI),
-            sdest = sd(Theta)) %>%
+  summarize(Bias = mean(err, na.rm = TRUE),
+            RMSE = sqrt(mean(err^2, na.rm = TRUE)),
+            EmpCI = mean(CI, na.rm = TRUE),
+            sdest = sd(Theta, na.rm = TRUE)) %>%
   ungroup() %>%
-  mutate(Ttest = abs(bias) / sqrt(sdest^2 / B_sims)) %>%
-  select(-sdest)
+  mutate(Ttest = abs(Bias) / sqrt(sdest^2 / B_sims)) %>%
+  select(-sdest) %>%
+  mutate(Ind = case_when(
+    Est == "dcest" ~ 4,
+    Est == "dcpop" ~ 3,
+    Est == "tpreg" ~ 2,
+    Est == "pistar" ~ 1)
+  ) %>%
+  mutate(Est = case_when(
+    Est == "dcest" ~ "DC-Est",
+    Est == "dcpop" ~ "DC-Pop",
+    Est == "tpreg" ~ "TP-Reg",
+    Est == "pistar" ~ "$\\pi^*$")
+  ) %>%
+  arrange(Ind) %>%
+  select(Est, Bias, RMSE, EmpCI, Ttest) %>%
+  knitr::kable("latex", booktabs = TRUE, escape = FALSE, digits = 3) %>%
+  cat(file = "tables/tpdcsim_mean.tex")
 
 # Analyze Variance
 mc_res %>%
   group_by(Est) %>%
-  summarize(mcvar = var(Theta),
-            estvar = mean(Var),
-            varvar = var(Var)) %>%
+  summarize(mcvar = var(Theta, na.rm = TRUE),
+            estvar = mean(Var, na.rm = TRUE),
+            varvar = var(Var, na.rm = TRUE)) %>%
   ungroup() %>%
   mutate(Ttest = abs(mcvar - estvar) / sqrt(varvar / B_sims))
 
