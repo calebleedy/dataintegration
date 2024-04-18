@@ -5,6 +5,10 @@ Deville, J.-C. and C.-E. Sarndal (1992).
 \newblock Calibration estimators in survey sampling.
 \newblock {\em Journal of the American statistical Association\/}~{\em 87\/}(418), 376--382.
 
+\bibitem[\protect\citeauthoryear{Fay}{Fay}{1992}]{fay1992inferences}
+Fay, R.~E. (1992).
+\newblock When are inferences from multiple imputation valid?.
+
 \bibitem[\protect\citeauthoryear{Fuller}{Fuller}{2009}]{fuller2009sampling}
 Fuller, W.~A. (2009).
 \newblock {\em Sampling statistics}.
@@ -25,13 +29,33 @@ Kim, J.~K. (2024).
 \newblock {\em Statistics in Survey Sampling}.
 \newblock arXiv.
 
+\bibitem[\protect\citeauthoryear{Kim, Navarro, and Fuller}{Kim et~al.}{2006}]{kim2006replication}
+Kim, J.~K., A.~Navarro, and W.~A. Fuller (2006).
+\newblock Replication variance estimation for two-phase stratified sampling.
+\newblock {\em Journal of the American statistical association\/}~{\em 101\/}(473), 312--320.
+
 \bibitem[\protect\citeauthoryear{Kwon, Kim, and Qiu}{Kwon et~al.}{2024}]{kwon2024debiased}
 Kwon, Y., J.~K. Kim, and Y.~Qiu (2024).
 \newblock Debiased calibration estimation using generalized entropy in survey sampling.
+
+\bibitem[\protect\citeauthoryear{Merkouris}{Merkouris}{2004}]{merkouris2004combining}
+Merkouris, T. (2004).
+\newblock Combining independent regression estimators from multiple surveys.
+\newblock {\em Journal of the American Statistical Association\/}~{\em 99\/}(468), 1131--1139.
 
 \bibitem[\protect\citeauthoryear{Narain}{Narain}{1951}]{narain1951sampling}
 Narain, R. (1951).
 \newblock On sampling without replacement with varying probabilities.
 \newblock {\em Journal of the Indian Society of Agricultural Statistics\/}~{\em 3\/}(2), 169--175.
+
+\bibitem[\protect\citeauthoryear{Randles}{Randles}{1982}]{randles1982asymptotic}
+Randles, R.~H. (1982).
+\newblock On the asymptotic normality of statistics with estimated parameters.
+\newblock {\em The Annals of Statistics\/}, 462--474.
+
+\bibitem[\protect\citeauthoryear{Shao and Steel}{Shao and Steel}{1999}]{shao1999variance}
+Shao, J. and P.~Steel (1999).
+\newblock Variance estimation for survey data with composite imputation and nonnegligible sampling fractions.
+\newblock {\em Journal of the American Statistical Association\/}~{\em 94\/}(445), 254--265.
 
 \end{thebibliography}

@@ -1,0 +1,88 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, mathrsfs, fancyhdr}
+\usepackage{syntonly, lastpage, hyperref, enumitem, graphicx}
+%\usepackage[style=authoryear]{biblatex}
+\usepackage{booktabs}
+\usepackage{float}
+
+\usepackage{amsmath, amsthm, mathtools,commath}
+\usepackage{graphics, color}
+\usepackage{latexsym}
+\usepackage{amssymb, amsfonts, bm}
+\usepackage{mathrsfs}
+
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{makeidx}
+\usepackage{fullpage}
+\usepackage{booktabs, arydshln}
+\usepackage{comment} 
+%\makeindex
+
+\hbadness=10000 \tolerance=10000 \hyphenation{en-vi-ron-ment
+in-ven-tory e-num-er-ate char-ac-ter-is-tic}
+
+\usepackage[round]{natbib}
+%\bibliographystyle{apalike2}
+% \bibliographystyle{jmr}
+
+
+\newcommand{\biblist}{\begin{list}{}
+{\listparindent 0.0cm \leftmargin 0.50cm \itemindent -0.50 cm
+\labelwidth 0 cm \labelsep 0.50 cm
+\usecounter{list}}\clubpenalty4000\widowpenalty4000}
+\newcommand{\ebiblist}{\end{list}}
+
+\newcounter{list}
+
+%\usepackage{setspace}
+
+%\usepackage{hangpar}
+\newcommand{\lbl}[1]{\label{#1}{\ensuremath{^{\fbox{\tiny\upshape#1}}}}}
+% remove % from next line for final copy
+\renewcommand{\lbl}[1]{\label{#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+\newtheorem{result}{Result}
+
+\newtheorem{lemma}{Lemma}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\MAP}{{\text{MAP}}}
+\newcommand{\Cov}{{\text{Cov}}}
+\newcommand{\Var}{{\text{Var}}}
+\newcommand{\logistic}{{\text{logistic}}}
+
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\R}{\mathbb{R}}
+\renewcommand{\bf}[1]{\mathbf{#1}}
+
+
+\begin{document}
+
+\title{Proposal to Change the Model Formulation}
+\author{Caleb Leedy}
+\maketitle 
+
+\baselineskip .3in
+
+Consider the two phase sampling problem in which we observe $X$ in the Phase 1
+sample $A_1$ and $(X, Y)$ in the Phase 2 sample $A_2$.
+Previously, we solved the following problem in our extension of debiased
+calibration (\cite{kwon2024debiased}),
+
+\begin{equation}\label{eq:primal}
+  \argmin_{w_{2|1}} \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i}) q_i 
+  \text{ such that}
+  \sum_{i \in A_2} w_{1i} w_{2i|1} z_i / q_i = \sum_{i \in A_1} w_{1i} z_i /
+  q_i.
+\end{equation}
+
+
+\end{document}
