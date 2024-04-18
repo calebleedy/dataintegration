@@ -3,49 +3,46 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: prelim_paper.aux
 The style file: chicago.bst
 Database file #1: references.bib
-Warning--no journal in fay1992inferences
-Warning--no number and no volume in fay1992inferences
-Warning--page numbers missing in fay1992inferences
 Warning--no number and no volume in randles1982asymptotic
-You've used 12 entries,
+You've used 9 entries,
             2861 wiz_defined-function locations,
-            688 strings with 6566 characters,
-and the built_in function-call counts, 7557 in all, are:
-= -- 646
-> -- 486
+            669 strings with 6095 characters,
+and the built_in function-call counts, 5576 in all, are:
+= -- 476
+> -- 347
 < -- 0
-+ -- 138
-- -- 176
-* -- 640
-:= -- 1399
-add.period$ -- 34
-call.type$ -- 12
-change.case$ -- 78
-chr.to.int$ -- 12
-cite$ -- 16
-duplicate$ -- 209
-empty$ -- 490
-format.name$ -- 200
-if$ -- 1371
++ -- 98
+- -- 128
+* -- 460
+:= -- 1038
+add.period$ -- 26
+call.type$ -- 9
+change.case$ -- 57
+chr.to.int$ -- 9
+cite$ -- 10
+duplicate$ -- 158
+empty$ -- 369
+format.name$ -- 144
+if$ -- 1008
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 13
-newline$ -- 61
-num.names$ -- 120
-pop$ -- 55
+missing$ -- 10
+newline$ -- 47
+num.names$ -- 90
+pop$ -- 42
 preamble$ -- 1
-purify$ -- 152
+purify$ -- 113
 quote$ -- 0
-skip$ -- 227
+skip$ -- 171
 stack$ -- 0
-substring$ -- 448
-swap$ -- 66
+substring$ -- 338
+swap$ -- 50
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 220
-warning$ -- 4
-while$ -- 128
+type$ -- 160
+warning$ -- 1
+while$ -- 98
 width$ -- 0
-write$ -- 154
-(There were 4 warnings)
+write$ -- 117
+(There was 1 warning)
