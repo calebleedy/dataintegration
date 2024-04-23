@@ -43,8 +43,12 @@ n2_obs <- 500
 
 library(dplyr)
 library(GECal)
+library(nleqslv)
 library(doParallel)
 library(doRNG)
+library(CVXR)
+
+# source("GEcalib_code.R")
 
 ```
 
@@ -88,14 +92,11 @@ gen_twophase <- function(pop_df, p1_obs, p2_obs) {
   # Phase 1 
   # Poisson sampling
   # mean(pi_i) = 0.1
-  # ptemp <- pt(-pop_df$X3 - 2, 3)
-  # pi_i <- ifelse(ptemp > 0.7, 0.7, ptemp)
-  ptemp <- pt(-pop_df$X3, 3)
-  pi_i <- ptemp
+  ptemp <- pt(-pop_df$X3 - 2, 3)
+  pi_i <- ifelse(ptemp > 0.7, 0.7, ptemp)
   del1 <- rbinom(nrow(pop_df), 1, pi_i)
   p1_df <- pop_df %>%
     mutate(pi1 = pi_i) %>%
-    rename(pi2 = X4) %>%
     mutate(del1 = del1) %>%
     filter(del1 == 1)
 
@@ -104,8 +105,12 @@ gen_twophase <- function(pop_df, p1_obs, p2_obs) {
   # p1_df <- filter(pop_df, row_number() %in% p1_ind)
 
   # Phase 2
-  # del2 <- rbinom(nrow(p1_df), 1, p1_df$pi2)
-  del2 <- rbinom(nrow(p1_df), 1, p1_df$pi2 / 2)
+  # pi2_1 <- p1_df$X4
+  p2tmp <- pt(-p1_df$X1 + 1, 3)
+  pi2_i <- ifelse(p2tmp > 0.9, 0.9, p2tmp)
+  del2 <- rbinom(nrow(p1_df), 1, pi2_i)
+
+  p1_df <- mutate(p1_df, pi2 = pi2_i)
 
   p2_df <- p1_df %>%
     mutate(del2 = del2) %>%
@@ -124,6 +129,85 @@ gen_twophase <- function(pop_df, p1_obs, p2_obs) {
 
 ```{r}
 #| label: estimators
+
+solveEL_prim <- function(xmat, d, xtot) {
+  w_vec <- Variable(nrow(xmat))
+  obj <- Maximize(sum(d * log(w_vec)))
+  constr <- list(t(xmat) %*% w_vec - xtot == 0)
+  prob <- Problem(obj, constr)
+  prim <- solve(prob)
+  resp <- prim$getValue(w_vec)
+  return(drop(resp))
+}
+
+# resw = resp
+# gbar = sum(-log(resw), na.rm = TRUE)
+# toremove <- which(is.na(log(resw)))
+# zbar = colSums(xmat[-toremove, ])
+# zbar = colSums(xmat)
+# lam = drop((gbar %*% zbar) %*% MASS::ginv(t(t(zbar)) %*% t(zbar)))
+# 
+# f(lam, xmat, d, xtot)
+# f(res$x, xmat, d, xtot)
+# 
+# res$x
+# lam
+# sum(p2_df$Y * resd) / pop_obs
+# sum(p2_df$Y * resp) / pop_obs
+
+
+solveEL <- function(xmat, d, xtot, acc2 = FALSE) {
+
+  f <- function(lam, xmat, d, xtot, returnw = FALSE) {
+    w <- -d / drop(xmat %*% lam)
+
+    if (returnw) {
+      return(w)
+    } else {
+      return(drop(w %*% xmat) - xtot)
+    }
+  }
+
+  j <- function(lam, xmat, d, xtot) {
+    t(xmat) %*% diag(d / drop(xmat %*% lam)^2) %*% xmat
+  }
+
+  init <- c(rep(0, ncol(xmat) - 1), 1)
+  res <- 
+  nleqslv(init, f, jac = j, xmat = xmat, d = d, xtot,
+          method = "Newton", control = list(maxit = 1e5, allowSingular = TRUE))
+
+  resw <- f(res$x, xmat, d, returnw = TRUE)
+
+  if (!(res$termcd %in% c(1))) {
+
+    return(NA)
+
+    w_prim <- solveEL_prim(xmat, d, xtot)
+    gbar = sum(-log(w_prim), na.rm = TRUE)
+    if (any(is.na(log(w_prim)))) {
+      toremove <- which(is.na(log(w_prim)))
+      zbar = colSums(xmat[-toremove, ])
+    } else {
+      zbar = colSums(xmat)
+    }
+    init = drop((gbar %*% zbar) %*% MASS::ginv(t(t(zbar)) %*% t(zbar)))
+
+    res2 <- 
+    nleqslv(init, f, jac = j, xmat = xmat, d = d, xtot,
+            method = "Newton", control = list(maxit = 1e5, allowSingular = TRUE))
+
+    if (!(res2$termcd %in% c(1))) {
+      return(NA)
+    }
+
+    resw <- f(res2$x, xmat, d, returnw = TRUE)
+
+  }
+
+  return(resw)
+
+}
 
 # Each estimator should return two outcomes:
 # 1. Point estimate, and
@@ -204,12 +288,17 @@ dc_poptots <- function(p1_df, p2_df, pop_obs, ...) {
   }
 
   samp_X <- cbind(rep(1, nrow(p2_df)), as.matrix(select(p2_df, X1, X2)))
-  dc_w <-  
-    GEcalib(cbind(samp_X, gdi),
-            d = rep(1, nrow(p2_df)),
-            extra$pop_tot,
-            entropy = entropy,
-            DS = FALSE)
+
+  # dc_w <-  
+  #   GEcalib(cbind(samp_X, gdi),
+  #           # d = rep(1, nrow(p2_df)),
+  #           d = 1 / (p2_df$pi2),
+  #           extra$pop_tot,
+  #           entropy = entropy,
+  #           DS = FALSE)
+
+  dc_w_alt <- solveEL(cbind(samp_X, gdi), 1 / p2_df$pi2, extra$pop_tot)
+  dc_w <- dc_w_alt
 
   # Mean Estimation
   theta <- sum(p2_df$Y * dc_w) / pop_obs
@@ -241,6 +330,12 @@ dc_esttots <- function(p1_df, p2_df, pop_obs, ...) {
     entropy <- "EL"
   }
 
+  if ("acc2" %in% names(extra)) {
+    acc2 <- extra$acc2
+  } else {
+    acc2 <- FALSE
+  }
+
   d_vec <- 1 / (p2_df$pi2 * p2_df$pi1)
   if (entropy == "EL") {
     gdi <- -1 / d_vec
@@ -255,12 +350,9 @@ dc_esttots <- function(p1_df, p2_df, pop_obs, ...) {
   }
 
   samp_X <- cbind(rep(1, nrow(p2_df)), as.matrix(select(p2_df, X1, X2)))
-  dc_w <-  
-    GEcalib(cbind(samp_X, gdi),
-            d = rep(1, nrow(p2_df)),
-            pop_est,
-            entropy = entropy,
-            DS = FALSE)
+
+  dc_w_alt <- solveEL(cbind(samp_X, gdi), 1 / p2_df$pi2, pop_est, acc2)
+  dc_w <- dc_w_alt
 
   # Mean Estimation
   theta <- sum(p2_df$Y * dc_w) / pop_obs
@@ -280,6 +372,8 @@ dc_esttots <- function(p1_df, p2_df, pop_obs, ...) {
   (p2_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(p2_df$Y - t(gam_dc) %*% t(z_dc)) +
   (gam_dc[2:3] %*% ex_var_mat %*% gam_dc[2:3] / pop_obs^2)
 
+  # FIXME: Change variance estimation to linearization estimate
+
   return(list(theta = theta, Var = as.numeric(vhat)))
 }
 
@@ -295,19 +389,21 @@ true_theta <- mean(pop_df$Y)
 clust <- makeCluster(min(detectCores() - 2, 100))
 registerDoParallel(clust)
 
-mc_res <- foreach(iter=1:B_sims, .packages = c("dplyr", "GECal")) %dorng% {
+mc_res <- foreach(iter=1:B_sims,
+                  .packages = c("dplyr", "GECal", "CVXR", "nleqslv")) %dopar% {
 
+  set.seed(iter)
   samps <- gen_twophase(pop_df, n1_obs, n2_obs)
   p1_df <- samps[[1]]
   p2_df <- samps[[2]]
 
-  # ptemp <- pt(-pop_df$X3 - 2, 3)
-  # pop_pi1 <- ifelse(ptemp > 0.7, 0.7, ptemp)
-  ptemp <- pt(-pop_df$X3, 3)
-  pop_pi1 <- ptemp
+  ptemp <- pt(-pop_df$X3 - 2, 3)
+  pop_pi1 <- ifelse(ptemp > 0.7, 0.7, ptemp)
 
   pistar <- pi_star(p1_df, p2_df, nrow(pop_df), pop_df = pop_df)
   tpreg <- tp_reg(p1_df, p2_df, nrow(pop_df))
+  # FIXME: GEcalib is not working. It produces results with very high
+  # values of the function.
   dcpop <- 
     dc_poptots(
       p1_df,
@@ -326,7 +422,8 @@ mc_res <- foreach(iter=1:B_sims, .packages = c("dplyr", "GECal")) %dorng% {
   return(
     tibble(Est = c("pistar", "tpreg", "dcpop", "dcest"),
            Theta = c(pistar[[1]], tpreg[[1]], dcpop[[1]], dcest[[1]]),
-           Var = c(pistar[[2]], tpreg[[2]], dcpop[[2]], dcest[[2]]))
+           Var = c(pistar[[2]], tpreg[[2]], dcpop[[2]], dcest[[2]]),
+           Iter = iter)
   )
 
 } %>% bind_rows()
@@ -342,6 +439,9 @@ stopCluster(clust)
 # Find any failed estimates
 which(is.na(mc_res$Theta))
 which(is.na(mc_res$Var))
+mc_res %>%
+  mutate(iter = rep(1:B_sims, each = 4)) %>%
+  filter(is.na(Theta))
 
 # Analyze Mean
 mc_res %>%
@@ -383,5 +483,8 @@ mc_res %>%
   ungroup() %>%
   mutate(Ttest = abs(mcvar - estvar) / sqrt(varvar / B_sims))
 
+mc_res %>%
+  filter(Est == "dcpop") %>%
+  arrange(desc(Var))
 
 ```

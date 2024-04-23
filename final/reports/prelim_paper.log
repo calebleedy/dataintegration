@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Arch Linux) (preloaded format=pdflatex 2024.2.23)  18 APR 2024 14:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Arch Linux) (preloaded format=pdflatex 2024.2.23)  22 APR 2024 20:18
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -477,31 +477,31 @@ LaTeX Font Info:    Font shape `U/lasy/b/n' in size <5> not available
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.582 
+l.481 
       
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.582 
-      ] [9] (./prelim_paper.bbl [10]) [11] 
+l.481 
+      ] [9] [10] [11] [12] (./prelim_paper.bbl [13]) [14] 
 enddocument/afterlastpage: lastpage setting LastPage.
 (./prelim_paper.aux)
 Package rerunfilecheck Info: File `prelim_paper.out' has not changed.
 (rerunfilecheck)             Checksum: D1830D94724E9CF38CB8513D996F592B;1894.
  ) 
 Here is how much of TeX's memory you used:
- 12206 strings out of 477400
- 191969 string characters out of 5828522
- 1865388 words of memory out of 5000000
- 32277 multiletter control sequences out of 15000+600000
- 530114 words of font info for 107 fonts, out of 8000000 for 9000
+ 12220 strings out of 477400
+ 192098 string characters out of 5828522
+ 1876388 words of memory out of 5000000
+ 32282 multiletter control sequences out of 15000+600000
+ 530815 words of font info for 109 fonts, out of 8000000 for 9000
  313 hyphenation exceptions out of 8191
- 75i,13n,76p,389b,566s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,16n,76p,389b,554s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on prelim_paper.pdf (11 pages, 266863 bytes).
+Output written on prelim_paper.pdf (14 pages, 280617 bytes).
 PDF statistics:
- 289 PDF objects out of 1000 (max. 8388607)
- 231 compressed objects within 3 object streams
- 44 named destinations out of 1000 (max. 500000)
+ 312 PDF objects out of 1000 (max. 8388607)
+ 251 compressed objects within 3 object streams
+ 51 named destinations out of 1000 (max. 500000)
  97 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -904,6 +904,8 @@ INPUT ./tables/tpdcsim_mean.tex
 INPUT tables/tpdcsim_mean.tex
 INPUT ./tables/tpdcsim_mean.tex
 INPUT tables/tpdcsim_mean.tex
+INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmti8.tfm
+INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmti7.tfm
 INPUT ./prelim_paper.bbl
 INPUT prelim_paper.bbl
 INPUT ./prelim_paper.bbl

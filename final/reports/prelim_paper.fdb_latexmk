@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex prelim_paper"] 1713468320 "prelim_paper.aux" "prelim_paper.bbl" "prelim_paper" 1713468387 0
+["bibtex prelim_paper"] 1713835128 "prelim_paper.aux" "prelim_paper.bbl" "prelim_paper" 1713835129 0
   "./references.bib" 1713385522 9740 c4e797ba9b662460d92279e32a9bc699 ""
   "/usr/share/texmf-dist/bibtex/bst/chicago/chicago.bst" 1704400182 37416 2ae04276c51f11eda70770f4081293b7 ""
-  "prelim_paper.aux" 1713468387 4710 93be94b3c8000f9ce8b442c0fa31087b "pdflatex"
+  "prelim_paper.aux" 1713835129 4889 e60e432c2ec459b07d67e95b12b4e20f "pdflatex"
   (generated)
   "prelim_paper.bbl"
   "prelim_paper.blg"
   (rewritten before read)
-["pdflatex"] 1713468386 "prelim_paper.tex" "prelim_paper.pdf" "prelim_paper" 1713468387 0
+["pdflatex"] 1713835128 "prelim_paper.tex" "prelim_paper.pdf" "prelim_paper" 1713835129 0
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1704400182 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1704400182 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1704400182 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -46,6 +46,8 @@
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1704400182 1116 933a60c408fc0a863a92debe84b2d294 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1704400182 1120 8b7d695260f3cff42e636090a8002094 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmti12.tfm" 1704400182 1484 ed72f8f5cf654cda15ecc8e32bfcbee5 ""
+  "/usr/share/texmf-dist/fonts/tfm/public/cm/cmti7.tfm" 1704400182 1492 86331993fe614793f5e7e755835c31c5 ""
+  "/usr/share/texmf-dist/fonts/tfm/public/cm/cmti8.tfm" 1704400182 1504 1747189e0441d1c18f3ea56fafc1c480 ""
   "/usr/share/texmf-dist/fonts/tfm/public/latex-fonts/lasy10.tfm" 1704400182 520 82a3d37183f34b6eb363a161dfc002c2 ""
   "/usr/share/texmf-dist/fonts/tfm/public/latex-fonts/lasy5.tfm" 1704400182 520 d082ac03a1087bc1ec2a06e24a9f68c0 ""
   "/usr/share/texmf-dist/fonts/tfm/public/latex-fonts/lasy6.tfm" 1704400182 520 4889cce2180234b97cad636b6039c722 ""
@@ -158,11 +160,11 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1704400182 40684 9b9ec0b4288972636ff6a3b9c4238efc ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1708717204 4534741 2466256d3ef422205b04f4d38ef06c10 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1708717184 6891337 32ce261ef4709a9d73fdb05ca43f5545 ""
-  "prelim_paper.aux" 1713468387 4710 93be94b3c8000f9ce8b442c0fa31087b "pdflatex"
-  "prelim_paper.bbl" 1713468320 2305 070009855233be75e7a106c870f6e842 "bibtex prelim_paper"
-  "prelim_paper.out" 1713468387 1894 d1830d94724e9cf38cb8513d996f592b "pdflatex"
-  "prelim_paper.tex" 1713468385 27016 95c9c7a8c439fa5fd9ee8f034322caa1 ""
-  "tables/tpdcsim_mean.tex" 1713227621 272 d8f476ef49a39f8e10b0db4a96b147c5 ""
+  "prelim_paper.aux" 1713835129 4889 e60e432c2ec459b07d67e95b12b4e20f "pdflatex"
+  "prelim_paper.bbl" 1713835128 2305 070009855233be75e7a106c870f6e842 "bibtex prelim_paper"
+  "prelim_paper.out" 1713835129 1894 d1830d94724e9cf38cb8513d996f592b "pdflatex"
+  "prelim_paper.tex" 1713835127 30016 7ebbf95c1de868018ba593ffbb784e82 ""
+  "tables/tpdcsim_mean.tex" 1713621431 268 ca856fb50bbfe8d639367a49a80c0a55 ""
   (generated)
   "prelim_paper.aux"
   "prelim_paper.log"
