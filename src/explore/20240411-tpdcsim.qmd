@@ -274,6 +274,7 @@ dc_poptots <- function(p1_df, p2_df, pop_obs, ...) {
     entropy <- "EL"
   }
 
+  # TODO: I am not sure if d_vec is correct
   d_vec <- 1 / (p2_df$pi2 * p2_df$pi1)
   if (entropy == "EL") {
     gdi <- -1 / d_vec
@@ -354,25 +355,48 @@ dc_esttots <- function(p1_df, p2_df, pop_obs, ...) {
   dc_w_alt <- solveEL(cbind(samp_X, gdi), 1 / p2_df$pi2, pop_est, acc2)
   dc_w <- dc_w_alt
 
+  if (any(is.na(dc_w))) {
+    return(list(theta = NA, Var = NA))
+  }
+
   # Mean Estimation
   theta <- sum(p2_df$Y * dc_w) / pop_obs
 
   # Variance Estimation
-  ex_var_mat <- matrix(nrow = 2, ncol = 2)
-  ex_var_mat[1, 1] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1^2)
-  ex_var_mat[1, 2] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1 * p1_df$X2)
-  ex_var_mat[2, 1] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1 * p1_df$X2)
-  ex_var_mat[2, 2] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X2^2)
+  # ex_var_mat <- matrix(nrow = 2, ncol = 2)
+  # ex_var_mat[1, 1] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1^2)
+  # ex_var_mat[1, 2] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1 * p1_df$X2)
+  # ex_var_mat[2, 1] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X1 * p1_df$X2)
+  # ex_var_mat[2, 2] <- sum((1 / p1_df$pi1^2 - 1 / p1_df$pi1) * p1_df$X2^2)
 
-  Pi_dc <- diag(1 - 1 / d_vec) * (dc_w / pop_obs)^2
+  # Pi_dc <- diag(1 - 1 / d_vec) * (dc_w / pop_obs)^2
   z_dc <- model.matrix(~1 + p2_df$X1 + p2_df$X2 + gdi)
-  gam_dc <- 
-    solve(t(z_dc) %*% diag(gpinv) %*% z_dc, t(z_dc) %*% diag(gpinv) %*% p2_df$Y)
-  vhat <- 
-  (p2_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(p2_df$Y - t(gam_dc) %*% t(z_dc)) +
-  (gam_dc[2:3] %*% ex_var_mat %*% gam_dc[2:3] / pop_obs^2)
+  # gam_dc <- 
+  #   solve(t(z_dc) %*% diag(gpinv) %*% z_dc, t(z_dc) %*% diag(gpinv) %*% p2_df$Y)
+  # vhat <- 
+  # (p2_df$Y - t(gam_dc) %*% t(z_dc)) %*% Pi_dc %*% t(p2_df$Y - t(gam_dc) %*% t(z_dc)) +
+  # (gam_dc[2:3] %*% ex_var_mat %*% gam_dc[2:3] / pop_obs^2)
 
-  # FIXME: Change variance estimation to linearization estimate
+  phi_est <- 
+    base::solve(t(z_dc) %*% diag(gpinv) %*% z_dc, t(z_dc) %*% (p2_df$Y * gpinv))
+
+  p12_df <- 
+    left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
+    mutate(del2 = ifelse(is.na(del2), 0, 1))
+
+  pred12 <- 
+  model.matrix(~1 + p12_df$X1 + p12_df$X2 + I(-1/(p12_df$pi2 + p12_df$pi1))) %*%
+    phi_est 
+
+  model.matrix(~1 + p12_df$X1 + p12_df$X2 + I(-1/(p12_df$pi2 + p12_df$pi1))) %>%
+    head
+  pred2 <- 
+  model.matrix(~1 + p2_df$X1 + p2_df$X2 + I(-1/(p2_df$pi2 + p2_df$pi1))) %*%
+    phi_est
+  eta <- pred12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - pred12)
+  v1 <- sum((1 - p12_df$pi1) / p12_df$pi1^2 * eta^2)
+  v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * (1 / p2_df$pi2 - 1) * (p2_df$Y - pred2)^2)
+  vhat <- (v1 + v2) / pop_obs^2
 
   return(list(theta = theta, Var = as.numeric(vhat)))
 }
@@ -402,8 +426,6 @@ mc_res <- foreach(iter=1:B_sims,
 
   pistar <- pi_star(p1_df, p2_df, nrow(pop_df), pop_df = pop_df)
   tpreg <- tp_reg(p1_df, p2_df, nrow(pop_df))
-  # FIXME: GEcalib is not working. It produces results with very high
-  # values of the function.
   dcpop <- 
     dc_poptots(
       p1_df,
@@ -486,5 +508,9 @@ mc_res %>%
 mc_res %>%
   filter(Est == "dcpop") %>%
   arrange(desc(Var))
+
+mc_res %>%
+  filter(Est == "dcpop") %>%
+  arrange(desc(Theta))
 
 ```
