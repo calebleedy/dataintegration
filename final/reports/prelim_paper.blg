@@ -6,43 +6,43 @@ Database file #1: references.bib
 Warning--no number and no volume in randles1982asymptotic
 You've used 10 entries,
             2861 wiz_defined-function locations,
-            676 strings with 6176 characters,
-and the built_in function-call counts, 6156 in all, are:
-= -- 528
+            673 strings with 6072 characters,
+and the built_in function-call counts, 6026 in all, are:
+= -- 506
 > -- 373
 < -- 0
 + -- 104
 - -- 138
-* -- 507
-:= -- 1144
+* -- 488
+:= -- 1133
 add.period$ -- 29
 call.type$ -- 10
-change.case$ -- 63
+change.case$ -- 62
 chr.to.int$ -- 10
 cite$ -- 11
 duplicate$ -- 176
-empty$ -- 413
+empty$ -- 403
 format.name$ -- 154
-if$ -- 1113
+if$ -- 1084
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 11
+missing$ -- 12
 newline$ -- 52
 num.names$ -- 100
-pop$ -- 45
+pop$ -- 49
 preamble$ -- 1
 purify$ -- 125
 quote$ -- 0
-skip$ -- 188
+skip$ -- 189
 stack$ -- 0
-substring$ -- 383
-swap$ -- 56
+substring$ -- 352
+swap$ -- 55
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 180
+type$ -- 170
 warning$ -- 1
-while$ -- 110
+while$ -- 108
 width$ -- 0
 write$ -- 130
 (There was 1 warning)

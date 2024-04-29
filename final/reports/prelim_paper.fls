@@ -910,6 +910,10 @@ INPUT ./tables/tpdcsim_var.tex
 INPUT tables/tpdcsim_var.tex
 INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmti8.tfm
 INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmti7.tfm
+INPUT ./tables/nndcsim_mean.tex
+INPUT tables/nndcsim_mean.tex
+INPUT ./tables/nndcsim_mean.tex
+INPUT tables/nndcsim_mean.tex
 INPUT ./prelim_paper.bbl
 INPUT prelim_paper.bbl
 INPUT ./prelim_paper.bbl

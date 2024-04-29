@@ -277,7 +277,7 @@ dc_ybar <-
     T1 <- c(nrow(pop_df),
             sum(p1_df$X1 * qi / p1_df$pi1),
             sum(p1_df$X2 * qi / p1_df$pi1),
-            sum(gdi1 * qi / p1_df$pi1))
+            sum(gdip * qi)) # NOTE: We do NOT want to estimate gdi
   } else {
     T1 <- c(nrow(pop_df),
             sum(pop_df$X1 * qi),

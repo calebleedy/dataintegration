@@ -852,7 +852,16 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 \begin{itemize}
   \item[1.] HT-estimator: $\hat Y_{HT} = N^{-1} \sum_{i \in A_2}
     \frac{y_i}{\pi_{2i}},$
-  \item[2.] Regression estimator (Reg): (FIXME)
+  \item[2.] Regression estimator (Reg): Let $\hat Y_{NN, reg} = \hat Y_{HT} + (\hat
+    X_c - \hat X_{2, HT}) \hat \beta_2$ where $\hat Y_{HT} = \sum_{i \in A_2} d_{2i}
+    y_i$, $\hat X_c = W \hat X_{1, HT} + (1 - W)\hat X_{2, HT}$, $W = n_{1,eff}
+    / (n_{1,eff} + n_{2, eff})$, $\hat X_{1, HT} = \sum_{i \in A_1} d_{1i} x_{i}$,
+    $\hat X_{2, HT} = \sum_{i \in A_2} d_{2i} x_{i}$ and 
+
+    $$ \hat \beta_2 = \left(\sum_{i \in A_2} x_i x_i^T\right)^{-1} \sum_{i \in
+    A_2} x_i y_i.$$
+
+    Then $\hat{\bar Y}_{NN, reg} = \hat Y_{NN, reg} / N$.
   \item[3.] Debiased Calibration with Population Constraints (DC-Pop): This 
     solves 
 
@@ -867,8 +876,26 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 \end{itemize}
 
 In addition to estimating the mean parameter $\bar Y_N$, we also construct
-variance estimates $\hat V(\hat Y)$ for each estimate $\hat Y$. For each
-approach we give the variance estimate in Table~\ref{tab:varforms}.
+variance estimates $\hat V(\hat Y)$ for each estimate $\hat Y$.
+% For each approach we give the variance estimate in Table~\ref{tab:varforms2}.
+
+We run the simulation $1000$ times for each of these methods and compute the
+Bias ($E[\hat Y] - \bar Y_N$), the RMSE ($\sqrt{\Var(\hat Y - \bar Y_N)}$), a 95\%
+empirical confidence interval ($\sum_{b = 1}^{1000} |\hat Y^{(b)} - \bar Y_N| \leq 
+\Phi(0.975)\sqrt{\hat V(\hat Y^{(b)})^{(b)}}$), and a T-test that assesses the
+unbiasedness of each estimator where $\hat Y^{(b)}$ is the result from the $b$th
+simulation replicate. The results are in Table~\ref{tab:nndc-mean}.
+
+\begin{table}[ht!]
+  \centering
+\input{tables/nndcsim_mean.tex}
+% This table was generated from ../../src/explore/proto-dctpmcmc.R
+\caption{This table shows the results of Simulation Study 2. It displays the
+Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+unbiasedness of each estimator for the estimators: HT, Reg, DC-Pop, and
+DC-Est.}
+\label{tab:nndc-mean}
+\end{table}
 
 
 \section{Topic 3: Multi-source Two-Phase Sampling}

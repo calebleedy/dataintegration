@@ -200,6 +200,170 @@ reg_est <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
   return(list(theta = theta, v_hat = as.numeric(v_hat)))
 }
 
+#' This  function does the debiased calibration
+#'
+#' @param zmat - A n x p matrix
+#' @param w1i - A vector of length n
+#' @param d2i - A vector of length n
+#' @param T1 - A vector of length p
+#' @param qi - A scaler or a vector of length n
+#' @param entropy - One of "EL", "ET"
+solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
+
+  f <- function(lam, zmat, w1i, d2i, T1, qi, entropy, returnw = FALSE) {
+
+    if (entropy == "EL") {
+      w <- -d2i / drop(zmat %*% lam)
+    } else if (entropy == "ET") {
+      w <- d2i * exp(drop(zmat %*% lam))
+    } else {
+      stop("We only accept entropy of EL or ET.")
+    }
+
+    if (returnw) {
+      return(w)
+    } else {
+      return(drop((w * w1i * qi) %*% zmat) - T1)
+    }
+  }
+
+  j <- function(lam, zmat, w1i, d2i, T1, qi, entropy) {
+    if (entropy == "EL") {
+      res <- t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
+    } else if (entropy == "ET") {
+      res <- t(zmat) %*% diag((w1i * qi * d2i) * exp(drop(zmat %*% lam))) %*% zmat
+    }
+
+    return(res)
+  }
+
+  init <- c(rep(0, ncol(zmat) - 1), 1)
+  res <- 
+  nleqslv(init, f, jac = j, zmat = zmat, w1i = w1i, d2i = d2i,
+          T1 = T1, qi = qi, entropy = entropy,
+          method = "Newton", control = list(maxit = 1e5, allowSingular = TRUE))
+
+  resw <- f(res$x, zmat, w1i, d2i, T1, qi, entropy, returnw = TRUE)
+
+  if (!(res$termcd %in% c(1))) {
+    return(NA)
+  }
+
+  return(resw)
+
+}
+
+dc_nn_ybar <- 
+  function(p1_df,
+           p2_df,
+           pop_df,
+           qi = 1,
+           entropy = "EL",
+           estT1 = TRUE,
+           sampling = "srs-poisson") {
+
+  d_vec <- 1 / (p2_df$pi2)
+  if (entropy == "EL") {
+    gdi <- -1 / d_vec
+    gdi1 <- -1 / (1 / p1_df$pi2)
+    gdip <- -1 / (1 / pop_df$pi2)
+    gpinv <- d_vec^2
+    gdi12 <- "-1 / d2i"
+  } else if (entropy == "ET") {
+    gdi <- log(d_vec)
+    gdi1 <- log(1 / p1_df$pi2)
+    gdip <- log(1 / pop_df$pi2)
+    gpinv <- d_vec
+    gdi12 <- "log(d2i)"
+  } else {
+    stop("This type of entropy has not yet been implemented.")
+  }
+
+  samp_X <- cbind(rep(1, nrow(p2_df)), as.matrix(select(p2_df, X1, X2)))
+  zmat <- cbind(samp_X, gdi)
+  w1i <- 1
+  d2i <- 1 / p2_df$pi2
+
+  if (estT1) {
+    v_poisson <- sum((1 - p2_df$pi2) / p2_df$pi2^2 * p2_df$Y^2) / nrow(pop_df)^2
+    v_srs <- (1 / nrow(p2_df) - 1 / nrow(pop_df)) * var(p2_df$Y)
+    d_eff <- v_poisson / v_srs
+    n2_eff <- nrow(p2_df) / d_eff
+    n1_eff <- nrow(p1_df)
+
+    x1_hat <- 
+      c(sum(p1_df$X1 * qi / p1_df$pi1),
+        sum(p1_df$X2 * qi / p1_df$pi1))
+
+    x2_hat <- 
+      c(sum(p2_df$X1 * qi / p2_df$pi2),
+        sum(p2_df$X2 * qi / p2_df$pi2))
+
+    w <- n1_eff / (n1_eff + n2_eff)
+    xc_hat <- (n1_eff * x1_hat + n2_eff * x2_hat) / (n1_eff + n2_eff)
+
+    T1 <- c(nrow(pop_df),
+            xc_hat[1],
+            xc_hat[2],
+            sum(gdip * qi))
+  } else {
+    w <- 1
+    T1 <- c(nrow(pop_df),
+            sum(pop_df$X1 * qi),
+            sum(pop_df$X2 * qi),
+            sum(gdip * qi))
+  }
+
+  dc_w <- solveGE(zmat, w1i, d2i, T1, qi, entropy)
+
+  # Mean Estimation
+  theta <- sum(p2_df$Y * dc_w * w1i) / nrow(pop_df)
+
+  z_dc <- model.matrix(~1 + p2_df$X1 + p2_df$X2 + gdi)
+  gam_dc <- 
+    solve(t(z_dc) %*% diag(d2i * gpinv * qi) %*% z_dc,
+          t(z_dc) %*% diag(d2i * gpinv) %*% p2_df$Y)
+
+  if (sampling == "srs-poisson") {
+
+    if (estT1) {
+      # Variance Estimation
+      coefs <- as.numeric(gam_dc)
+      u_mat <- 
+      matrix(c(rep(1, nrow(p2_df)), p2_df$X1 * w, p2_df$X2 * w, gdi * qi), ncol = 4)
+      eps <- (p2_df$Y - drop(u_mat %*% coefs))
+      var_x <- 
+      (1/nrow(p1_df) - 1/nrow(pop_df)) * var(matrix(c(p1_df$X1, p1_df$X2), ncol = 2))
+
+      v1 <- 
+      w^2 * matrix(coefs[2:3], nrow = 1) %*% var_x %*% matrix(coefs[2:3], ncol = 1)
+      v2 <- sum((1 - p2_df$pi2) / p2_df$pi2^2 * eps^2) / nrow(pop_df)^2
+
+      cov_xy <- c(sum((1 - p2_df$pi2) / p2_df$pi2^2 * coefs[2] * 
+                     (n2_eff) / (n1_eff + n2_eff) * p2_df$X1 * eps) / nrow(pop_df)^2,
+                  sum((1 - p2_df$pi2) / p2_df$pi2^2 * coefs[3] * 
+                     (n2_eff) / (n1_eff + n2_eff) * p2_df$X3 * eps) / nrow(pop_df)^2)
+      v3 <- sum(cov_xy)
+
+      v_hat <- v1 + v2 + v3
+
+    } else {
+      coefs <- as.numeric(gam_dc)
+      u_mat <- 
+      matrix(c(rep(1, nrow(p2_df)), p2_df$X1, p2_df$X2, gdi * qi), ncol = 4)
+      eps <- (p2_df$Y - drop(u_mat %*% coefs))
+      v2 <- sum((1 - p2_df$pi2) / p2_df$pi2^2 * eps^2) / nrow(pop_df)^2
+
+      v_hat <- v2
+
+    }
+
+  } else {
+    v_hat <- NA
+  }
+
+  return(list(theta = theta, v_hat = as.numeric(v_hat)))
+}
 
 ```
 
@@ -240,11 +404,13 @@ mc_res <-
 
     ht <- ht_est(p1_df, p2_df, nrow(upop_df))
     reg <- reg_est(p1_df, p2_df, nrow(upop_df))
+    dcpop <- dc_nn_ybar(p1_df, p2_df, upop_df, entropy = "EL", estT1 = FALSE)
+    dcest <- dc_nn_ybar(p1_df, p2_df, upop_df, entropy = "EL", estT1 = TRUE)
 
     return(
-      tibble(Est = c("HT", "Reg"),
-             Theta = c(ht[[1]], reg[[1]]),
-             Var = c(ht[[2]], reg[[2]]),
+      tibble(Est = c("HT", "Reg", "dcpop", "dcest"),
+             Theta = c(ht[[1]], reg[[1]], dcpop[[1]], dcest[[1]]),
+             Var = c(ht[[2]], reg[[2]], dcpop[[2]], dcest[[2]]),
              Iter = iter)
     )
   } %>% bind_rows()
@@ -257,6 +423,9 @@ stopCluster(clust)
 ```{r}
 #| label: analyze results
 
+# Check for failures
+filter(mc_res, is.na(Theta))
+
 # Analyze Mean
 mc_res %>%
   mutate(err = Theta - true_theta) %>%
@@ -268,15 +437,18 @@ mc_res %>%
             sdest = sd(Theta, na.rm = TRUE)) %>%
   ungroup() %>%
   mutate(Ttest = abs(Bias) / sqrt(sdest^2 / B_sims)) %>%
-  select(-sdest) 
-
-
-%>%
+  select(-sdest) %>%
   mutate(Ind = case_when(
     Est == "dcest" ~ 4,
     Est == "dcpop" ~ 3,
     Est == "Reg" ~ 2,
     Est == "HT" ~ 1)
+  ) %>%
+  mutate(Est = case_when(
+    Est == "dcest" ~ "DC-Est",
+    Est == "dcpop" ~ "DC-Pop",
+    Est == "HT" ~ "HT",
+    Est == "Reg" ~ "Reg")
   ) %>%
   arrange(Ind) %>%
   select(Est, Bias, RMSE, EmpCI, Ttest) 
@@ -293,9 +465,7 @@ mc_res %>%
             EstVar = mean(Var, na.rm = TRUE),
             VarVar = var(Var, na.rm = TRUE)) %>%
   ungroup() %>%
-  mutate(Ttest = abs(MCVar - EstVar) / sqrt(VarVar / B_sims)) 
-
-%>%
+  mutate(Ttest = abs(MCVar - EstVar) / sqrt(VarVar / B_sims)) %>%
   mutate(Ind = case_when(
     Est == "dcest" ~ 4,
     Est == "dcpop" ~ 3,

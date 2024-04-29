@@ -30,14 +30,14 @@ Kim, J.~K. (2024).
 \newblock {\em Statistics in Survey Sampling}.
 \newblock arXiv.
 
+\bibitem[\protect\citeauthoryear{Kish}{Kish}{1965}]{kish1965survey}
+Kish, L. (1965).
+\newblock {\em Survey Sampling}.
+\newblock John Wiley \& Sons, Inc.
+
 \bibitem[\protect\citeauthoryear{Kwon, Kim, and Qiu}{Kwon et~al.}{2024}]{kwon2024debiased}
 Kwon, Y., J.~K. Kim, and Y.~Qiu (2024).
 \newblock Debiased calibration estimation using generalized entropy in survey sampling.
-
-\bibitem[\protect\citeauthoryear{Merkouris}{Merkouris}{2004}]{merkouris2004combining}
-Merkouris, T. (2004).
-\newblock Combining independent regression estimators from multiple surveys.
-\newblock {\em Journal of the American Statistical Association\/}~{\em 99\/}(468), 1131--1139.
 
 \bibitem[\protect\citeauthoryear{Narain}{Narain}{1951}]{narain1951sampling}
 Narain, R. (1951).
