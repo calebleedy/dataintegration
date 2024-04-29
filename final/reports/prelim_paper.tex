@@ -540,17 +540,18 @@ probability of $i \in A_1$ and $\pi_{2i} = \Pr(i \in A_2)$.
 %  two-phase sampling. Then, our goal is to compute an estimator of $X$ from
 %  $A_c$. The second-phase sample would be $A_2$. 
 %}
-We can combine these estimates to get
-$\hat X_c = W \hat X_1 + (1 - W)\hat X_2$ for some matrix $W$ (see
-\cite{merkouris2004combining} for the optimal choice of $W$), and can then define
-a regression estimator as
+We can combine these estimates using the effective sample size 
+(\cite{kish1965survey}) to get
+$\hat X_c = (n_{1, eff} \hat X_1 + n_{2, eff}\hat X_2) / (n_{1, eff} + n_{2,
+eff})$ where $n_{1, eff}$ and $n_{2, eff}$ are the effective sample size for
+$A_1$ and $A_2$ respectively. Then we can define a regression estimator as
 
 $$
 \hat Y_{NN, reg} = \hat Y_2 + (\hat X_c - \hat X_2)^T \hat \beta_q = 
 \hat Y_2 + (\hat X_1 - \hat X_2)^T W^T\hat \beta_q 
 $$
 
-where % \textcolor{red}{(we may need transpose in $W$)}
+where, $W = n_{1, eff} / (n_{1, eff} + n_{2, eff})$, and
 
 $$\hat \beta_q = \left(\sum_{i \in A_2} \frac{x_i x_i^T}{q_i}\right)^{-1}
 \sum_{i \in A_2} \frac{x_i y_i}{q_i} \text{ and }\hat Y_2 = \sum_{i \in A_2}
@@ -559,7 +560,7 @@ d_{2i} y_i. $$
 Since the samples $A_1$ and $A_2$ are independent, 
 
 $$V(\hat Y_{NN, reg}) = V\left(\sum_{i \in A_2} \frac{1}{\pi_{2i}}(y_i -
-x_i^TW\beta^*_q)\right) + (\beta^*_q)^T W^T V(\hat X_1) W \beta_q^*$$
+x_i^TW\beta^*_q)\right) + (\beta^*_q)^T W V(\hat X_1) W \beta_q^*$$
 
 where $\beta_q^*$ is the probability limit of $\hat \beta_q$. Like the two phase
 sample this regression estimator can be viewed as the solution to the following
