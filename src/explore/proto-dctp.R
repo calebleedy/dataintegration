@@ -197,12 +197,12 @@ tp_reg <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
 #' @param entropy - One of "EL", "ET"
 solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
 
-  f <- function(lam, zmat, w1i, d2i, T1, qi, entropy, returnw = FALSE) {
+  f <- function(lam, zmat, w1i, T1, qi, entropy, returnw = FALSE) {
 
     if (entropy == "EL") {
-      w <- -d2i / drop(zmat %*% lam)
+      w <- -1 / drop(zmat %*% lam)
     } else if (entropy == "ET") {
-      w <- d2i * exp(drop(zmat %*% lam))
+      w <- exp(drop(zmat %*% lam))
     } else {
       stop("We only accept entropy of EL or ET.")
     }
@@ -214,11 +214,11 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
     }
   }
 
-  j <- function(lam, zmat, w1i, d2i, T1, qi, entropy) {
+  j <- function(lam, zmat, w1i, T1, qi, entropy) {
     if (entropy == "EL") {
-      res <- t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
+      res <- t(zmat) %*% diag((w1i * qi) / drop(zmat %*% lam)^2) %*% zmat
     } else if (entropy == "ET") {
-      res <- t(zmat) %*% diag((w1i * qi * d2i) * exp(drop(zmat %*% lam))) %*% zmat
+      res <- t(zmat) %*% diag((w1i * qi) * exp(drop(zmat %*% lam))) %*% zmat
     }
 
     return(res)
@@ -226,11 +226,11 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
 
   init <- c(rep(0, ncol(zmat) - 1), 1)
   res <- 
-  nleqslv(init, f, jac = j, zmat = zmat, w1i = w1i, d2i = d2i,
+  nleqslv(init, f, jac = j, zmat = zmat, w1i = w1i,
           T1 = T1, qi = qi, entropy = entropy,
           method = "Newton", control = list(maxit = 1e5, allowSingular = TRUE))
 
-  resw <- f(res$x, zmat, w1i, d2i, T1, qi, entropy, returnw = TRUE)
+  resw <- f(res$x, zmat, w1i, T1, qi, entropy, returnw = TRUE)
 
   if (!(res$termcd %in% c(1))) {
     return(NA)

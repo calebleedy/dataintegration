@@ -278,8 +278,8 @@ where $\hat \lambda$ is the solution to
 
   where
 
-  $$\hat Y_{\ell}(\hat \lambda, \phi^*) = \hat Y_{DCE}(\hat \lambda) + 
-  \left(\sum_{i \in A_1} w_{1i} z_i q_i - \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(\hat
+  $$\hat Y_{\ell}(\lambda, \phi^*) = \hat Y_{DCE}(\hat \lambda) + 
+  \left(\sum_{i \in A_1} w_{1i} z_i q_i - \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(
   \lambda) z_i q_i\right)\phi^*$$
 
   and
@@ -382,7 +382,8 @@ X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
 X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
 \varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
 Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
-\pi_{1i} &= \min(\Phi_3(-x_{3i} - 2), 0.7) \\
+%\pi_{1i} &= \min(\Phi_3(-x_{3i} - 2), 0.7) \\
+\pi_{1i} &= n_1 / N \\
 \pi_{2i|1} &= \min(\Phi_3(-x_{1i} + 1), 0.9).
 \end{aligned}
 $$
@@ -394,11 +395,12 @@ where $\Phi_3$ is the CDF of a t-distribution with 3 degrees of freedom.
 %In this case, your second-phase sampling is essentially equivalent to the simple
 %random sampling. }
 This is a two-phase extension of the setup in \cite{kwon2024debiased}. We
-consider a finite population of size $N = 10,000$ with both the Phase 1 and
-Phase 2 sampling occuring under Poisson (Bernoulli) sampling. This yields a
+consider a finite population of size $N = 10,000$ with the Phase 1 sampling
+being a simple random sample (SRS) and the 
+Phase 2 sampling occuring under Poisson sampling. This yields a
 Phase 1 sample
-size of $E[n_1] \approx 1100$ and a Phase 2 sample size of
-$E[n_2] \approx 300$. In the Phase 1 sample, we observe 
+size of $n_1 = 1000$ and a Phase 2 sample size of
+$E[n_2] \approx 267$. In the Phase 1 sample, we observe 
 $(X_1, X_2)$ while in the Phase 2 sample we observe $(X_1, X_2, Y)$. This
 simulation does not deal with model misspecification, and we compare the
 proposed method for the parameter $\bar Y_N$ with four approaches:
@@ -414,6 +416,8 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
     and $\bf x_i = (x_{1i}, x_{2i})^T$,
     % \textcolor{red}{Dr. Kim, should I modify the simulation so that the
     % regression estimator also includes $g(\pi_{2i|1}^{-1})$ as a covariate?}
+
+    \textcolor{red}{You should include an intercept in $\bf x_i$. }
   \item[3.] Debiased Calibration with Population Constraints (DC-Pop): This 
     solves 
 
@@ -437,27 +441,30 @@ approach we give the variance estimate in Table~\ref{tab:varforms}.
     \toprule
     Estimator & Estimated Variance & Notes \\
     \midrule
-    $\pi^*$ & $N^{-2} \sum_{i \in A_2} \left(\pi_{2i|1}^{-2} - \pi_{2i|1}^{-1}\right)
-    y_i^2 $ & \\
-    TP-Reg  & 
-    {\scriptsize $N^{-2}\left(\sum\limits_{i \in A_1} 
-        \left(\frac{1 - \pi_{1i}}{\pi_{1i}^{2}}\right) \eta_i^2 
-        + \sum\limits_{i \in A_2} \frac{1}{\pi_{1i} \pi_{2i|1}}(d_{2i|1} - 1)
-        (y_i - \bf x_i' \hat \beta)^2 \right)$}
-    & 
-      {\scriptsize$\eta_i = \bf x_i \hat \beta + \frac{\delta_{2i}}{\pi_{2i|1}}(y_i - 
-      \bf x_i \hat \beta)$} \\
-      %$\hat \beta = \left(\sum_{i \in A_2} \bf x_i \bf x_i'\right)^{-1} \sum_{i \in A_2} \bf x_i y_i$ \\
-    DC-Pop  & {\scriptsize$\sum\limits_{i \in A_2} c_i (y_i - q_i z_i \hat \gamma)^2 
-              (w_{1i} \hat w_{2i|1}(\hat \lambda) / N)^2$}
-            & {\scriptsize$c_i = ((1 - \pi_{1i}) \pi_{2i|1} + (1 - \pi_{2i|1}))$} \\
-      DC-Est  & 
-      \scriptsize{$N^{-2}\left(\sum\limits_{i \in A_1} \left(\frac{1 -
-        \pi_{1i}}{\pi_{1i}^2}\right) \eta_i^2 + \sum\limits_{i \in A_2}
-          \left(\frac{1}{\pi_{1i}\pi_{2i|1}}\right) (d_{2i|1} - 1) (y_i - q_i
-          z_i \hat \phi)^2\right)$} & 
-      {\scriptsize $\eta_i = q_i z_i \hat \phi +
-          \frac{\delta_{2i|1}}{\pi_{2i|1}}(y_i - q_i z_i \hat \phi)$} \\
+    $\pi^*$ 
+    & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_Y + 
+      \sum\limits_{i \in A_2} \frac{w_{1i}^2}{N^2} 
+        \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}y_i^2$}
+    & {\scriptsize$\hat s^2_Y = \frac{1}{n_2 - 1}\sum\limits_{i \in A_2} (y_i -
+    \bar y_i)^2$} \\
+    TP-Reg  
+    & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_\eta + 
+      \sum\limits_{i \in A_2} \frac{w_{1i}}{N^2} 
+        \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
+    & {\scriptsize$ \eta_i = x_i'\beta + \delta_{2i} w_{2i|1}\varepsilon_i,\;
+        \varepsilon_i = (y_i - x_i' \beta)$} \\
+    DC-Pop  
+    & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_\varepsilon + 
+      \sum\limits_{i \in A_2} \frac{w_{1i}}{N^2} 
+        \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
+    & {\scriptsize$\eta_i = z_i' \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
+        \varepsilon_i = (y_i - z_i'\phi)$} \\
+    DC-Est  
+    & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_\eta + 
+      \sum\limits_{i \in A_2} \frac{w_{1i}}{N^2} 
+        \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
+    & {\scriptsize$\eta_i = z_i' \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
+        \varepsilon_i = (y_i - z_i' \phi)$} \\
     \bottomrule
   \end{tabular}
   \caption{This table gives the formulas for each variance estimator used in
@@ -466,14 +473,8 @@ estimatator see Appendix A.}
   \label{tab:varforms}
 \end{table}
 
-\textcolor{red}{Dr. Kim, please see Appendix A for my derivation of the variance
-DC-Pop.}
+%\textcolor{red}{I am not sure about the variance estimation formula in Table 1. They are different from what we discussed before. I wonder whether you can make the sampling rate $n/N$ negligible so that the second term becomes insignificant. How about making $N=50,000$, $n_1=500$, and $n_2=200$?}
 
-%    Pi_dc <- 
-%      diag((1 - p2_df$pi1) * p2_df$pi2 + (1 - p2_df$pi2)) * 
-%      (w1i * dc_w / nrow(pop_df))^2
-%    err <- p2_df$Y - t(gam_dc) %*% t(z_dc) * qi
-%    vhat <- (err) %*% Pi_dc %*% t(err)
 
 We run the simulation $1000$ times for each of these methods and compute the
 Bias ($E[\hat Y] - \bar Y_N$), the RMSE ($\sqrt{\Var(\hat Y - \bar Y_N)}$), a 95\%
@@ -485,12 +486,28 @@ simulation replicate. The results are in Table~\ref{tab:tpdc-mean}.
 \begin{table}[ht!]
   \centering
 \input{tables/tpdcsim_mean.tex}
-% This table was generated from /src/explore/20240411-tpdcsim.qmd
+% This table was generated from ../../src/explore/proto-dctpmcmc.R
 \caption{This table shows the results of Simulation Study 1. It displays the
 Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
 unbiasedness of each estimator for the estimators: $\pi^*$, TP-Reg, DC-Pop, and
 DC-Est.}
 \label{tab:tpdc-mean}
+\end{table}
+
+\textcolor{red}{Dr. Kim is this confidence interval good enough? It seems
+slightly high for me.}
+
+\textcolor{red}{I also give the mean variance estimates, the Monte Carlo mean,
+as well as a test for bias.}
+\begin{table}[ht!]
+  \centering
+{\color{red} \input{tables/tpdcsim_var.tex} }
+% This table was generated from ../../src/explore/proto-dctpmcmc.R
+\caption{\textcolor{red}{This table shows the variance estimates from Simulation
+    Study 1. It displays the Monte Carlo variance of $\hat Y^{(b)}$, the average
+    estimated variance, the variance of the variance estimator, and a
+    t-statistic assessing the unbiasedness of each variance estimator.}}
+\label{tab:tpdc-var}
 \end{table}
 
 \section{Topic 2: Non-nested Two-Phase Sampling}
@@ -584,7 +601,8 @@ for $g(x) = G'(x)$ and a known choice of $q_i \in \mathbb{R}$.
 
 The difference
 between solving Equation~\ref{eq:nnopt} and Equation~\ref{eq:primal} is that the
-estimator $\hat X_{c}$ is estimated from the combined sample $A_c= A_1 \cup A_2$. Before using
+estimator $\hat X_{c}$ is estimated from the combined sample $A_c= A_1 \cup
+A_2$. Before using
 $\hat X_{c}$ in the debiased calibration estimator, we need to estimate it
 from the non-nested samples.
 
@@ -617,8 +635,14 @@ $$\hat T =
 $$
 
 
-\textcolor{red}{I am a little worried about the second term of $\hat{T}$. It is somewhat weird to assume that $T_g= \sum_{i \in U} g(d_{2i}) q_i$ is known. One simple way is to use a HT estimator  of $T_g$ from sample $A_2$. That is, use $\hat{T}_{g, {\rm HT}} = \sum_{i \in A_2} d_{2i} g( d_{2i}) q_i$ or even use a GREG estimator of $T_g$. 
-%I wonder we can assume that an unbiased estimator of $T_g$ is available from $A_c=A_1 \cup A_2$. That is, let's assume that we have $\hat{T}_c = W \hat{T}_1 + (1- W) \hat{T}_2$ as the estimator  for $T$. 
+\textcolor{red}{I am a little worried about the second term of $\hat{T}$. It is
+  somewhat weird to assume that $T_g= \sum_{i \in U} g(d_{2i}) q_i$ is known.
+  One simple way is to use a HT estimator  of $T_g$ from sample $A_2$. That is,
+  use $\hat{T}_{g, {\rm HT}} = \sum_{i \in A_2} d_{2i} g( d_{2i}) q_i$ or even
+  use a GREG estimator of $T_g$. 
+%I wonder we can assume that an unbiased estimator of $T_g$ is available from
+  %$A_c=A_1 \cup A_2$. That is, let's assume that we have $\hat{T}_c = W
+  %\hat{T}_1 + (1- W) \hat{T}_2$ as the estimator  for $T$. 
 }
 
 Differntiating with respect to $w_{2i}$ and setting this expression equal to

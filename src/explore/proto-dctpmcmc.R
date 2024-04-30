@@ -19,7 +19,7 @@ source("proto-dctp.R")
 
 B_sims <- 1000
 N_obs <- 10000
-n1_obs <- 1000
+# n1_obs <- 1000
 
 # ************
 # * Run MCMC *
@@ -109,7 +109,7 @@ mc_res %>%
 
 %>%
   knitr::kable("latex", booktabs = TRUE, escape = FALSE, digits = 3) %>%
-  cat(file = "tables/tpdcsim_mean.tex")
+  cat(file = paste0("tables/tpdcsim",  "_mean.tex"))
 
 # Analyze Variance
 mc_res %>%
@@ -136,7 +136,7 @@ mc_res %>%
 
 %>%
   knitr::kable("latex", booktabs = TRUE, escape = FALSE, digits = 4) %>%
-  cat(file = "tables/tpdcsim_var.tex")
+  cat(file = paste0("tables/tpdcsim", "_var.tex"))
 
 
 mc_res %>%

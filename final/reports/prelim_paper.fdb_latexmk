@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex prelim_paper"] 1714401714 "prelim_paper.aux" "prelim_paper.bbl" "prelim_paper" 1714401714 0
+["bibtex prelim_paper"] 1714489860 "prelim_paper.aux" "prelim_paper.bbl" "prelim_paper" 1714489861 0
   "./references.bib" 1714401620 9865 a2da132bc8b691209fbcafb6c45b6850 ""
   "/usr/share/texmf-dist/bibtex/bst/chicago/chicago.bst" 1704400182 37416 2ae04276c51f11eda70770f4081293b7 ""
-  "prelim_paper.aux" 1714401714 6838 d4ca209ec4899b87cb9eba0d2c4d99f5 "pdflatex"
+  "prelim_paper.aux" 1714489860 7273 c610ca56d1f2487267d89270f964e714 "pdflatex"
   (generated)
   "prelim_paper.bbl"
   "prelim_paper.blg"
   (rewritten before read)
-["pdflatex"] 1714401714 "prelim_paper.tex" "prelim_paper.pdf" "prelim_paper" 1714401714 0
+["pdflatex"] 1714489860 "prelim_paper.tex" "prelim_paper.pdf" "prelim_paper" 1714489861 0
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1704400182 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1704400182 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1704400182 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -64,6 +64,7 @@
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb" 1704400182 37912 77d683123f92148345f3fc36a38d9ab1 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb" 1704400182 37166 8ab3487cbe3ab49ebce74c29ea2418db ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1704400182 35469 70d41d2b9ea31d5d813066df7c99281c ""
+  "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb" 1704400182 36912 b448ef9ad9d7228ec3c6e71005136d55 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1704400182 35752 024fb6c41858982481f6968b5fc26508 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1704400182 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1704400182 32362 179c33bbf43f19adbb3825bb4e36e57a ""
@@ -77,6 +78,7 @@
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb" 1704400182 32626 4f5c1b83753b1dd3a97d1b399a005b4b ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb" 1704400182 36118 fad905eba93cff5bce1e185fe980a177 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb" 1704400182 30273 87a352d78b6810ae5cfdc68d2fb827b2 ""
+  "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb" 1704400182 35479 892d27442ef9ef29ce1ee57aa0e8a665 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1704400182 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
   "/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1704400182 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "/usr/share/texmf-dist/tex/generic/atbegshi/atbegshi.sty" 1704400182 24708 5584a51a7101caf7e6bbf1fc27d8f7b1 ""
@@ -160,13 +162,14 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1704400182 40684 9b9ec0b4288972636ff6a3b9c4238efc ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1708717204 4534741 2466256d3ef422205b04f4d38ef06c10 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1708717184 6891337 32ce261ef4709a9d73fdb05ca43f5545 ""
-  "prelim_paper.aux" 1714401714 6838 d4ca209ec4899b87cb9eba0d2c4d99f5 "pdflatex"
-  "prelim_paper.bbl" 1714401714 2377 b7261956d4e55bc1fcf823ff5d72557a "bibtex prelim_paper"
-  "prelim_paper.out" 1714401714 2282 99c76009956143b20d2c6e6d058bc686 "pdflatex"
-  "prelim_paper.tex" 1714401562 40067 10a68a4236835203d393da279574dd71 ""
+  "prelim_paper.aux" 1714489860 7273 c610ca56d1f2487267d89270f964e714 "pdflatex"
+  "prelim_paper.bbl" 1714489860 2377 b7261956d4e55bc1fcf823ff5d72557a "bibtex prelim_paper"
+  "prelim_paper.out" 1714489860 2282 99c76009956143b20d2c6e6d058bc686 "pdflatex"
+  "prelim_paper.tex" 1714489857 41627 331514c752665bc4e535e230bee7bb4d ""
   "tables/nndcsim_mean.tex" 1714401706 263 030972692ce387a2178e83be595ff76f ""
-  "tables/tpdcsim_mean.tex" 1714158041 272 2da6d0c309382b4e91d0ce1e34cd3722 ""
-  "tables/tpdcsim_var.tex" 1714159121 291 5fcabd8e49580906da0cd0e72b969430 ""
+  "tables/tpdcsim50000_mean.tex" 1714489210 268 5cfc78767f1a9d5c6a80480c85a65e0d ""
+  "tables/tpdcsim_mean.tex" 1714489216 272 547e9ddc67ea3996b2eb8d159d6b7ee9 ""
+  "tables/tpdcsim_var.tex" 1714489241 291 ae59aeebd087431cf6c1ca4e6b7795a9 ""
   (generated)
   "prelim_paper.aux"
   "prelim_paper.log"
