@@ -54,7 +54,7 @@ mc_res <-
   p2_df <- samps[[2]]
 
   pistar <- pi_star(p1_df, p2_df, N_obs)
-  tpreg <- tp_reg(p1_df, p2_df, N_obs)
+  tpreg <- tp_reg(p1_df, p2_df, upop_df)
   dcpop <- dc_ybar(p1_df, p2_df, upop_df, qi = 1, entropy = "EL", estT1 = FALSE)
   dcest <- dc_ybar(p1_df, p2_df, upop_df, qi = 1, entropy = "EL", estT1 = TRUE)
 

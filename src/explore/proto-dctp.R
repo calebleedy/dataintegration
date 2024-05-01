@@ -123,10 +123,15 @@ pi_star <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
 }
 
 #' This function implements the two-phase regression estimator
-tp_reg <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
+tp_reg <- function(p1_df, p2_df, pop_df, sampling = "srs-poisson") {
 
   # Step 1: Get beta
-  mod <- lm(Y ~ X1 + X2, data = p2_df)
+  
+  gpinv <- 1 / p2_df$pi2^2
+  p2_df <- p2_df %>%
+    mutate(gpinv = gpinv) %>%
+    mutate(weight_v = gpinv / pi1)
+  mod <- lm(Y ~ X1 + X2 + I(1 / pi2), weights = weight_v, data = p2_df)
 
   # Step 2: Predict and Get Variance
   if (sampling == "srs-srs") {
@@ -134,7 +139,7 @@ tp_reg <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
     theta <- mean(predict(mod, p1_df))
 
     vhat <-
-      (1 / n1 - 1 / pop_obs) * (mod$coefficients[2]^2 * var(p1_df$X1) + 
+      (1 / n1 - 1 / nrow(pop_df)) * (mod$coefficients[2]^2 * var(p1_df$X1) + 
       mod$coefficients[3]^2 * var(p1_df$X2)) +
       (1 / n2 - 1 / n1) * var(p2_df$Y - predict(mod, p2_df))
 
@@ -142,7 +147,7 @@ tp_reg <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
 
     theta <- 
       (sum(predict(mod, p1_df) / p1_df$pi1) + 
-      sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / pop_obs
+      sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / nrow(pop_df)
 
     p12_df <- 
       left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
@@ -154,13 +159,13 @@ tp_reg <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
     v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
              (1 / p2_df$pi2 - 1) * (p2_df$Y - predict(mod, p2_df))^2)
 
-    vhat <- (v1 + v2) / pop_obs^2
+    vhat <- (v1 + v2) / nrow(pop_df)^2
 
   } else if (sampling == "srs-poisson") {
 
     theta <- 
       (sum(predict(mod, p1_df) / p1_df$pi1) + 
-      sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / pop_obs
+      sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / nrow(pop_df)
 
     p12_df <- 
       left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
@@ -170,9 +175,9 @@ tp_reg <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
     eta <- pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - pred_12)
 
     var_eta <- var(eta[p12_df$del2 == 1])
-    v1 <- (1 / nrow(p1_df) - 1 / pop_obs) * var_eta
+    v1 <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var_eta
     v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
-             (1 / p2_df$pi2 - 1) * (p2_df$Y - predict(mod, p2_df))^2) / pop_obs^2
+             (1 / p2_df$pi2 - 1) * (p2_df$Y - predict(mod, p2_df))^2) / nrow(pop_df)^2
 
     vhat <- (v1 + v2)
 
