@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex prelim_paper"] 1714489860 "prelim_paper.aux" "prelim_paper.bbl" "prelim_paper" 1714489861 0
+["bibtex prelim_paper"] 1714828454 "prelim_paper.aux" "prelim_paper.bbl" "prelim_paper" 1714828455 0
   "./references.bib" 1714401620 9865 a2da132bc8b691209fbcafb6c45b6850 ""
   "/usr/share/texmf-dist/bibtex/bst/chicago/chicago.bst" 1704400182 37416 2ae04276c51f11eda70770f4081293b7 ""
-  "prelim_paper.aux" 1714489860 7273 c610ca56d1f2487267d89270f964e714 "pdflatex"
+  "prelim_paper.aux" 1714828454 6840 3bd312b5cc10bd9c0669acb958fbfd9d "pdflatex"
   (generated)
   "prelim_paper.bbl"
   "prelim_paper.blg"
   (rewritten before read)
-["pdflatex"] 1714489860 "prelim_paper.tex" "prelim_paper.pdf" "prelim_paper" 1714489861 0
+["pdflatex"] 1714828454 "prelim_paper.tex" "prelim_paper.pdf" "prelim_paper" 1714828455 0
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1704400182 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1704400182 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1704400182 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -162,14 +162,13 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1704400182 40684 9b9ec0b4288972636ff6a3b9c4238efc ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1708717204 4534741 2466256d3ef422205b04f4d38ef06c10 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1708717184 6891337 32ce261ef4709a9d73fdb05ca43f5545 ""
-  "prelim_paper.aux" 1714489860 7273 c610ca56d1f2487267d89270f964e714 "pdflatex"
-  "prelim_paper.bbl" 1714489860 2377 b7261956d4e55bc1fcf823ff5d72557a "bibtex prelim_paper"
-  "prelim_paper.out" 1714489860 2282 99c76009956143b20d2c6e6d058bc686 "pdflatex"
-  "prelim_paper.tex" 1714489857 41627 331514c752665bc4e535e230bee7bb4d ""
+  "prelim_paper.aux" 1714828454 6840 3bd312b5cc10bd9c0669acb958fbfd9d "pdflatex"
+  "prelim_paper.bbl" 1714828454 2377 b7261956d4e55bc1fcf823ff5d72557a "bibtex prelim_paper"
+  "prelim_paper.out" 1714828454 2282 99c76009956143b20d2c6e6d058bc686 "pdflatex"
+  "prelim_paper.tex" 1714828451 42271 298e6f2360fca177c443f7c889b44254 ""
   "tables/nndcsim_mean.tex" 1714401706 263 030972692ce387a2178e83be595ff76f ""
-  "tables/tpdcsim50000_mean.tex" 1714489210 268 5cfc78767f1a9d5c6a80480c85a65e0d ""
-  "tables/tpdcsim_mean.tex" 1714489216 272 547e9ddc67ea3996b2eb8d159d6b7ee9 ""
-  "tables/tpdcsim_var.tex" 1714489241 291 ae59aeebd087431cf6c1ca4e6b7795a9 ""
+  "tables/tpdcsim_mean.tex" 1714827818 370 827432c10845cc7584c7d912c26aa76c ""
+  "tables/tpdcsim_var.tex" 1714827818 394 fce99d77cfdc2a43c02f289affa614ff ""
   (generated)
   "prelim_paper.aux"
   "prelim_paper.log"

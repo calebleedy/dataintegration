@@ -95,7 +95,7 @@ gen_samps <- function(uppop_df, p1_type, p2_type) {
 ## Alternative Estimators
 
 #' This function implements the $\pi^*$-estimator for two-phase sampling.
-pi_star <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
+pi_star <- function(p1_df, p2_df, pop_obs, sampling = "poisson-poisson") {
 
   theta <- sum(p2_df$Y / (p2_df$pi1 * p2_df$pi2)) / pop_obs
 
@@ -110,10 +110,32 @@ pi_star <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
 
   } else if (sampling == "srs-poisson") {
 
-    var_y <- var(p2_df$Y)
-    v1 <- (1 / nrow(p1_df) - 1 / pop_obs) * var_y
-    v2 <- sum((1 - p2_df$pi2) / (p2_df$pi1^2 * p2_df$pi2^2) * p2_df$Y^2) / pop_obs^2
-    vhat <- v1 + v2
+    # var_y <- var(p2_df$Y)
+    # v1 <- (1 / nrow(p1_df) - 1 / pop_obs) * var_y
+    # v2 <- sum((1 - p2_df$pi2) / (p2_df$pi1^2 * p2_df$pi2^2) * p2_df$Y^2) / pop_obs^2
+    # vhat <- v1 + v2
+
+    tmp <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
+    for (i in 1:nrow(p2_df)) {
+      for (j in 1:nrow(p2_df)) {
+        if (i == j) {
+          pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
+          tmp[i, j] <- ((pi2i - (pi2i)^2 / pi2i) * p2_df$Y[i]^2 / (pi2i^2)
+        } else {
+          pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
+          pi2j <- p2_df$pi2[j] * p2_df$pi1[j]
+          pi2ijp1ij <- 
+            p2_df$pi2[i] * p2_df$pi2[j] * p2_df$pi1[i] * 
+            (nrow(p1_df) - 1) / (nrow(pop_df) - 1)
+          tmp[i, j] <- 
+            ((pi2ijp1ij - pi2i * pi2j) / pi2ijp1ij) * 
+            p2_df$Y[i] / pi2i * p2_df$Y[j] / pi2j  
+        }
+      }
+    }
+
+    vhat <- sum(as.numeric(tmp)) / nrow(pop_df)^2
+
 
   } else {
     vhat <- NA
@@ -123,15 +145,21 @@ pi_star <- function(p1_df, p2_df, pop_obs, sampling = "srs-poisson") {
 }
 
 #' This function implements the two-phase regression estimator
-tp_reg <- function(p1_df, p2_df, pop_df, sampling = "srs-poisson") {
+tp_reg <- function(p1_df, p2_df, pop_df, sampling = "poisson-poisson") {
 
   # Step 1: Get beta
   
-  gpinv <- 1 / p2_df$pi2^2
-  p2_df <- p2_df %>%
-    mutate(gpinv = gpinv) %>%
-    mutate(weight_v = gpinv / pi1)
-  mod <- lm(Y ~ X1 + X2 + I(1 / pi2), weights = weight_v, data = p2_df)
+  mod <- lm(Y ~ X1 + X2, data = p2_df)
+
+  theta <- 
+    (sum(predict(mod, p1_df) / p1_df$pi1) + 
+    sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / nrow(pop_df)
+
+  p12_df <- 
+    left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
+    mutate(del2 = ifelse(is.na(del2), 0, 1))
+  pred_12 <- predict(mod, p12_df)
+  eta <- pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - pred_12)
 
   # Step 2: Predict and Get Variance
   if (sampling == "srs-srs") {
@@ -145,16 +173,6 @@ tp_reg <- function(p1_df, p2_df, pop_df, sampling = "srs-poisson") {
 
   } else if (sampling == "poisson-poisson") {
 
-    theta <- 
-      (sum(predict(mod, p1_df) / p1_df$pi1) + 
-      sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / nrow(pop_df)
-
-    p12_df <- 
-      left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
-      mutate(del2 = ifelse(is.na(del2), 0, 1))
-    pred_12 <- predict(mod, p12_df)
-    eta <- pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - pred_12)
-
     v1 <- sum((1 - p12_df$pi1) / p12_df$pi1^2 * eta^2)
     v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
              (1 / p2_df$pi2 - 1) * (p2_df$Y - predict(mod, p2_df))^2)
@@ -163,18 +181,7 @@ tp_reg <- function(p1_df, p2_df, pop_df, sampling = "srs-poisson") {
 
   } else if (sampling == "srs-poisson") {
 
-    theta <- 
-      (sum(predict(mod, p1_df) / p1_df$pi1) + 
-      sum(1 / (p2_df$pi1 * p2_df$pi2) * (p2_df$Y - predict(mod, p2_df)))) / nrow(pop_df)
-
-    p12_df <- 
-      left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
-      mutate(del2 = ifelse(is.na(del2), 0, 1))
-
-    pred_12 <- predict(mod, p12_df)
-    eta <- pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - pred_12)
-
-    var_eta <- var(eta[p12_df$del2 == 1])
+    var_eta <- var(eta)
     v1 <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var_eta
     v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
              (1 / p2_df$pi2 - 1) * (p2_df$Y - predict(mod, p2_df))^2) / nrow(pop_df)^2
@@ -253,8 +260,9 @@ dc_ybar <-
            pop_df,
            qi = 1,
            entropy = "EL",
-           sampling = "srs-poisson",
-           estT1 = TRUE) {
+           sampling = "poisson-poisson",
+           estT1 = TRUE,
+           linearized = FALSE) {
 
   d_vec <- 1 / (p2_df$pi2)
   if (entropy == "EL") {
@@ -282,7 +290,7 @@ dc_ybar <-
     T1 <- c(nrow(pop_df),
             sum(p1_df$X1 * qi / p1_df$pi1),
             sum(p1_df$X2 * qi / p1_df$pi1),
-            sum(gdip * qi)) # NOTE: We do NOT want to estimate gdi
+            sum(gdip * qi)) # We do NOT want to estimate gdi
   } else {
     T1 <- c(nrow(pop_df),
             sum(pop_df$X1 * qi),
@@ -296,71 +304,114 @@ dc_ybar <-
   theta <- sum(p2_df$Y * dc_w * w1i) / nrow(pop_df)
 
   # Variance Estimation
-  z_dc <- model.matrix(~1 + p2_df$X1 + p2_df$X2 + gdi)
-  gam_dc <- 
-    solve(t(z_dc) %*% diag(w1i * gpinv * qi) %*% z_dc,
-          t(z_dc) %*% diag(w1i * gpinv) %*% p2_df$Y)
+  # We ignore qi for now
+  p2_df <- mutate(p2_df, gdi = gdi, weight_v = gpinv * w1i)
+  mod <- lm(Y ~ X1 + X2 + gdi, weights = weight_v, data = p2_df)
+  # z_dc <- model.matrix(~1 + p2_df$X1 + p2_df$X2 + gdi)
+  # gam_dc <- 
+  #   solve(t(z_dc) %*% diag(w1i * gpinv) %*% z_dc,
+  #         t(z_dc) %*% diag(w1i * gpinv) %*% p2_df$Y)
+  gam_dc <- matrix(mod$coefficients)
+  pred2 <- predict(mod, p2_df)
 
   p12_df <- 
-    left_join(p1_df, p2_df, by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
+    left_join(p1_df,
+              mutate(p2_df, dc_w = dc_w),
+              by = join_by(X1, X2, X3, X4, Y, pi1, pi2, del1)) %>%
     mutate(del2 = ifelse(is.na(del2), 0, 1)) %>%
+    mutate(dc_w = ifelse(is.na(dc_w), 0, dc_w)) %>%
     mutate(d2i = 1 / pi2) %>%
     mutate(gdi = eval(parse_expr(gdi12)))
 
-  z12_dc <- model.matrix(~1 + X1 + X2 + gdi, data = p12_df)
+  # z12_dc <- model.matrix(~1 + X1 + X2 + gdi, data = p12_df)
+  # pred_12 <- as.numeric(z12_dc %*% gam_dc)
+  pred_12 <- predict(mod, p12_df)
+  eps <- p12_df$Y - pred_12
+  eps2 <- p2_df$Y - pred2
 
   if (estT1) {
 
+    eta <- pred_12 + p12_df$del2 * p12_df$dc_w * eps
+
     if (sampling == "poisson-poisson") {
 
-      pred_12 <- as.numeric(z12_dc %*% gam_dc)
-      eta <- qi * pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - qi * pred_12)
-
       v1 <- sum((1 - p12_df$pi1) / p12_df$pi1^2 * eta^2)
-      v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
-               (1 / p2_df$pi2 - 1) * (p2_df$Y - (qi * as.numeric(z_dc %*% gam_dc)))^2)
+      v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2^2) * (1 - p2_df$pi2) * (eps2)^2)
 
       vhat <- (v1 + v2) / nrow(pop_df)^2
 
     } else if (sampling == "srs-poisson") {
 
-      pred_12 <- as.numeric(z12_dc %*% gam_dc)
-      eta <- qi * pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - qi * pred_12)
-
-      var_eta <- var(eta[p12_df$del2 == 1])
-      v1 <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var_eta
+      v1 <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var(eta)
       v2 <- 
-      sum(1 / (p2_df$pi1 * p2_df$pi2) * (1 / p2_df$pi2 - 1) * 
-         (p2_df$Y - (qi * as.numeric(z_dc %*% gam_dc)))^2) / nrow(pop_df)^2
+      sum(1 / (p2_df$pi1 * p2_df$pi2^2) * (1 - p2_df$pi2) * (eps2)^2) / nrow(pop_df)^2
 
       vhat <- (v1 + v2)
     }
+
+    if (linearized) {
+      # eta <- pred_12 + p12_df$del2 / p12_df$pi2 * eps
+      theta <- sum((1 / p1_df$pi1) * eta) / nrow(pop_df)
+    }
   } else {
+
+    p12_df <- 
+      left_join(pop_df,
+                mutate(p2_df, dc_w = dc_w),
+                by = join_by(X1, X2, X3, X4, Y, pi1, pi2)) %>%
+      mutate(del1 = ifelse(is.na(del1), 0, 1)) %>%
+      mutate(del2 = ifelse(is.na(del2), 0, 1)) %>%
+      mutate(dc_w = ifelse(is.na(dc_w), 0, dc_w)) %>%
+      mutate(d2i = 1 / pi2) %>%
+      mutate(w1i = 1 / pi1) %>%
+      mutate(gdi = eval(parse_expr(gdi12)))
+
+    pred_12 <- predict(mod, p12_df)
+    eps <- p12_df$Y - pred_12
+    eps2 <- p2_df$Y - pred2
+
+    eta <- pred_12 + p12_df$del2 * p12_df$w1i * p12_df$dc_w * eps
 
     if (sampling == "poisson-poisson") {
 
-      pred_12 <- as.numeric(z12_dc %*% gam_dc)
-      eta <- p12_df$del2 / p12_df$pi2 * (p12_df$Y - qi * pred_12)
-
-      v1 <- sum((1 - p12_df$pi1) / p12_df$pi1^2 * eta^2)
-      v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2) * 
-               (1 / p2_df$pi2 - 1) * (p2_df$Y - (qi * as.numeric(z_dc %*% gam_dc)))^2)
-
-      vhat <- (v1 + v2) / nrow(pop_df)^2
+      pis <- p2_df$pi1 * (1 / dc_w)
+      vhat <- sum((1 / pis^2 - 1 / pis) * eps2^2) / nrow(pop_df)^2
 
     } else if (sampling == "srs-poisson") {
 
-      pred_12 <- as.numeric(z12_dc %*% gam_dc)
-      eta <- qi * pred_12 + p12_df$del2 / p12_df$pi2 * (p12_df$Y - qi * pred_12)
+      # # This works but why 1 / nrow(p2_df) in v1 instead of 1 / nrow(p1_df)?
+      # Because, we essentially do not use the first stage.
+      # var_eps <- var(eps2)
+      # v1 <- (1 / nrow(p2_df) - 1 / nrow(pop_df)) * var_eps
+      # v2 <- 
+      #   sum((1 - p2_df$pi2) / (p2_df$pi1^2 * (1 / dc_w)^2) * eps2^2) / nrow(pop_df)^2
+      # vhat <- v1 + v2
 
-      var_eps <- var(qi * as.numeric(z_dc %*% gam_dc))
-      # var_eta <- var(eta[p12_df$del2 == 1])
-      v1 <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var_eps
-      v2 <- 
-      sum(1 / (p2_df$pi1 * p2_df$pi2) * (1 / p2_df$pi2 - 1) * 
-         (p2_df$Y - (qi * as.numeric(z_dc %*% gam_dc)))^2) / nrow(pop_df)^2
+      tmp <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
+      for (i in 1:nrow(p2_df)) {
+        for (j in 1:nrow(p2_df)) {
+          if (i == j) {
+            pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
+            tmp[i, j] <- ((pi2i - (pi2i)^2 / pi2i) * eps2[i]^2 / (pi2i^2)
+          } else {
+            pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
+            pi2j <- p2_df$pi2[j] * p2_df$pi1[j]
+            pi2ijp1ij <- 
+              p2_df$pi2[i] * p2_df$pi2[j] * p2_df$pi1[i] * 
+              (nrow(p1_df) - 1) / (nrow(pop_df) - 1)
+            tmp[i, j] <- 
+              ((pi2ijp1ij - pi2i * pi2j) / pi2ijp1ij) * 
+              eps2[i] / pi2i * eps2[j] / pi2j  
+          }
+        }
+      }
 
-      vhat <- (v1 + v2)
+      vhat <- sum(as.numeric(tmp)) / nrow(pop_df)^2
+
+    }
+
+    if (linearized) {
+      theta <- sum(eta) / nrow(pop_df)
     }
   }
 

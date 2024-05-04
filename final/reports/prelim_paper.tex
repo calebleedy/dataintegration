@@ -420,9 +420,9 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
     % \textcolor{red}{Dr. Kim, should I modify the simulation so that the
     % regression estimator also includes $g(\pi_{2i|1}^{-1})$ as a covariate?}
 
-    \textcolor{red}{You should include an intercept in $\bf x_i$. }
-    \textcolor{blue}{I have been including an intercept, but I forgot to add it
-    into these notes.}
+    %\textcolor{red}{You should include an intercept in $\bf x_i$. }
+    %\textcolor{blue}{I have been including an intercept, but I forgot to add it
+    %into these notes.}
   \item[3.] Debiased Calibration with Population Constraints (DC-Pop): This 
     solves 
 
@@ -433,6 +433,12 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 
   \item[4.] Debiased Calibration with Estimated Population Constraints (DC-Est):
     This solves Equation~\eqref{eq:primal} with $q_i = 1$.
+  \item[5.] Linearized Debiased Calibration with Population Constraints (Eta-Pop):
+    This is the linearized estimate DC-Pop using the linearization in
+    Theorem~\ref{thm:dc1}.
+  \item[6.] Linearized Debiased Calibration with Estimated Population
+    Constraints (Eta-Est): This is the linearized estimate DC-Est using the
+    linearization in Theorem~\ref{thm:dc1}.
 \end{itemize}
 
 In addition to estimating the mean parameter $\bar Y_N$, we also construct
@@ -469,6 +475,8 @@ approach we give the variance estimate in Table~\ref{tab:varforms}.
         \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
     & {\scriptsize$\eta_i = \bf z_i' \bm \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
         \varepsilon_i = (y_i - \bf z_i' \bm \phi)$} \\
+    Eta-Pop & Same as DC-Pop & \\
+    Eta-Est & Same as DC-Est & \\
     \bottomrule
   \end{tabular}
   \caption{This table gives the formulas for each variance estimator used in
@@ -477,24 +485,24 @@ estimatator see Appendix A.}
   \label{tab:varforms}
 \end{table}
 
-\textcolor{red}{I am not sure about the variance estimation formula in Table 1. 
-They are different from what we discussed before. I wonder whether you can make
-the sampling rate $n/N$ negligible so that the second term becomes
-insignificant. How about making $N=50,000$, $n_1=500$, and $n_2=200$?}
-
-\textcolor{blue}{The result with $N = 50,000$, $n_1 = 500$ and $E[n_2] \approx
-200$}
-
-\begin{table}[ht!]
-  \centering
-  {\color{blue}\input{tables/tpdcsim50000_mean.tex}}
-% This table was generated from ../../src/explore/proto-dctpmcmc.R
-  \caption{\textcolor{blue}{This table shows the results of Simulation Study 1 with
-      a different finite population and Phase 2 selection probability.
-      It displays the Bias, RMSE, empirical 95\% confidence interval, and a
-      t-statistic assessing the unbiasedness of each estimator for the
-      estimators: $\pi^*$, TP-Reg, DC-Pop, and DC-Est.}}
-\end{table}
+%\textcolor{red}{I am not sure about the variance estimation formula in Table 1. 
+%They are different from what we discussed before. I wonder whether you can make
+%the sampling rate $n/N$ negligible so that the second term becomes
+%insignificant. How about making $N=50,000$, $n_1=500$, and $n_2=200$?}
+%
+%\textcolor{blue}{The result with $N = 50,000$, $n_1 = 500$ and $E[n_2] \approx
+%200$}
+%
+%\begin{table}[ht!]
+%  \centering
+%  {\color{blue}\input{tables/tpdcsim50000_mean.tex}}
+%% This table was generated from ../../src/explore/proto-dctpmcmc.R
+%  \caption{\textcolor{blue}{This table shows the results of Simulation Study 1 with
+%      a different finite population and Phase 2 selection probability.
+%      It displays the Bias, RMSE, empirical 95\% confidence interval, and a
+%      t-statistic assessing the unbiasedness of each estimator for the
+%      estimators: $\pi^*$, TP-Reg, DC-Pop, and DC-Est.}}
+%\end{table}
 
 
 We run the simulation $1000$ times for each of these methods and compute the
@@ -515,8 +523,11 @@ DC-Est.}
 \label{tab:tpdc-mean}
 \end{table}
 
-\textcolor{red}{Dr. Kim is this confidence interval good enough? It seems
-slightly high for me.}
+\textcolor{red}{While DC-Est still does not outperform TP-Reg, it is equivalent
+to Eta-Est, which is a regression estimator.}
+
+\textcolor{red}{The variance estimates look good now. I needed to think of
+DC-Pop as a regression estimator instead of a two-phase regression estimator.}
 
 \textcolor{red}{I also give the mean variance estimates, the Monte Carlo mean,
 as well as a test for bias.}
@@ -530,6 +541,7 @@ as well as a test for bias.}
     t-statistic assessing the unbiasedness of each variance estimator.}}
 \label{tab:tpdc-var}
 \end{table}
+
 
 \section{Topic 2: Non-nested Two-Phase Sampling}
 
