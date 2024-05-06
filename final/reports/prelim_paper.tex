@@ -203,7 +203,7 @@ The method of \cite{kwon2024debiased} requires known finite population
 calibration levels. It does not handle the
 two-phase setup where we need to estimate the finite population total of $\bf x$
 from the Phase 1 sample. In the rest of the section, we extend this method to 
-two phase sampling so that we have a valid 
+two-phase sampling so that we have a valid 
 estimator when including estimated Phase 1 weights with appropriate variance
 estimation.
 
@@ -411,7 +411,7 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 \begin{itemize}
   \item[1.] $\pi^*$-estimator: $\hat Y_{\pi^*} = N^{-1} \sum_{i \in A_2}
     \frac{y_i}{\pi_{1i} \pi_{2i|1}},$
-  \item[2.] Two Phase Regression estimator (TP-Reg): 
+  \item[2.] Two-Phase Regression estimator (TP-Reg): 
     $\hat Y_{reg} = \sum_{i \in A_1} \frac{\bf x_i' \hat \beta}{\pi_{1i}} + 
     \sum_{i \in A_2} \frac{1}{\pi_{1i}\pi_{2i|1}}(y_i - \bf x_i' \hat \beta)$ 
     where $\hat \beta = 
@@ -547,18 +547,18 @@ as well as a test for bias.}
 
 \subsection{Background}
 
-Now we consider the sampling mechanism known as non-nested two phase sampling 
-(\cite{hidiroglou2001double}). In the last section, we considered two phase sampling
+Now we consider the sampling mechanism known as non-nested two-phase sampling 
+(\cite{hidiroglou2001double}). In the last section, we considered two-phase sampling
 in which the Phase 2 sample was a subset of the Phase 1 sample. With non-nested
-two phase sampling the Phase 2 sample is independent of the Phase 1 sample. It
+two-phase sampling the Phase 2 sample is independent of the Phase 1 sample. It
 is a separate independent sample of the same population. Like traditional two
 phase sampling, we consider the Phase 1 sample, $A_1$, to consist of
 observations of $(\bf X_i)_{i = 1}^{n_1}$ and the Phase 2 sample, $A_2$, to consist
 of observations of $(\bf X_i, Y_i)_{i = 1}^{n_2}$. 
 
-Whereas the classical two phase estimator uses a single Horvitz-Thompson
+Whereas the classical two-phase estimator uses a single Horvitz-Thompson
 estimator of the Phase 1 sample to construct estimates for calibration totals,
-in the non-nested two phase sample we have two independent Horvitz-Thompson
+in the non-nested two-phase sample we have two independent Horvitz-Thompson
 estimators of the total of $\bf X$,
 
 $$\hat{\bf X_1} = \sum_{i \in A_1}^{n_1} d_{1i} \bf x_i \text{ and } 
@@ -590,7 +590,7 @@ Since the samples $A_1$ and $A_2$ are independent,
 $$V(\hat Y_{NN, reg}) = V\left(\sum_{i \in A_2} \frac{1}{\pi_{2i}}(y_i -
 \bf x_i^TW\bm \beta^*_q)\right) + (\bm \beta^*_q)^T W^T V(\hat{\bf X_1}) W \bm \beta_q^*$$
 
-where $\bm \beta_q^*$ is the probability limit of $\hat{\bm \beta_q}$. Like the two phase
+where $\bm \beta_q^*$ is the probability limit of $\hat{\bm \beta_q}$. Like the two-phase
 sample this regression estimator can be viewed as the solution to the following
 calibration equation 
 
@@ -603,13 +603,13 @@ and $\hat Y_{NN, reg} = \sum_{i \in A_2} \hat w_{2i} y_i$ where $\hat
 w_{2i}$ is the solution to Equation~\ref{eq:nncal}.
 
 We extend the debiased calibration estimator of \cite{kwon2024debiased} to the
-non-nested two phase sampling case where we use a combined estimate 
+non-nested two-phase sampling case where we use a combined estimate 
 $\hat{\bm X_c}$ as the calibration totals instead of using the true totals from
 the finite population.
 
 \subsection{Methodology}
 
-The methodology for the non-nested two phase sample is very similar to the setup
+The methodology for the non-nested two-phase sample is very similar to the setup
 described as part of Topic 1. Given a strictly convex differentiable function,
 $G: \mathcal{V} \to \mathbb{R}$, the goal is to solve
 
@@ -637,9 +637,9 @@ $\hat{\bf X_2}$, then the optimal combined estimate is
 $$\hat{\bf X_c} = \frac{V_1^{-1} \hat{\bf X_1} + V_2^{-1} 
 \hat{\bf X_2}}{V_1^{-1} + V_2^{-1}}.$$
 
-We can constuct a non-nested two phase estimator $\hat Y_{NNE}$ for $Y_N$ where
+We can constuct a non-nested two-phase estimator $\hat Y_{NNE}$ for $Y_N$ where
 $\hat Y_{NNE} = \sum_{i \in A_2} \hat w_{2i} y_i$ and $\hat w_{2i}$ solves
-Equation~\ref{eq:nnopt}. Like the classical two phase approach, to solve this
+Equation~\ref{eq:nnopt}. Like the classical two-phase approach, to solve this
 setup we minimize the Lagrangian,
 
 \begin{equation}\label{eq:legragedc2}
@@ -931,7 +931,91 @@ DC-Est.}
 \end{table}
 
 
-\section{Topic 3: Multi-source Two-Phase Sampling}
+\section{Topic 3: Multi-Source Two-Phase Sampling}
+
+\subsection{Background}
+
+When considering non-nested two-phase sampling, we focused on the case of having
+two samples. Now, we consider incorporating more than two independent samples
+together with a debiasing constraint. First, we consider the case in which we
+want to estimate the $\theta = E[Y]$ and $Y$ is only observed in one sample.
+Then we will consider the case where $Y$ may be in multiple samples.
+
+Consider the setup in which we have independent samples $A_0, A_1, \dots, A_M$
+where $Y$ is observed only in $A_0$ but $\bf X$ is observed in all of the
+samples with elements $\bf X^{(0)}$ observed in $A_0$ and $\bf X^{(m)}$ observed
+in $A_m$ for each $m = 1, \dots, M$. Like the non-nested case, we assume that
+each survey is sampling independently from the same population sampling frame.
+
+The traditional multi-source approach (\cite{kim2024statistics}) is to use
+generalized least squares (GLS) to obtain an optimal estimator of $X$ from the
+samples $A_1, \dots, A_M$. Then we can incorporate this information in the
+estimation of $\theta$ by using the following estimate 
+
+$$\hat \theta = \sum_{i \in A_0} \hat w_i y_i$$
+
+where 
+
+\begin{equation}\label{eq:mstps}
+\hat w = \argmin_w \sum_{i \in A_0} G(w_i)q_i \text{ such that } \sum_{i \in
+A_0} w_i \bf x_i = \hat X_{GLS}^{(0)}
+\end{equation}
+
+where $\hat X_{GLS}^{(0)}$ is the GLS estimate of $X$ for all of the
+$X$-variables measured in sample $A_0$, and $G$ is a generalized entropy
+function. 
+
+% Outline
+% Instead of incorporating data from one additional source, we want to combine
+% data from multiple sources
+% * Use GLS (generalized from effective sample size)
+% * We need to add debiasing constraint 
+%   * What do we do if we have multiple surveys for which we observe Y?
+%   * How do we incorporate the selection probability?
+
+\subsection{Methodology}
+
+In order to have a design consistent estimator that incorporates information from
+samples $A_0, A_1, \dots, A_M$, we want to add the debiasing constraints, 
+
+$$ \sum_{i \in A_0} w_{i} \bf x_i q_i = \sum_{i \in U} g(d_i) q_i $$ 
+
+where $g(x) = \partial G(x) / \partial x$ and $d_i$ are the design weights for
+sample $A_0$. This yields the optimization problem:
+
+\begin{equation}\label{eq:dc3}
+  \hat w = \argmin_w \sum_{i \in A_0} G(w_i) q_i + \lambda\left(\hat T - \sum_{i
+  \in A_0} w_i \bf z_i\right)
+\end{equation}
+
+where $\hat T = (\hat{\bf X}^{(0)}, \sum_{i \in U} g(d_i) q_i)^T$ and 
+$\bf z_i = (\bf x_i^T, g(d_i)q_i)^T$. A more general approach considers the case
+in which multiple samples can observe $Y$. In this case, assume that we have
+samples $A_1, \dots A_{M_1}$ for which we observe elements of $\bf X$ and $Y$
+and samples $B_1, \dots, B_{M_2}$ for which we only observed elements of $\bf
+X$. We denote $\bf X^{(A_m)}$ and $\bf X^{(B_m)}$ as the columns of $\bf X$
+observed in samples $A_m$ and $B_m$ respectively. Then the final
+estimator\footnote{This is sort of like stratified sampling with unknown strata.}
+is 
+
+$$ \hat Y = M_1^{-1} \sum_{m = 1}^{M_1} \sum_{i \in A_m} \hat w_{im} y_i $$
+
+and $\hat w_{im}$ solves  
+
+\begin{equation}\label{eq:dc32}
+  \hat w = \argmin_w \sum_{i \in A_m} G(w_i) q_i + \lambda\left(\hat T_m - \sum_{i
+  \in A_m} w_i \bf z_i\right)
+\end{equation}
+
+where $\hat T = (\hat{\bf X}^{(m)}, \sum_{i \in U} g(d_{im}) q_i)^T$ and $d_{im}$
+are the design weights for $A_m$.
+
+\subsection{Theoretical Results}
+
+\subsection{Simulation Study 3.1}
+
+\subsection{Simulation Study 3.2}
+
 
 \newpage 
 
