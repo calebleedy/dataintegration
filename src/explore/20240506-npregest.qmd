@@ -1,0 +1,416 @@
+---
+title: "Debiased Nonparametric Regression Estimation"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+# Summary
+
+This report implements a simulation study in which we assess the bias of a
+nonparametric regression estimator. We compare an oracle regression estimate,
+naive two-phase nonparametric regression, and our proposed method--debiased
+nonparametric regression estimation.
+
+# Simulation Setup
+
+```{r}
+#| label: setup
+
+B_sims <- 1000
+
+N_obs <- 10000
+n1_obs <- 2000
+n2_obs <- 1000
+
+library(dplyr)
+library(doParallel)
+library(doRNG)
+library(npreg)
+library(mgcv)
+library(randomForest)
+
+```
+
+We generate a finite population of size $N =$`{r} N_obs` from a superpopulation
+model of:
+
+$$\begin{aligned}
+X_i &\stackrel{ind}{\sim} N(0, 1) \\
+\varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
+Y_i = 0.2 x + \sin(x) + 0.3 \varepsilon_i
+\end{aligned}
+$$
+
+The Phase 1 sample is a simple random sample (SRS) of size $n_1 =$`{r} n1_obs`
+from the finite population and the Phase 2 sample is a Poisson sample with the
+probability of selection into the Phase 2 sample from the Phase 1 sample being
+$\Phi_3(X_i)$ where $\Phi_3$ is the CDF function of a t-distribution with 3
+degrees of freedom.
+
+```{r}
+#| label: generate data and samples
+
+gen_pop <- function(N_obs, n1_obs) {
+  x <- runif(N_obs, 0, 8 * pi)
+  eps <- rnorm(N_obs)
+  y <- 0.2 * x + sin(x) + 0.3 * eps
+
+  pi1 <- n1_obs / N_obs
+  z <- (x - mean(x)) / sd(x)
+  pi2 <- ifelse(pnorm(z - 0.5) > 0.7, 0.7, pnorm(z - 0.5))
+  pi2 <- ifelse(pi2 < 0.02, 0.02, pi2)
+
+  return(tibble(X = x, Y = y, pi1 = pi1, pi2 = pi2))
+
+}
+
+gen_samps <- function(pop_df, p1_samp = "srs", p2_samp = "poisson") {
+
+  if (p1_samp == "srs") {
+    ind <- sample(1:nrow(pop_df), size = pop_df$pi1[1] * nrow(pop_df))
+    p1_df <- filter(pop_df, row_number() %in% ind) %>%
+      mutate(del1 = 1)
+  } else {
+    stop("p1_samp must be srs.")
+  }
+
+  if (p2_samp == "poisson") {
+    del2 <- rbinom(nrow(p1_df), 1, p1_df$pi2)
+    p1_df <- mutate(p1_df, del2 = del2)
+    p2_df <- filter(p1_df, del2 == 1)
+  } else {
+    stop("p2_samp must be poisson")
+  }
+
+  return(list(p1_df, p2_df))
+}
+
+```
+
+```{r}
+#| labels: estimators
+
+oracle_est <- function(p1_df, p2_df, N_obs) {
+
+  # Steps:
+  # 1. Get mhat.
+  # 2. Predict missing values
+  # 3. Estimate variance via linearization
+
+  # 1. Get mhat.
+  mx <- 0.2 * p1_df$X + sin(p1_df$X)
+  mx2 <- 0.2 * p2_df$X + sin(p2_df$X)
+
+  # 2. Predict missing values
+  eta <- mx + p1_df$del2 / p1_df$pi2 * (p1_df$Y - mx)
+  theta <- sum(eta / p1_df$pi1) / N_obs
+
+  # 3. Estimate variance via linearization
+  v1 <- (1 / nrow(p1_df) - 1 / N_obs) * var(eta)
+  v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2^2) * 
+           (1 - p2_df$pi2) * (p2_df$Y - mx2)^2) / N_obs^2
+
+  vhat <- (v1 + v2)
+
+
+  return(list(theta, vhat))
+}
+
+naive_npreg_est <- function(p1_df, p2_df, N_obs, type = "loess") {
+
+  # Steps:
+  # 1. Estimate mhat.
+  # 2. Predict missing values
+  # 3. Estimate variance via linearization
+
+  # 1. Estimate mhat.
+  if (type == "loess") {
+    mod <- loess(Y ~ X, p2_df, control = loess.control(surface="direct"))
+  } else if (type == "randomforest") {
+    mod <- randomForest(Y ~ X, p2_df)
+  } else if (type == "spline") {
+    # mod <- ss(x = p2_df$X, y = p2_df$Y)
+    # mx <- predict(mod, x = p1_df$X)$y
+    # mx2 <- predict(mod, x = p2_df$X)$y
+    mod <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2_df)
+  } else if (type == "linear") {
+    mod <- lm(Y ~ X, data = p2_df)
+  }
+
+  mx <- predict(mod, p1_df)
+  mx2 <- predict(mod, p2_df)
+  # 2. Predict missing values
+  eta <- mx + p1_df$del2 / p1_df$pi2 * (p1_df$Y - mx)
+  theta <- sum(eta / p1_df$pi1) / N_obs
+
+  # 3. Estimate variance via linearization
+  v1 <- (1 / nrow(p1_df) - 1 / N_obs) * var(eta)
+  v2 <- sum(1 / (p2_df$pi1 * p2_df$pi2^2) * 
+           (1 - p2_df$pi2) * (p2_df$Y - mx2)^2) / N_obs^2
+
+  vhat <- (v1 + v2)
+
+  return(list(theta, vhat))
+}
+
+ss_npreg_est <- function(p1_df, p2_df, N_obs, type = "loess") {
+
+  # Steps:
+  # 0. Split A_2
+  # 1. Estimate mhat in both splits
+  # 2. Predict missing values
+  # 3. Estimate variance via linearization
+
+  # 0. Split A_2
+  inda <- sample(1:nrow(p2_df), size = round(nrow(p2_df) / 2))
+  p2a_df <- filter(p2_df, row_number() %in% inda)
+  p2b_df <- filter(p2_df, !(row_number() %in% inda))
+  p2_df <- p2_df %>%
+    mutate(del2a = row_number() %in% inda) %>%
+    mutate(del2b = !(row_number() %in% inda)) 
+
+  p1_df <- p1_df %>%
+    left_join(p2_df, by = join_by(X, Y, pi1, pi2, del1, del2)) %>%
+    mutate(del2a = ifelse(is.na(del2a), 0, del2a)) %>%
+    mutate(del2b = ifelse(is.na(del2b), 0, del2b))
+
+  # 1. Estimate mhat in both splits
+  if (type == "loess") {
+    moda <- loess(Y ~ X, p2a_df, control = loess.control(surface="direct"))
+    modb <- loess(Y ~ X, p2b_df, control = loess.control(surface="direct"))
+  } else if (type == "randomforest") {
+    moda <- randomForest(Y ~ X, p2a_df)
+    modb <- randomForest(Y ~ X, p2b_df)
+  } else if (type == "spline") {
+    # moda <- ss(x = p2a_df$X, y = p2a_df$Y)
+    # modb <- ss(x = p2b_df$X, y = p2b_df$Y)
+    # ma_2 <- predict(moda, x = p2_df$X)$y
+    # mb_2 <- predict(modb, x = p2_df$X)$y
+    # ma_1 <- predict(moda, x = p1_df$X)$y
+    # mb_1 <- predict(modb, x = p1_df$X)$y
+    # mx <- (ma_1 + mb_1) / 2
+    moda <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2a_df)
+    modb <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2b_df)
+  } else if (type == "linear") {
+    moda <- lm(Y ~ X, data = p2a_df)
+    modb <- lm(Y ~ X, data = p2b_df)
+  }
+
+  ma_2 <- predict(moda, p2_df)
+  mb_2 <- predict(modb, p2_df)
+  ma_1 <- predict(moda, p1_df)
+  mb_1 <- predict(modb, p1_df)
+  mx <- (ma_1 + mb_1) / 2
+
+  # 2. Predict missing values
+  eta <- 
+    mx + 
+    p1_df$del2a / p1_df$pi2 * (p1_df$Y - mb_1) + 
+    p1_df$del2b / p1_df$pi2 * (p1_df$Y - ma_1)
+
+  # plot(p1_df$Y, eta)
+
+  theta <- sum(eta / p1_df$pi1) / N_obs
+
+  # 3. Estimate variance via linearization
+  vhat <- var(eta) / nrow(p1_df)
+  # v0 <- (1 / nrow(p1_df) - 1 / N_obs) * var(eta)
+
+  # p2a_df <- p2a_df %>%
+  #   mutate(pi2a = pi2 * nrow(p2a_df) / nrow(p2_df))
+  # p2b_df <- p2b_df %>%
+  #   mutate(pi2b = pi2 * nrow(p2b_df) / nrow(p2_df))
+
+  # v1_t <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
+  # v2_t <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
+  # cov_t <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
+
+  # # Since Phase 1 is SRS
+  # p1ij <- nrow(p1_df) / N_obs * (nrow(p1_df) - 1) / (N_obs - 1)
+  # eps_a <- p2_df$Y - ma_2
+  # eps_b <- p2_df$Y - mb_2
+
+  # n2a <- nrow(p2a_df)
+  # n2b <- nrow(p2b_df)
+  # n2 <- nrow(p2_df)
+
+  # for (i in 1:nrow(p2_df)) {
+  #   for (j in 1:nrow(p2_df)) {
+  #     if (i == j) {
+  #       v1_t[i, j] <- 
+  #       1 / 4 * (2 - p2_df$pi2[i]) / p2_df$pi1[i] * eps_b[i]^2 / p2_df$pi2[i]^2
+  #       v2_t[i, j] <- 
+  #       1 / 4 * (2 - p2_df$pi2[i]) / p2_df$pi1[i] * eps_a[i]^2 / p2_df$pi2[i]^2
+  #       cov_t[i, j] <- 
+  #       1/(p2_df$pi2[i] * p2_df$pi1[i]) * n2a/n2 * (n2a - 1)/n2 * eps_b[i] * eps_a[i]
+  #     } else {
+  #       v1_t[i, j] <- 1 / 4 * (p2_df$pi2[i]) / (p2_df$pi1[i] * p2_df$pi1[j]) *
+  #         eps_b[i] * eps_b[j] / (p2_df$pi2[i] * p2_df$pi2[j])
+  #       v2_t[i, j] <- 1 / 4 * 1 / (p2_df$pi1[i] * p2_df$pi1[j]) *
+  #         eps_a[i] * eps_a[j] / (p2_df$pi2[i] * p2_df$pi2[j])
+  #       cov_t[i, j] <- 1 / (p2_df$pi2[i] * p2_df$pi1[i]) * n2a / n2 * 
+  #       ((n2 - n2a) / (n2 - 1) + (n2a - 1)/n2) * eps_b[i] * eps_a[i]
+  #     }
+  #   }
+  # }
+
+  # v1 <- sum(as.numeric(v1_t)) / N_obs^2
+  # v2 <- sum(as.numeric(v2_t)) / N_obs^2
+  # v3 <- sum(as.numeric(cov_t)) / N_obs^2
+
+  # vhat <- (v0 + v1 + v2 + v3)
+
+  return(list(theta, vhat))
+}
+
+
+```
+
+```{r}
+#| label: MCMC
+
+set.seed(1)
+pop_df <- gen_pop(N_obs, n1_obs)
+true_theta <- mean(pop_df$Y)
+
+# png("tables/popplot.png")
+# plot(pop_df$X, pop_df$Y)
+# dev.off()
+
+clust <- makeCluster(min(detectCores() - 2, 100), outfile = "")
+registerDoParallel(clust)
+
+mc_res <- 
+  foreach(iter=1:B_sims,
+          .packages = c("dplyr", "randomForest", "mgcv")) %dopar% {
+
+  if (iter %% 100 == 0) {
+    print(paste0("Iter: ", iter))
+  }
+
+  samps <- gen_samps(pop_df)
+  p1_df <- samps[[1]]
+  p2_df <- samps[[2]]
+
+  # png("tables/p2plot.png")
+  # plot(p2_df$X, p2_df$Y)
+  # dev.off()
+
+  oest <- oracle_est(p1_df, p2_df, N_obs)
+  nest_lm <- naive_npreg_est(p1_df, p2_df, N_obs, type = "linear")
+  pest_lm <- ss_npreg_est(p1_df, p2_df, N_obs, type = "linear")
+  nest_lo <- naive_npreg_est(p1_df, p2_df, N_obs, type = "loess")
+  pest_lo <- ss_npreg_est(p1_df, p2_df, N_obs, type = "loess")
+  nest_rf <- naive_npreg_est(p1_df, p2_df, N_obs, type = "randomforest")
+  pest_rf <- ss_npreg_est(p1_df, p2_df, N_obs, type = "randomforest")
+  nest_sp <- naive_npreg_est(p1_df, p2_df, N_obs, type = "spline")
+  pest_sp <- ss_npreg_est(p1_df, p2_df, N_obs, type = "spline")
+
+  return(tibble(
+      Est = c("Oracle",
+              "NaiveLinear", "PropLinear",
+              "NaiveLoess", "PropLoess",
+              "NaiveRF", "PropRF",
+              "NaiveSpline", "PropSpline"),
+      Theta = c(oest[[1]],
+                nest_lm[[1]], pest_lm[[1]],
+                nest_lo[[1]], pest_lo[[1]],
+                nest_rf[[1]], pest_rf[[1]],
+                nest_sp[[1]], pest_sp[[1]]),
+      Var = c(oest[[2]],
+              nest_lm[[2]], pest_lm[[2]],
+              nest_lo[[2]], pest_lo[[2]],
+              nest_rf[[2]], pest_rf[[2]],
+              nest_sp[[2]], pest_sp[[2]]),
+      Iter = iter)
+  )
+
+} %>% bind_rows()
+
+stopCluster(clust)
+
+
+```
+
+
+```{r}
+#| label: Analyse MCMC
+
+# Find any failed estimates
+which(is.na(mc_res$Theta))
+which(is.na(mc_res$Var))
+
+# Analyze Mean
+mc_res %>%
+  mutate(err = Theta - true_theta) %>%
+  mutate(CI = abs(err) < qnorm(0.975) * sqrt(Var)) %>%
+  group_by(Est) %>%
+  summarize(Bias = mean(err, na.rm = TRUE),
+            RMSE = sqrt(mean(err^2, na.rm = TRUE)),
+            EmpCI = mean(CI, na.rm = TRUE),
+            sdest = sd(Theta, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(Ttest = abs(Bias) / sqrt(sdest^2 / B_sims)) %>%
+  select(-sdest) %>%
+  mutate(Ind = case_when(
+    Est == "NaiveLinear" ~ 2,
+    Est == "NaiveLoess" ~ 4,
+    Est == "NaiveRF" ~ 6,
+    Est == "NaiveSpline" ~ 8,
+    Est == "PropLinear" ~ 3,
+    Est == "PropLoess" ~ 5,
+    Est == "PropRF" ~ 7,
+    Est == "PropSpline" ~ 9,
+    Est == "Oracle" ~ 1
+  )) %>%
+  arrange(Ind) %>%
+  select(-Ind) 
+
+%>%
+  knitr::kable(digits = 3, "latex", booktabs = TRUE, linesep = "") %>%
+  cat(file = "tables/npreg_mean.tex")
+
+# Analyze Variance
+mc_res %>%
+  group_by(Est) %>%
+  summarize(MCVar = var(Theta, na.rm = TRUE),
+            EstVar = mean(Var, na.rm = TRUE),
+            VarVar = var(Var, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(Ttest = abs(MCVar - EstVar) / sqrt(VarVar / B_sims)) %>%
+  mutate(Ind = case_when(
+    Est == "NaiveLoess" ~ 2,
+    Est == "NaiveRF" ~ 4,
+    Est == "NaiveSpline" ~ 6,
+    Est == "PropLoess" ~ 3,
+    Est == "PropRF" ~ 5,
+    Est == "PropSpline" ~ 7,
+    Est == "Oracle" ~ 1
+  )) %>%
+  arrange(Ind) %>%
+  select(-Ind) 
+
+%>%
+  knitr::kable(digits = c(1, 4, 4, 7, 1), "latex", booktabs = TRUE, linesep = "") %>%
+  cat(file = "tables/npreg_var.tex")
+
+
+```
+
+```{r}
+#| label: individual plots
+
+
+
+```
+

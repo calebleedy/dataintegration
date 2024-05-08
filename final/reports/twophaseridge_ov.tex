@@ -1,0 +1,174 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, mathrsfs, fancyhdr}
+\usepackage{syntonly, lastpage, hyperref, enumitem, graphicx}
+%\usepackage[style=authoryear]{biblatex}
+\usepackage{booktabs}
+\usepackage{float}
+
+\usepackage{amsmath, amsthm, mathtools,commath}
+\usepackage{graphics, color}
+\usepackage{latexsym}
+\usepackage{amssymb, amsfonts, bm}
+\usepackage{mathrsfs}
+
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{makeidx}
+\usepackage{fullpage}
+\usepackage{booktabs, arydshln}
+\usepackage{comment} 
+%\makeindex
+
+\hbadness=10000 \tolerance=10000 \hyphenation{en-vi-ron-ment
+in-ven-tory e-num-er-ate char-ac-ter-is-tic}
+
+\usepackage[round]{natbib}
+%\bibliographystyle{apalike2}
+% \bibliographystyle{jmr}
+
+
+\newcommand{\biblist}{\begin{list}{}
+{\listparindent 0.0cm \leftmargin 0.50cm \itemindent -0.50 cm
+\labelwidth 0 cm \labelsep 0.50 cm
+\usecounter{list}}\clubpenalty4000\widowpenalty4000}
+\newcommand{\ebiblist}{\end{list}}
+
+\newcounter{list}
+
+%\usepackage{setspace}
+
+%\usepackage{hangpar}
+\newcommand{\lbl}[1]{\label{#1}{\ensuremath{^{\fbox{\tiny\upshape#1}}}}}
+% remove % from next line for final copy
+\renewcommand{\lbl}[1]{\label{#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+\newtheorem{result}{Result}
+
+\newtheorem{lemma}{Lemma}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\MAP}{{\text{MAP}}}
+\newcommand{\Cov}{{\text{Cov}}}
+\newcommand{\Var}{{\text{Var}}}
+\newcommand{\logistic}{{\text{logistic}}}
+
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\R}{\mathbb{R}}
+\renewcommand{\bf}[1]{\mathbf{#1}}
+
+
+\begin{document}
+
+\title{Similarities between Nonnested Regression Estimation and Ridge Regression}
+\author{Caleb Leedy}
+\maketitle 
+
+\baselineskip .3in
+
+\section{Nonnested Regression}
+
+In the case of non-nested two phase sampling, we have $A_1 = (X_i)_{i = 1}^{n_1}$
+and $A_2 = (X_1, Y_i)_{i = 1}^{n_2}$ with $A_1$ and $A_2$ being selected
+independently from the same sampling frame. The regression estimator is then
+
+\begin{align*}
+\hat{\bar{Y}}_{reg} 
+  &= \hat{\bar{Y}}_{HT} + (\hat{\bar{X}}_c - \hat{\bar{X}}_2)' \hat \beta_2 
+  & \text{for } \hat \beta_2 = \left(\sum_{i \in A_2} x_i x_i'\right)^{-1} 
+    \sum_{i \in A2} x_i y_i \text{ with } x_{1i} = 1 \\
+  &= \hat{\bar{Y}}_{HT} + (\hat{\bar{X}}_1 - \hat{\bar{X}}_2)'W'\hat \beta_2 
+  & \text{ if } \hat{\bar{X}}_c = W \hat{\bar{X}}_1 + (I - W) \hat{\bar{X}}_2\\
+  &= \sum_{i \in A_1} x_i' W' \hat \beta_2 + \sum_{i \in A_2} (y_i - x_i' W'
+  \hat \beta_2).
+\end{align*}
+
+While the matrix $W$ controls the interaction between $A_1$ and $A_2$ it also
+plays the role of shrinkage on $\hat \beta_2$.
+
+
+\textcolor{red}{If the population total of $X$ is known, then the regression estimator $$ \hat{\bar{Y}}_{reg} 
+  = \hat{\bar{Y}}_{HT} + ({\bar{X}} - \hat{\bar{X}}_2)' \hat \beta_2$$
+  can be used. In this case, $\hat{\beta}_2$ does not have the shrinkage interpretation. Now, if $\bar{X}$ is unknown, we need to use an estimator. If we use the best estimator $\hat{\bar{X}}_c$, then the residual is orthogonal. Otherwise, if we use an inefficient estimator $\hat{\bar{X}}_1$, we pay its price. It is more related to attenuation effect in the measurement error model problem. 
+  }
+\section{Ridge Regression}
+
+Given a sample $A$, ridge regression solves the optimization problem,
+
+$$\hat \beta = \argmin_{\beta \in \R^p} \sum_{i \in A} (y_i - x_i'\beta)^2 + \beta^T
+(\lambda I_p) \beta.$$
+
+Differentiating with respect to $\beta$ and setting this equal to zero yields a
+solution,
+
+$$\hat \beta = \left(\sum_{i \in A} x_i x_i' + \lambda I_p\right)^{-1} \sum_{i
+\in A} x_i' y_i = (X'X + \lambda I_p)^{-1} X'Y.$$
+
+Let $\hat \beta_{OLS} = \hat \beta_2 = (X'X)^{-1} X'Y$, then using the
+Sherman-Morrison-Woodbury inverse formula,
+
+$$\hat \beta = (I_p - (X'X)^{-1}(\lambda^{-1}I_p + (X'X)^{-1}))^{-1} \hat \beta_{OLS}.$$
+
+\section{Discussion}
+
+The previous two sections suggest that if we let
+
+$$
+\begin{aligned}
+  W &= (I_p - (X'X)^{-1}(\lambda^{-1}I_p + (X'X)^{-1}))^{-1} \\
+  \iff \lambda W &= (X'X)(I_p - W) \\ 
+  \iff \lambda &= (X'X)(W^{-1} - I_p)
+\end{aligned}
+$$
+
+then we would have equivalent results. In this way, non-nested two phase
+sampling is like ridge regression.
+
+\begin{itemize}
+  \item We could connect this to LASSO?
+  \item This could be a connection to Bayesian statistics and choosing priors on
+    our estimates?
+  \item Maybe this can help us choose priors for ridge regression better?
+\end{itemize}
+
+
+\section{Alternative idea for non-parametric regression estimation}
+
+
+One possible idea is to develop a debiased estimation under two-phase sampling. If the covariates are high dimensional or the regression employs nonparametric regression (such as spline or random forest, etc), then the resulting two-phase regression estimator can be biased. To correct for the bias, we can use the following approach.
+
+\begin{enumerate}
+\item Split the sample $A_2$ into two parts: $A_2= A_2^{(a)} \cup A_2^{(b)}$.
+We can use SRS to split the sample, but other sampling designs can be used. 
+\item Use the observations in $A_2^{(a)}$ only to obtain a predictor of $y_i$, $\hat{f}^{(a)} (\bx_i)$. Also, use the observations in $A_2^{(b)}$ only to obtain a predictor of $y_i$, $\hat{f}^{(b)} (\bx_i)$. 
+\item Let 
+$$ \hat{f}(\bx_i) = \left( \hat{f}^{(a)} (\bx_i) + \hat{f}^{(b)} (\bx_i) \right)/ 2$$
+be the predictor combining two samples. 
+\item The final debiased two-phase regression estimator is given by 
+\begin{equation}
+\hat{Y}_{\rm d, reg} = \sum_{i \in A_1} w_{1i}  \hat{f}(\bx_i) +  \sum_{i \in A_2^{(a)} } w_{1i} \pi_{2i \mid 1}^{-1}   \left\{y_i - \hat{f}^{(b)} (\bx_i) \right\} +\sum_{i \in A_2^{(b)} } w_{1i} \pi_{2i \mid 1}^{-1}   \left\{y_i - \hat{f}^{(a)} (\bx_i) \right\}
+\label{debiased}
+\end{equation}
+\end{enumerate}
+ If I am not mistaken, there are several advantages of the debiased two-phase regression estimator in (\ref{debiased}). 
+\begin{enumerate}
+\item Unlike the classical two-phase regression estimator using nonparametric regression, we can establish asymptotic unbiasedness and  $\sqrt{n}$-consistency. 
+\item Even if we use the sample split, there is no efficiency loss. That is, the asymptotic variance is equal to 
+$$ V \left( \hat{Y}_{\rm d, reg} \right) = V \left( \hat{Y}_1 \right) + E\left[ V \left\{ \sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1} \left( y_i - f(\bx_i) \right) \mid A_1 \right\} \right] 
+$$
+where $f(\bx_i)$ is the probability limit of $\hat{f}(\bx_i)$. 
+\item Variance estimation is also straightforward. We can compute 
+$$ \hat{\eta}_i = \hat{f}(\bx_i) +\delta_i  \pi_{2i \mid 1}^{-1} I_i^{(a)} \left\{ y_i - \hat{f}^{(b)}(\bx_i) \right\} +\delta_i \pi_{2i \mid 1}^{-1} I_i^{(b)} \left\{ y_i - \hat{f}^{(a)} (\bx_i) \right\}$$
+and apply to the variance estimation formula for the first-phase sample, 
+where $I_i^{(a)}$ is the indicator function for $A_2^{(a)}$ such that $I_i^{(a)} = 1$ if $i \in A_2^{(a)}$ and $I_i^{(a)}=0$ otherwise. Also, $I_i^{(b)}= 1- I_i^{(a)}$. 
+\end{enumerate}
+
+
+I also have an idea on how to implement the above debiased regression estimator using calibration. I will give more details once we are confident in the proposed idea. 
+\end{document}

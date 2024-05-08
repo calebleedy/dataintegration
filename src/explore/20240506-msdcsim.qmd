@@ -1,0 +1,159 @@
+---
+title: "Multi-Source Debiased Calibration Simulation"
+author: "Caleb Leedy"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+# Summary
+
+This report simulates multi-source sampling with the debiased
+calibration of @kwon2024debiased. We check for the following:
+
+1. Bias of $\hat Y$ and,
+2. Bias of $\hat V(\hat Y)$.
+
+For the estimator $\hat Y$ we construct 
+
+1. The $\pi^*$-estimator,
+2. The two-phase regression estimator,
+3. The debiased calibration estimator (with known finite population total), and
+4. The debiased calibration estimator with estimated population totals from the
+   Phase 1 sample.
+
+# Simulation Setup
+
+```{r}
+#| label: setup
+
+B_sims <- 1000
+
+N_obs <- 10000
+n1_obs <- 1000
+n2_obs <- 2000
+
+library(dplyr)
+library(GECal)
+library(nleqslv)
+library(doParallel)
+library(doRNG)
+library(CVXR)
+library(rlang)
+
+```
+
+We have the following superpopulation model with $N=$`{r} N_obs` elements:
+
+$$
+\begin{aligned}
+X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
+X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
+X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
+X_{4i} &\stackrel{ind}{\sim} Unif(0.1, 0.9) \\
+\varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
+\pi_{0i} &= \Phi(-x_{1i} - 2)\\
+\pi_{1i} &= |x_{1i}| / \sum_{i \in U} |x_{i1}|\\
+\pi_{2i} &= n_2 / N.\\
+\end{aligned}
+$$
+
+We observe the following columns in each sample
+
+| Sample | $X_1$ | $X_2$ | $X_3$ |  $Y$ |
+|:-------|------:|------:|------:|-----:|
+| $A_0$  | ✓     | ✓     | ✓     |  ✓   |  
+| $A_1$  | ✓     | ✓     |       |      |  
+| $A_2$  | ✓     |       | ✓     |      |  
+
+For the sampling mechanism both $A_0$ and $A_1$ are selected using a Poisson
+sample with response probabilities $\pi_{0i}$ and $\pi_{1i}$ respectively. The
+sample $A_2$ is a simple random sample.
+
+```{r}
+#| label: generate population and samples
+
+gen_pop <- function(obs) {
+
+  x1 <- rnorm(obs, 2, 1)
+  x2 <- runif(obs, 0, 4)
+  x3 <- rnorm(obs, 0, 1)
+  x4 <- runif(obs, 0.1, 0.9)
+  eps <- rnorm(obs)
+
+  y <- 3 * x1 + 2 * x2 + eps
+
+  return(tibble(X1 = x1, X2 = x2, X3 = x3, X4 = x4, Y = y))
+}
+
+#' This function adds sampling probabilites to a population data frame.
+#'
+#' @details The phase 2 formula will be included for every element. There is no
+#' information about if an element is part of the Phase 1 or Phase 2 sample.
+update_pop <- function(pop_df, p0_formula, p1_formula, p2_formula) {
+
+  pi0 <- eval(parse_expr(p0_formula))
+  pi1 <- eval(parse_expr(p1_formula))
+  pi2 <- eval(parse_expr(p2_formula))
+
+  pop_df %>%
+    mutate(pi0 = pi0, pi1 = pi1, pi2 = pi2)
+}
+
+#' This function generates Phase 1 and Phase 2 samples from an updated
+#' population with selection probabilites.
+gen_samps <- function(upop_df, p0_type, p1_type, p2_type) {
+
+  if (p0_type == "poisson") {
+    del0 <- rbinom(nrow(upop_df), 1, upop_df$pi0)
+  } else if (p1_type == "srs") {
+    ind <- sample(1:nrow(upop_df), size = upop_df$pi0[1] * nrow(upop_df))
+    del0 <- as.numeric(1:nrow(upop_df) %in% ind)
+  } else {
+    stop("We have only implemented poisson and srs for Sample 0.")
+  }
+
+  p0_df <- mutate(upop_df, del0 = del0) %>% filter(del0 == 1)
+
+  if (p1_type == "poisson") {
+    del1 <- rbinom(nrow(upop_df), 1, upop_df$pi1)
+  } else if (p1_type == "srs") {
+    ind <- sample(1:nrow(upop_df), size = upop_df$pi1[1] * nrow(upop_df))
+    del1 <- as.numeric(1:nrow(upop_df) %in% ind)
+  } else {
+    stop("We have only implemented poisson and srs for Sample 1.")
+  }
+
+  p1_df <- mutate(upop_df, del1 = del1) %>% filter(del1 == 1)
+
+  if (p2_type == "poisson") {
+    del2 <- rbinom(nrow(upop_df), 1, upop_df$pi2)
+  } else if (p2_type == "srs") {
+    ind <- sample(1:nrow(upop_df), size = round(upop_df$pi2[1] * nrow(upop_df)))
+    del2 <- as.numeric(1:nrow(upop_df) %in% ind)
+  } else {
+    stop("We have only implemented poisson and srs for Sample 2.")
+  }
+
+  p2_df <- mutate(upop_df, del2 = del2) %>% filter(del2 == 1)
+
+  return(list(p0_df, p1_df, p2_df))
+}
+
+```
+
+```{r}
+#| label: estimators
+
+
+
+```

@@ -61,8 +61,8 @@ X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
 X_{4i} &\stackrel{ind}{\sim} Unif(0.1, 0.9) \\
 \varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
 Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
-\pi_{1i} &= \Phi(-x_{3i} - 2)\\
-\pi_{2i|1} &= x_{4i}.
+\pi_{1i} &= FIXME\\
+\pi_{2i|1} &= FIXME.
 \end{aligned}
 $$
 

@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Arch Linux) (preloaded format=pdflatex 2024.2.23)  8 MAY 2024 11:49
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Arch Linux) (preloaded format=pdflatex 2024.2.23)  7 MAY 2024 16:26
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**twophaseridge.tex
-(./twophaseridge.tex
+**Debiased_two_phase.tex
+(./Debiased_two_phase.tex
 LaTeX2e <2022-11-01> patch level 1
 L3 programming layer <2023-02-22> (/usr/share/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2022/07/02 v1.4n Standard LaTeX document class
@@ -395,8 +395,12 @@ LaTeX Info: Redefining \cite on input line 694.
 File: l3backend-pdftex.def 2023-01-16 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count312
 \l__pdf_internal_box=\box58
-) (./twophaseridge.aux)
-\openout1 = `twophaseridge.aux'.
+) (./Debiased_two_phase.aux
+
+LaTeX Warning: Label `result' multiply defined.
+
+)
+\openout1 = `Debiased_two_phase.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 67.
 LaTeX Font Info:    ... okay on input line 67.
@@ -417,9 +421,9 @@ LaTeX Font Info:    ... okay on input line 67.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 67.
 LaTeX Font Info:    ... okay on input line 67.
 Package hyperref Info: Link coloring OFF on input line 67.
- (./twophaseridge.out) (./twophaseridge.out)
+ (./Debiased_two_phase.out) (./Debiased_two_phase.out)
 \@outlinefile=\write4
-\openout4 = `twophaseridge.out'.
+\openout4 = `Debiased_two_phase.out'.
 
  (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -465,66 +469,33 @@ File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <7> not available
 (Font)              Font shape `U/lasy/m/n' tried instead on input line 72.
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <8> not available
-(Font)              Font shape `U/lasy/m/n' tried instead on input line 77.
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 81.
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <6> not available
-(Font)              Font shape `U/lasy/m/n' tried instead on input line 77.
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 81.
  [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2{/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}] [3]
-<tables/popplot.png, id=64, 481.8pt x 481.8pt>
-File: tables/popplot.png Graphic file (type png)
-<use tables/popplot.png>
-Package pdftex.def Info: tables/popplot.png  used on input line 235.
-(pdftex.def)             Requested size: 234.8775pt x 234.87839pt.
-<tables/p2plot.png, id=65, 481.8pt x 481.8pt>
-File: tables/p2plot.png Graphic file (type png)
-<use tables/p2plot.png>
-Package pdftex.def Info: tables/p2plot.png  used on input line 242.
-(pdftex.def)             Requested size: 234.8775pt x 234.87839pt.
- [4] [5
-pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.267 \end{itemize}
-                   
-pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.267 \end{itemize}
-                    <./tables/popplot.png (PNG copy)> <./tables/p2plot.png (PNG copy)>] (./tables/npreg_mean.tex) (./tables/npreg_var.tex) [6
-pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.349 
-      ] (./tables/npsim2C1_mean.tex) [7
-pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.397 \end{table}
-                 ] [8
-pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.404 \newpage
-              ] (./twophaseridge.bbl) [9] 
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}] [2] [3] [4] [5] 
 enddocument/afterlastpage: lastpage setting LastPage.
-(./twophaseridge.aux)
-Package rerunfilecheck Info: File `twophaseridge.out' has not changed.
-(rerunfilecheck)             Checksum: E516E0D6AE4F13D7D3DC1EDBA62CF834;1003.
+(./Debiased_two_phase.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+Package rerunfilecheck Info: File `Debiased_two_phase.out' has not changed.
+(rerunfilecheck)             Checksum: BE1F2504F7896551E2418C65E961F44D;239.
  ) 
 Here is how much of TeX's memory you used:
- 12181 strings out of 477400
- 191394 string characters out of 5828522
- 1867388 words of memory out of 5000000
- 32259 multiletter control sequences out of 15000+600000
- 528789 words of font info for 101 fonts, out of 8000000 for 9000
+ 12122 strings out of 477400
+ 190435 string characters out of 5828522
+ 1864388 words of memory out of 5000000
+ 32226 multiletter control sequences out of 15000+600000
+ 528620 words of font info for 100 fonts, out of 8000000 for 9000
  313 hyphenation exceptions out of 8191
- 75i,12n,76p,1055b,573s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on twophaseridge.pdf (9 pages, 314730 bytes).
+ 75i,8n,76p,378b,577s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
+Output written on Debiased_two_phase.pdf (5 pages, 153880 bytes).
 PDF statistics:
- 192 PDF objects out of 1000 (max. 8388607)
- 143 compressed objects within 2 object streams
- 31 named destinations out of 1000 (max. 500000)
- 59 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 128 PDF objects out of 1000 (max. 8388607)
+ 94 compressed objects within 1 object stream
+ 22 named destinations out of 1000 (max. 500000)
+ 17 words of extra memory for PDF output out of 10000 (max. 10000000)
 
