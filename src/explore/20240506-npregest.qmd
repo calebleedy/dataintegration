@@ -35,7 +35,6 @@ n2_obs <- 1000
 library(dplyr)
 library(doParallel)
 library(doRNG)
-library(npreg)
 library(mgcv)
 library(randomForest)
 
@@ -61,16 +60,20 @@ degrees of freedom.
 #| label: generate data and samples
 
 gen_pop <- function(N_obs, n1_obs) {
-  x <- runif(N_obs, 0, 8 * pi)
+  x <- runif(N_obs, 1, 2)
+  z <- rnorm(N_obs)
   eps <- rnorm(N_obs)
-  y <- 0.2 * x + sin(x) + 0.3 * eps
+  # y <- 0.05 * x^2 + 2 * eps + exp(x - max(x) + 4) + 2 * sin(x)
+  y <- x + z + eps
 
   pi1 <- n1_obs / N_obs
-  z <- (x - mean(x)) / sd(x)
-  pi2 <- ifelse(pnorm(z - 0.5) > 0.7, 0.7, pnorm(z - 0.5))
+  pi2 <- ifelse(pnorm(z - 1) > 0.7, 0.7, pnorm(z - 1))
   pi2 <- ifelse(pi2 < 0.02, 0.02, pi2)
 
-  return(tibble(X = x, Y = y, pi1 = pi1, pi2 = pi2))
+  w1 <- 1 / pi1
+  w2 <- 1 / pi2
+
+  return(tibble(X = x, Y = y, pi1 = pi1, pi2 = pi2, w1 = w1, w2 = w2))
 
 }
 
@@ -108,8 +111,8 @@ oracle_est <- function(p1_df, p2_df, N_obs) {
   # 3. Estimate variance via linearization
 
   # 1. Get mhat.
-  mx <- 0.2 * p1_df$X + sin(p1_df$X)
-  mx2 <- 0.2 * p2_df$X + sin(p2_df$X)
+  mx <- p1_df$X
+  mx2 <- p2_df$X
 
   # 2. Predict missing values
   eta <- mx + p1_df$del2 / p1_df$pi2 * (p1_df$Y - mx)
@@ -135,16 +138,14 @@ naive_npreg_est <- function(p1_df, p2_df, N_obs, type = "loess") {
 
   # 1. Estimate mhat.
   if (type == "loess") {
-    mod <- loess(Y ~ X, p2_df, control = loess.control(surface="direct"))
+    mod <- loess(Y ~ X, data = p2_df, weights = w2,
+                 control = loess.control(surface="direct"))
   } else if (type == "randomforest") {
-    mod <- randomForest(Y ~ X, p2_df)
+    mod <- randomForest(Y ~ X, data = p2_df)
   } else if (type == "spline") {
-    # mod <- ss(x = p2_df$X, y = p2_df$Y)
-    # mx <- predict(mod, x = p1_df$X)$y
-    # mx2 <- predict(mod, x = p2_df$X)$y
-    mod <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2_df)
+    mod <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2_df, weights = w2)
   } else if (type == "linear") {
-    mod <- lm(Y ~ X, data = p2_df)
+    mod <- lm(Y ~ X, data = p2_df, weights = w2)
   }
 
   mx <- predict(mod, p1_df)
@@ -180,30 +181,25 @@ ss_npreg_est <- function(p1_df, p2_df, N_obs, type = "loess") {
     mutate(del2b = !(row_number() %in% inda)) 
 
   p1_df <- p1_df %>%
-    left_join(p2_df, by = join_by(X, Y, pi1, pi2, del1, del2)) %>%
+    left_join(p2_df, by = join_by(X, Y, pi1, pi2, w1, w2, del1, del2)) %>%
     mutate(del2a = ifelse(is.na(del2a), 0, del2a)) %>%
     mutate(del2b = ifelse(is.na(del2b), 0, del2b))
 
   # 1. Estimate mhat in both splits
   if (type == "loess") {
-    moda <- loess(Y ~ X, p2a_df, control = loess.control(surface="direct"))
-    modb <- loess(Y ~ X, p2b_df, control = loess.control(surface="direct"))
+    moda <- loess(Y ~ X, data = p2a_df, weights = w2,
+                  control = loess.control(surface="direct"))
+    modb <- loess(Y ~ X, data = p2b_df, weights = w2,
+                  control = loess.control(surface="direct"))
   } else if (type == "randomforest") {
-    moda <- randomForest(Y ~ X, p2a_df)
-    modb <- randomForest(Y ~ X, p2b_df)
+    moda <- randomForest(Y ~ X, data = p2a_df)
+    modb <- randomForest(Y ~ X, data = p2b_df)
   } else if (type == "spline") {
-    # moda <- ss(x = p2a_df$X, y = p2a_df$Y)
-    # modb <- ss(x = p2b_df$X, y = p2b_df$Y)
-    # ma_2 <- predict(moda, x = p2_df$X)$y
-    # mb_2 <- predict(modb, x = p2_df$X)$y
-    # ma_1 <- predict(moda, x = p1_df$X)$y
-    # mb_1 <- predict(modb, x = p1_df$X)$y
-    # mx <- (ma_1 + mb_1) / 2
-    moda <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2a_df)
-    modb <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2b_df)
+    moda <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2a_df, weights = w2)
+    modb <- gam(Y ~ s(X, k = 15, bs = "cr"), data = p2b_df, weights = w2)
   } else if (type == "linear") {
-    moda <- lm(Y ~ X, data = p2a_df)
-    modb <- lm(Y ~ X, data = p2b_df)
+    moda <- lm(Y ~ X, data = p2a_df, weights = w2)
+    modb <- lm(Y ~ X, data = p2b_df, weights = w2)
   }
 
   ma_2 <- predict(moda, p2_df)
@@ -225,50 +221,6 @@ ss_npreg_est <- function(p1_df, p2_df, N_obs, type = "loess") {
   # 3. Estimate variance via linearization
   vhat <- var(eta) / nrow(p1_df)
   # v0 <- (1 / nrow(p1_df) - 1 / N_obs) * var(eta)
-
-  # p2a_df <- p2a_df %>%
-  #   mutate(pi2a = pi2 * nrow(p2a_df) / nrow(p2_df))
-  # p2b_df <- p2b_df %>%
-  #   mutate(pi2b = pi2 * nrow(p2b_df) / nrow(p2_df))
-
-  # v1_t <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
-  # v2_t <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
-  # cov_t <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
-
-  # # Since Phase 1 is SRS
-  # p1ij <- nrow(p1_df) / N_obs * (nrow(p1_df) - 1) / (N_obs - 1)
-  # eps_a <- p2_df$Y - ma_2
-  # eps_b <- p2_df$Y - mb_2
-
-  # n2a <- nrow(p2a_df)
-  # n2b <- nrow(p2b_df)
-  # n2 <- nrow(p2_df)
-
-  # for (i in 1:nrow(p2_df)) {
-  #   for (j in 1:nrow(p2_df)) {
-  #     if (i == j) {
-  #       v1_t[i, j] <- 
-  #       1 / 4 * (2 - p2_df$pi2[i]) / p2_df$pi1[i] * eps_b[i]^2 / p2_df$pi2[i]^2
-  #       v2_t[i, j] <- 
-  #       1 / 4 * (2 - p2_df$pi2[i]) / p2_df$pi1[i] * eps_a[i]^2 / p2_df$pi2[i]^2
-  #       cov_t[i, j] <- 
-  #       1/(p2_df$pi2[i] * p2_df$pi1[i]) * n2a/n2 * (n2a - 1)/n2 * eps_b[i] * eps_a[i]
-  #     } else {
-  #       v1_t[i, j] <- 1 / 4 * (p2_df$pi2[i]) / (p2_df$pi1[i] * p2_df$pi1[j]) *
-  #         eps_b[i] * eps_b[j] / (p2_df$pi2[i] * p2_df$pi2[j])
-  #       v2_t[i, j] <- 1 / 4 * 1 / (p2_df$pi1[i] * p2_df$pi1[j]) *
-  #         eps_a[i] * eps_a[j] / (p2_df$pi2[i] * p2_df$pi2[j])
-  #       cov_t[i, j] <- 1 / (p2_df$pi2[i] * p2_df$pi1[i]) * n2a / n2 * 
-  #       ((n2 - n2a) / (n2 - 1) + (n2a - 1)/n2) * eps_b[i] * eps_a[i]
-  #     }
-  #   }
-  # }
-
-  # v1 <- sum(as.numeric(v1_t)) / N_obs^2
-  # v2 <- sum(as.numeric(v2_t)) / N_obs^2
-  # v3 <- sum(as.numeric(cov_t)) / N_obs^2
-
-  # vhat <- (v0 + v1 + v2 + v3)
 
   return(list(theta, vhat))
 }
@@ -292,7 +244,8 @@ registerDoParallel(clust)
 
 mc_res <- 
   foreach(iter=1:B_sims,
-          .packages = c("dplyr", "randomForest", "mgcv")) %dopar% {
+          .packages = c("dplyr", "randomForest", "mgcv"),
+          .options.RNG  = 2) %dorng% {
 
   if (iter %% 100 == 0) {
     print(paste0("Iter: ", iter))
@@ -410,6 +363,23 @@ mc_res %>%
 ```{r}
 #| label: individual plots
 
+library(ggplot2)
+
+set.seed(1)
+pop_df <- gen_pop(N_obs, n1_obs)
+true_theta <- mean(pop_df$Y)
+
+  samps <- gen_samps(pop_df)
+  p1_df <- samps[[1]]
+  p2_df <- samps[[2]]
+
+ggplot(pop_df, aes(x = X, y = Y)) + 
+geom_point() +
+geom_smooth(method = "lm", formula = y ~ x)
+
+ggplot(p2_df, aes(x = X, y = Y)) + 
+geom_point() +
+geom_smooth(method = "lm", formula = y ~ x)
 
 
 ```

@@ -24,8 +24,8 @@ calibration of @kwon2024debiased. We check for the following:
 
 For the estimator $\hat Y$ we construct 
 
-1. The $\pi^*$-estimator,
-2. The two-phase regression estimator,
+1. The a HT-estimator,
+2. The non-nested two-phase regression estimator ($A_0$ and $A_2$),
 3. The debiased calibration estimator (with known finite population total), and
 4. The debiased calibration estimator with estimated population totals from the
    Phase 1 sample.
@@ -38,16 +38,12 @@ For the estimator $\hat Y$ we construct
 B_sims <- 1000
 
 N_obs <- 10000
-n1_obs <- 1000
-n2_obs <- 2000
+n1_obs <- 2000
 
 library(dplyr)
-library(GECal)
 library(nleqslv)
 library(doParallel)
 library(doRNG)
-library(CVXR)
-library(rlang)
 
 ```
 
@@ -58,12 +54,12 @@ $$
 X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
 X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
 X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
-X_{4i} &\stackrel{ind}{\sim} Unif(0.1, 0.9) \\
+Z_i &\stackrel{ind}{\sim} N(0, 1) \\
 \varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
 Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
-\pi_{0i} &= \Phi(-x_{1i} - 2)\\
-\pi_{1i} &= |x_{1i}| / \sum_{i \in U} |x_{i1}|\\
-\pi_{2i} &= n_2 / N.\\
+\pi_{0i} &= \min(\max(\Phi(-x_{1i}), 0.02), 0.9)\\
+\pi_{1i} &= n_1 / N\\
+\pi_{2i} &= \Phi(x_{2i} - 2) \\
 \end{aligned}
 $$
 
@@ -72,8 +68,8 @@ We observe the following columns in each sample
 | Sample | $X_1$ | $X_2$ | $X_3$ |  $Y$ |
 |:-------|------:|------:|------:|-----:|
 | $A_0$  | ✓     | ✓     | ✓     |  ✓   |  
-| $A_1$  | ✓     | ✓     |       |      |  
-| $A_2$  | ✓     |       | ✓     |      |  
+| $A_1$  | ✓     |       | ✓     |      |  
+| $A_2$  | ✓     | ✓     |       |      |  
 
 For the sampling mechanism both $A_0$ and $A_1$ are selected using a Poisson
 sample with response probabilities $\pi_{0i}$ and $\pi_{1i}$ respectively. The
@@ -82,69 +78,63 @@ sample $A_2$ is a simple random sample.
 ```{r}
 #| label: generate population and samples
 
-gen_pop <- function(obs) {
+gen_pop <- function(N_obs, n1_obs) {
 
-  x1 <- rnorm(obs, 2, 1)
-  x2 <- runif(obs, 0, 4)
-  x3 <- rnorm(obs, 0, 1)
-  x4 <- runif(obs, 0.1, 0.9)
-  eps <- rnorm(obs)
+  x1 <- rnorm(N_obs, 2, 1)
+  x2 <- runif(N_obs, 0, 4)
+  x3 <- rnorm(N_obs, 5, 1)
+  z <- rnorm(N_obs, 0, 1)
+
+  eps <- rnorm(N_obs)
 
   y <- 3 * x1 + 2 * x2 + eps
 
-  return(tibble(X1 = x1, X2 = x2, X3 = x3, X4 = x4, Y = y))
-}
+  pi0 <- pmin(pmax(pnorm(-x1), 0.02), 0.9)
+  # pi1 <- pnorm(-z - 1) # Informative sampling. Do we want this?
+  pi1 <- n1_obs / N_obs
+  # pi2 <- pmin(pmax(pnorm(x2 - 4), 0.01), 0.9)
+  pi2 <- pnorm(x2 - 2)
 
-#' This function adds sampling probabilites to a population data frame.
-#'
-#' @details The phase 2 formula will be included for every element. There is no
-#' information about if an element is part of the Phase 1 or Phase 2 sample.
-update_pop <- function(pop_df, p0_formula, p1_formula, p2_formula) {
-
-  pi0 <- eval(parse_expr(p0_formula))
-  pi1 <- eval(parse_expr(p1_formula))
-  pi2 <- eval(parse_expr(p2_formula))
-
-  pop_df %>%
-    mutate(pi0 = pi0, pi1 = pi1, pi2 = pi2)
+  return(tibble(X1 = x1, X2 = x2, X3 = x3, Y = y,
+                pi0 = pi0, pi1 = pi1, pi2 = pi2))
 }
 
 #' This function generates Phase 1 and Phase 2 samples from an updated
 #' population with selection probabilites.
-gen_samps <- function(upop_df, p0_type, p1_type, p2_type) {
+gen_samps <- function(pop_df, p0_type, p1_type, p2_type) {
 
   if (p0_type == "poisson") {
-    del0 <- rbinom(nrow(upop_df), 1, upop_df$pi0)
-  } else if (p1_type == "srs") {
-    ind <- sample(1:nrow(upop_df), size = upop_df$pi0[1] * nrow(upop_df))
-    del0 <- as.numeric(1:nrow(upop_df) %in% ind)
+    del0 <- rbinom(nrow(pop_df), 1, pop_df$pi0)
+  } else if (p0_type == "srs") {
+    ind <- sample(1:nrow(pop_df), size = pop_df$pi0[1] * nrow(pop_df))
+    del0 <- as.numeric(1:nrow(pop_df) %in% ind)
   } else {
     stop("We have only implemented poisson and srs for Sample 0.")
   }
 
-  p0_df <- mutate(upop_df, del0 = del0) %>% filter(del0 == 1)
+  p0_df <- mutate(pop_df, del0 = del0) %>% filter(del0 == 1)
 
   if (p1_type == "poisson") {
-    del1 <- rbinom(nrow(upop_df), 1, upop_df$pi1)
+    del1 <- rbinom(nrow(pop_df), 1, pop_df$pi1)
   } else if (p1_type == "srs") {
-    ind <- sample(1:nrow(upop_df), size = upop_df$pi1[1] * nrow(upop_df))
-    del1 <- as.numeric(1:nrow(upop_df) %in% ind)
+    ind <- sample(1:nrow(pop_df), size = pop_df$pi1[1] * nrow(pop_df))
+    del1 <- as.numeric(1:nrow(pop_df) %in% ind)
   } else {
     stop("We have only implemented poisson and srs for Sample 1.")
   }
 
-  p1_df <- mutate(upop_df, del1 = del1) %>% filter(del1 == 1)
+  p1_df <- mutate(pop_df, del1 = del1) %>% filter(del1 == 1)
 
   if (p2_type == "poisson") {
-    del2 <- rbinom(nrow(upop_df), 1, upop_df$pi2)
+    del2 <- rbinom(nrow(pop_df), 1, pop_df$pi2)
   } else if (p2_type == "srs") {
-    ind <- sample(1:nrow(upop_df), size = round(upop_df$pi2[1] * nrow(upop_df)))
-    del2 <- as.numeric(1:nrow(upop_df) %in% ind)
+    ind <- sample(1:nrow(pop_df), size = round(pop_df$pi2[1] * nrow(pop_df)))
+    del2 <- as.numeric(1:nrow(pop_df) %in% ind)
   } else {
     stop("We have only implemented poisson and srs for Sample 2.")
   }
 
-  p2_df <- mutate(upop_df, del2 = del2) %>% filter(del2 == 1)
+  p2_df <- mutate(pop_df, del2 = del2) %>% filter(del2 == 1)
 
   return(list(p0_df, p1_df, p2_df))
 }
@@ -154,6 +144,312 @@ gen_samps <- function(upop_df, p0_type, p1_type, p2_type) {
 ```{r}
 #| label: estimators
 
+ht_est <- function(p0_df, N_obs, p0_type = "poisson") {
 
+  theta <- sum(p0_df$Y / p0_df$pi0) / N_obs
+
+  if (p0_type == "poisson") {
+
+    v_hat <- sum((1 - p0_df$pi0) / p0_df$pi0^2 * p0_df$Y^2) / N_obs^2
+
+  } else {
+
+    v_hat <- NA
+
+  }
+
+  return(list(theta = theta, v_hat = v_hat))
+}
+
+reg_est <- function(p0_df, p1_df, N_obs, p0_samp = "poisson", p1_samp = "srs") {
+
+  v_poisson <- sum((1 - p0_df$pi0) / p0_df$pi0^2 * p0_df$Y^2) / N_obs^2
+  v_srs <- (1 / nrow(p0_df) - 1 / N_obs) * var(p0_df$Y)
+  d_eff <- v_poisson / v_srs
+  n0_eff <- nrow(p0_df) / d_eff
+  n1_eff <- nrow(p1_df)
+
+  x1_hat <- 
+    c(sum(p1_df$X1 / p1_df$pi1) / N_obs,
+      sum(p1_df$X2 / p1_df$pi1) / N_obs)
+
+  x0_hat <- 
+    c(sum(p0_df$X1 / p0_df$pi0) / N_obs,
+      sum(p0_df$X2 / p0_df$pi0) / N_obs)
+
+  w <- n1_eff / (n1_eff + n0_eff)
+  xc_hat <- (n1_eff * x1_hat + n0_eff * x0_hat) / (n1_eff + n0_eff)
+  
+  # Estimate beta
+  mod <- lm(Y ~ X1 + X2, data = p0_df)
+
+  # Regression Estimation
+  y_ht <- sum(p0_df$Y / p0_df$pi0) / N_obs
+  theta <- y_ht + sum((xc_hat - x0_hat) * mod$coefficients[2:3])
+
+  # Variance Estimation
+  coefs <- mod$coefficients
+  eps <- (p0_df$Y - coefs[1] * w - coefs[2] * w * p0_df$X1 - coefs[3] * w * p0_df$X2)
+  var_x <- 
+  (1 / nrow(p1_df) - 1 / N_obs) * var(matrix(c(p1_df$X1, p1_df$X2), ncol = 2))
+
+  v1 <- w^2 * matrix(coefs[2:3], nrow = 1) %*% var_x %*% matrix(coefs[2:3], ncol = 1)
+  v2 <- sum((1 - p0_df$pi0) / p0_df$pi0^2 * eps^2) / N_obs^2
+
+  cov_xy <- c(sum((1 - p0_df$pi0) / p0_df$pi0^2 * coefs[2] * 
+                 (n0_eff) / (n1_eff + n0_eff) * p0_df$X1 * eps) / N_obs^2,
+              sum((1 - p0_df$pi0) / p0_df$pi0^2 * coefs[3] * 
+                 (n0_eff) / (n1_eff + n0_eff) * p0_df$X3 * eps) / N_obs^2)
+  v3 <- sum(cov_xy)
+
+  v_hat <- v1 + v2 + v3
+
+  return(list(theta = theta, v_hat = as.numeric(v_hat)))
+}
+
+
+#' This  function does the debiased calibration
+#'
+#' @param zmat - A n x p matrix
+#' @param w1i - A vector of length n
+#' @param d2i - A vector of length n
+#' @param T1 - A vector of length p
+#' @param qi - A scaler or a vector of length n
+#' @param entropy - One of "EL", "ET"
+solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
+
+  f <- function(lam, zmat, w1i, d2i, T1, qi, entropy, returnw = FALSE) {
+
+    if (entropy == "EL") {
+      w <- -d2i / drop(zmat %*% lam)
+    } else if (entropy == "ET") {
+      w <- d2i * exp(drop(zmat %*% lam))
+    } else {
+      stop("We only accept entropy of EL or ET.")
+    }
+
+    if (returnw) {
+      return(w)
+    } else {
+      return(drop((w * w1i * qi) %*% zmat) - T1)
+    }
+  }
+
+  j <- function(lam, zmat, w1i, d2i, T1, qi, entropy) {
+    if (entropy == "EL") {
+      res <- t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
+    } else if (entropy == "ET") {
+      res <- t(zmat) %*% diag((w1i * qi * d2i) * exp(drop(zmat %*% lam))) %*% zmat
+    }
+
+    return(res)
+  }
+
+  init <- c(rep(0, ncol(zmat) - 1), 1)
+  res <- 
+  nleqslv(init, f, jac = j, zmat = zmat, w1i = w1i, d2i = d2i,
+          T1 = T1, qi = qi, entropy = entropy,
+          method = "Newton", control = list(maxit = 1e5, allowSingular = TRUE))
+
+  resw <- f(res$x, zmat, w1i, d2i, T1, qi, entropy, returnw = TRUE)
+
+  if (!(res$termcd %in% c(1))) {
+    return(NA)
+  }
+
+  return(resw)
+
+}
+
+dc_ms_ybar <- 
+  function(p0_df, p1_df, p2_df, pop_df, estT1, qi = 1, entropy = "EL", reg = FALSE) {
+
+  d_vec <- 1 / (p0_df$pi0)
+  if (entropy == "EL") {
+    gdi <- -1 / d_vec
+    gdip <- -1 / (1 / pop_df$pi0)
+    gpinv <- d_vec^2
+  } else if (entropy == "ET") {
+    gdi <- log(d_vec)
+    gdip <- log(1 / pop_df$pi0)
+    gpinv <- d_vec
+  } else {
+    stop("This type of entropy has not yet been implemented.")
+  }
+
+  samp_X <- cbind(rep(1, nrow(p0_df)), as.matrix(select(p0_df, X1, X2, X3)))
+  zmat <- cbind(samp_X, gdi)
+  w1i <- 1
+  d0i <- 1 / p0_df$pi0
+
+  if (estT1) {
+    x1_0 <- sum(p0_df$X1 / p0_df$pi0) / N_obs
+    x2_0 <- sum(p0_df$X2 / p0_df$pi0) / N_obs
+    x3_0 <- sum(p0_df$X3 / p0_df$pi0) / N_obs
+
+    x1_1 <- sum(p1_df$X1 / p1_df$pi1) / N_obs
+    x3_1 <- sum(p1_df$X3 / p1_df$pi1) / N_obs
+
+    x1_2 <- sum(p2_df$X1 / p2_df$pi2) / N_obs
+    x2_2 <- sum(p2_df$X2 / p2_df$pi2) / N_obs
+
+    xhat <- c(x1_0, x2_0, x3_0, x1_1, x3_1, x1_2, x2_2)
+    x_mat <- 
+    matrix(c(1, 0, 0,
+             0, 1, 0,
+             0, 0, 1,
+             1, 0, 0,
+             0, 0, 1,
+             1, 0, 0,
+             0, 1, 0), ncol = 3, byrow = TRUE)
+    vmat <- matrix(0, nrow = 7, ncol = 7)
+    vmat[1, 1] <- sum((1 / p0_df$pi0^2 - 1 / p0_df$pi0) * p0_df$X1^2) / nrow(pop_df)^2
+    vmat[1, 2] <- 
+      sum((1 / p0_df$pi0^2 - 1 / p0_df$pi0) * p0_df$X1 * p0_df$X2) / nrow(pop_df)^2
+    vmat[1, 3] <-
+      sum((1 / p0_df$pi0^2 - 1 / p0_df$pi0) * p0_df$X1 * p0_df$X3) / nrow(pop_df)^2
+    vmat[2, 1] <- vmat[1, 2]
+    vmat[3, 1] <- vmat[1, 3]
+    vmat[2, 2] <- sum((1 / p0_df$pi0^2 - 1 / p0_df$pi0) * p0_df$X2^2) / nrow(pop_df)^2
+    vmat[2, 3] <-
+      sum((1 / p0_df$pi0^2 - 1 / p0_df$pi0) * p0_df$X2 * p0_df$X3) / nrow(pop_df)^2
+    vmat[3, 2] <- vmat[2, 3]
+    vmat[3, 3] <- sum((1 / p0_df$pi0^2 - 1 / p0_df$pi0) * p0_df$X3^2) / nrow(pop_df)^2
+
+    vmat[4, 4] <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var(p1_df$X1)
+    vmat[5, 5] <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * var(p1_df$X3)
+    vmat[4, 5] <- (1 / nrow(p1_df) - 1 / nrow(pop_df)) * cov(p1_df$X1, p1_df$X3)
+    vmat[5, 4] <- vmat[4, 5]
+
+    vmat[6, 6] <- sum((1 / p2_df$pi2^2 - 1 / p2_df$pi2) * p2_df$X1^2) / nrow(pop_df)^2
+    vmat[7, 7] <- sum((1 / p2_df$pi2^2 - 1 / p2_df$pi2) * p2_df$X2^2) / nrow(pop_df)^2
+    vmat[6, 7] <- 
+      sum((1 / p2_df$pi2^2 - 1 / p2_df$pi2) * p2_df$X1 * p2_df$X2) / nrow(pop_df)^2
+    vmat[7, 6] <- vmat[6, 7]
+
+    xgls <- drop(MASS::ginv(t(x_mat) %*% solve(vmat) %*% x_mat) %*% 
+                (t(x_mat) %*% solve(vmat) %*% xhat))
+
+    T1 <- c(nrow(pop_df),
+            xgls[1] * nrow(pop_df),
+            xgls[2] * nrow(pop_df),
+            xgls[3] * nrow(pop_df),
+            sum(gdip * qi))
+  } else {
+    T1 <- c(nrow(pop_df),
+            sum(pop_df$X1),
+            sum(pop_df$X2),
+            sum(pop_df$X3),
+            sum(gdip * qi))
+  }
+
+  dc_w <- solveGE(zmat, w1i, d0i, T1, qi, entropy)
+
+  # Mean Estimation
+  theta <- sum(p0_df$Y * dc_w * w1i) / nrow(pop_df)
+  z_dc <- model.matrix(~1 + p0_df$X1 + p0_df$X2 + p0_df$X3 + gdi)
+  gam_dc <- 
+    solve(t(z_dc) %*% diag(d0i * gpinv * qi) %*% z_dc,
+          t(z_dc) %*% diag(d0i * gpinv) %*% p0_df$Y)
+  coefs <- as.numeric(gam_dc)
+  u_mat <- 
+  matrix(c(rep(1, nrow(p0_df)), p0_df$X1, p0_df$X2, p0_df$X3, gdi * qi), ncol = 5)
+  eps <- (p0_df$Y - drop(u_mat %*% coefs))
+  if (estT1) {
+    # Variance Estimation
+    # This is the variance of bar x gls not x gls total.
+    var_x <- MASS::ginv(t(x_mat) %*% MASS::ginv(vmat) %*% x_mat)
+
+    v1 <- matrix(coefs[2:4], nrow = 1) %*% var_x %*% matrix(coefs[2:4], ncol = 1)
+    v2 <- sum((1 - p0_df$pi0) / p0_df$pi0^2 * eps^2) / nrow(pop_df)^2
+    v_hat <- v1 + v2 
+  } else {
+    v2 <- sum((1 - p0_df$pi0) / p0_df$pi0^2 * eps^2) / nrow(pop_df)^2
+    v_hat <- v2
+  }
+  if (reg) {
+    theta <- 
+    (drop(T1 %*% gam_dc) + 
+      sum(1 / p0_df$pi0 * (p0_df$Y - drop(z_dc %*% gam_dc)))) / nrow(pop_df) 
+  }
+
+  return(list(theta = theta, v_hat = as.numeric(v_hat)))
+}
+
+
+
+```
+
+```{r}
+#| label: run MCMC
+
+set.seed(1)
+pop_df <- gen_pop(N_obs, n1_obs)
+true_theta <- mean(pop_df$Y)
+
+clust <- makeCluster(min(detectCores() - 2, 100), outfile = "")
+registerDoParallel(clust)
+
+mc_res <- 
+  foreach(iter=1:B_sims,
+          .packages = c("dplyr", "nleqslv"),
+          .options.RNG = 1) %dorng% {
+
+    if (iter %% 100 == 0) {
+      print(paste0("Iter: ", iter))
+    }
+
+    samps <- gen_samps(pop_df, "poisson", "srs", "poisson")
+    p0_df <- samps[[1]]
+    p1_df <- samps[[2]]
+    p2_df <- samps[[3]]
+
+    ht <- ht_est(p0_df, N_obs)
+    reg <- reg_est(p0_df, p1_df, N_obs)
+    ms_pop <- dc_ms_ybar(p0_df, p1_df, p2_df, pop_df, estT1 = FALSE)
+    ms_est <- dc_ms_ybar(p0_df, p1_df, p2_df, pop_df, estT1 = TRUE)
+    ms_reg <- dc_ms_ybar(p0_df, p1_df, p2_df, pop_df, estT1 = TRUE, reg = TRUE)
+
+    return(tibble(Est = c("HT", "NNReg", "MSPop", "MSEst", "MSReg"),
+                  Theta = c(ht[[1]], reg[[1]], ms_pop[[1]], ms_est[[1]], ms_reg[[1]]),
+                  Var = c(ht[[2]], reg[[2]], ms_pop[[2]], ms_est[[2]], ms_reg[[2]]),
+                  Iter = iter)
+    )
+
+  } %>% bind_rows()
+
+stopCluster(clust)
+
+```
+
+```{r}
+#| label: analyze results
+
+# Check for failures
+filter(mc_res, is.na(Theta))
+
+# Analyze Mean
+mc_res %>%
+  mutate(err = Theta - true_theta) %>%
+  mutate(CI = abs(err) < qnorm(0.975) * sqrt(Var)) %>%
+  group_by(Est) %>%
+  summarize(Bias = mean(err, na.rm = TRUE),
+            RMSE = sqrt(mean(err^2, na.rm = TRUE)),
+            EmpCI = mean(CI, na.rm = TRUE),
+            sdest = sd(Theta, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(Ttest = abs(Bias) / sqrt(sdest^2 / B_sims)) %>%
+  select(-sdest) %>%
+  mutate(Ind = case_when(
+    Est == "MSReg" ~ 5,
+    Est == "MSEst" ~ 4,
+    Est == "MSPop" ~ 3,
+    Est == "NNReg" ~ 2,
+    Est == "HT" ~ 1)
+  ) %>%
+  arrange(Ind) %>%
+  select(Est, Bias, RMSE, EmpCI, Ttest) %>%
+  knitr::kable("latex", booktabs = TRUE, digits = 4) %>%
+  cat(file = "tables/msdcsim1.tex")
 
 ```

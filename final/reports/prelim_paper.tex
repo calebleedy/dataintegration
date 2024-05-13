@@ -1007,91 +1007,160 @@ and $\hat w_{im}$ solves
   \in A_m} w_i \bf z_i\right)
 \end{equation}
 
-where $\hat T = (\hat{\bf X}^{(m)}, \sum_{i \in U} g(d_{im}) q_i)^T$ and $d_{im}$
+where $\hat T = (\hat{\bf X}^{(A_m)}, \sum_{i \in U} g(d_{im}) q_i)^T$ and $d_{im}$
 are the design weights for $A_m$.
 
 \subsection{Theoretical Results}
 
 \subsection{Simulation Study 3.1}
 
+We first run a simulation for the case in which we only have one sample in which
+we observe $Y$. We have the following superpopulation model with $N=10000$
+elements:
+
+
+$$
+\begin{aligned}
+X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
+X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
+X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
+Z_i &\stackrel{ind}{\sim} N(0, 1) \\
+\varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
+\pi_{0i} &= \min(\max(\Phi(-x_{1i}), 0.02), 0.9)\\
+\pi_{1i} &= n_1 / N.\\
+\pi_{2i} &= \Phi(x_{2i} - 2) \\
+\end{aligned}
+$$
+
+We observe the following columns in each sample
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    Sample & $X_1$ & $X_2$ & $X_3$ & $Y$ \\
+    \midrule
+   $A_0$  & \checkmark     & \checkmark     & \checkmark     &  \checkmark \\    
+   $A_1$  & \checkmark     &       & \checkmark     &    \\  
+   $A_2$  & \checkmark     & \checkmark     &       &    \\  
+   \bottomrule
+  \end{tabular}
+\end{table}
+
+For the sampling mechanism both $A_0$ and $A_1$ are selected using a Poisson
+sample with response probabilities $\pi_{0i}$ and $\pi_{1i}$ respectively. The
+sample $A_2$ is a simple random sample with $n_1 = 2000$. We compare five
+different estimators for $\theta = E[Y]$.
+
+\begin{itemize}
+  \item[1.] Horvitz-Thompson estimator (HT): $\hat Y = N^{-1} \sum_{i \in A_0}
+    \frac{y_i}{\pi_{0i}}$,
+  \item[2.] Non-nested regression (NNReg): This is the non-nested regression from
+    Equation~\eqref{eq:nnopt} with only using information from Samples $A_0$ and
+    $A_1$,
+  \item[3.] Multi-Source proposed (MSEst): This is the proposed estimator from
+    Equation~\eqref{eq:dc3},
+  \item[4.] Multi-Source population (MSPop): This is the proposed estimator with
+    using the true value of $T_1$ from the population,
+  \item[5.] Multi-Source regression (MSReg): This is the linearized regression
+    estimator from FIXME.
+\end{itemize}
+
+\begin{table}[ht!]
+  \centering
+  \input{tables/msdcsim1.tex}
+% This table was generated from ../../src/explore/20240506-msdcsim.qmd
+\caption{This table shows the results of Simulation Study 2. It displays the
+Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+unbiasedness of each estimator for the estimators: HT, NNReg, MSPop, MSEst, and
+MSReg.}
+\label{tab:msdc-mean}
+\end{table}
+
+As expected MSPop has the lowest RMSE because it also uses the population
+totals. It seems like MSEst and MSReg are almost equivalent, which is good
+because they are also supposed to be identical. The MSEst estimator outperforms
+NNReg because it also uses information from $A_2$, even though it implicitly
+uses a regression estimator with $X_3$ as a covariate, which is unnecessary.
+
 \subsection{Simulation Study 3.2}
 
+Building off of the previous simulation study, we now consider the case for
+which we observe $Y$ in separate samples.
+We have the following superpopulation model with $N = 10,000$ elements:
+
+$$
+\begin{aligned}
+X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
+X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
+X_{3i} &\stackrel{ind}{\sim} N(5, 1) \\
+\varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
+\pi_{A1i} &= \min(\max(\Phi(-x_{1i}), 0.02), 0.9)\\
+\pi_{A2i} &= \min(\max(\Phi(x_{3i} - 6), 0.02), 0.95) \\
+\pi_{B1i} &= n_1 / N\\
+\pi_{B2i} &= \Phi(x_{2i} - 2) \\
+\end{aligned}
+$$
+
+We observe the following columns in each sample
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    Sample & $X_1$ & $X_2$ & $X_3$ & $Y$ \\
+    \midrule
+   $A_1$  & \checkmark     & \checkmark     & \checkmark     &  \checkmark \\    
+   $A_2$  & \checkmark     & & \checkmark     &  \checkmark \\    
+   $B_1$  & \checkmark     &       & \checkmark     &    \\  
+   $B_2$  & \checkmark     & \checkmark     &       &    \\  
+   \bottomrule
+  \end{tabular}
+\end{table}
+
+For the sampling mechanism $A_1$, $A_2$ and $B_2$ are selected using a Poisson
+sample with response probabilities $\pi_{A1i}$, $\pi_{A2i}$ and $\pi_{B1i}$
+respectively. The $B_2$ sample is a simple random sample (SRS). We estimate the
+following methods:
+
+\begin{itemize}
+  \item[1.] Horvitz-Thompson estimator for $A_1$ (HTA1):
+
+    $$\hat Y_{HT, A_1} = \sum_{i \in A_1} \frac{y_i}{\pi_{A1i}}.$$
+  \item[2.] Horvitz-Thompson estimator for $A_2$ (HTA1):
+    $$\hat Y_{HT, A_2} = \sum_{i \in A_2} \frac{y_i}{\pi_{A2i}}.$$
+  \item[3.] Weighted Horvitz-Thompson estimator (WHT):
+    $$\hat Y_{WHT} = \frac{\hat Y_{HT, A_1} / \hat V_{A_1} + \hat Y_{HT, A_2} /
+    \hat V_{A_2}}{1 / \hat V_{A_1} + 1 / \hat V_{A_2}}$$
+
+    where $\hat V_{A_m}$ is the estimated variance of the Horvitz-Thompson
+    estimator $\hat Y_{HT, A_m}$.
+  \item[4.] Multi-Source proposed (MSEst): This is the proposed estimator from
+    Equation~FIXME.
+  \item[5.] Multi-Source population (MSPop): This is the proposed estimator with
+    using the true value of $T_1$ from the population,
+  \item[6.] Multi-Source regression (MSReg): This is the linearized regression
+    estimator from FIXME.
+\end{itemize}
+
+\begin{table}[ht!]
+  \centering
+  \input{tables/msdcsim2.tex}
+% This table was generated from ../../src/explore/20240511-msdcsim2.qmd
+\caption{This table shows the results of Simulation Study 2. It displays the
+Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+unbiasedness of each estimator for the estimators: HT, NNReg, MSPop, MSEst, and
+MSReg.}
+\label{tab:msdc2-mean}
+\end{table}
+
+% FIXME: Change to GLS estimate of Y.
 
 \newpage 
 
 \bibliographystyle{chicago}
 \bibliography{references}
 
-\newpage
-
-\appendix
-
-\section{Derivation of the Estimated Variance of DC-Pop in Simulation 1}
-
-We know that $\hat Y_{DC-Pop} = \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(\hat
-\lambda) y_i$ where $\hat w_{2i|1}$ solves
-
-  \begin{equation}
-    \argmin_{w_{2|1}} \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i})
-    \text{ such that}
-    \sum_{i \in A_2} w_{1i} w_{2i|1} z_i = \sum_{i \in U} z_i.
-  \end{equation}
-
-This means that using the technique of \cite{randles1982asymptotic},
-the linearization of $\hat Y_{DC-Pop}$ is 
-
-$$\hat Y_{DC-Pop, \ell} = \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(\hat \lambda) y_i + 
-\left( \sum_{i \in U} z_i - 
-\sum_{i \in A_2} w_{1i} w_{2i|1}(\hat \lambda) z_i \right) \phi.$$
-
-Since $\phi^*$ satisfies $E\left[\frac{\partial}{\partial \lambda} \hat Y_{DC-Pop,
-\ell}(\lambda^*, \phi^*)\right] = 0$, $\phi^*$ is the same as it is for $\hat Y_{DC-Est,
-\ell}$ with $q_i = 1$,
-
-  \begin{align*}
-    \phi^*
-    &= E\left[\sum_{i \in A_2} \frac{w_{1i}z_i z_i^T }{g'(d_{2i|1})}\right]^{-1}
-    E\left[\sum_{i \in A_2} \frac{w_{1i}z_i y_i}{g'(d_{2i|1})}\right]\\
-    &= \left[\sum_{i \in U} \frac{\pi_{2i|1}z_i z_i^T}{g'(d_{2i|1})}\right]^{-1}
-    \left[\sum_{i \in U} \frac{\pi_{2i|1} z_i y_i}{g'(d_{2i|1})}\right].\\
-  \end{align*}
-
-Hence,
-
-$$
-\hat Y_{DC-Pop, \ell} = \sum_{i \in U} z_i \phi^* + \sum_{i \in A_2} w_{1i} \hat
-w_{2i|1}(\lambda^*) (y_i - z_i \phi^*).
-$$
-
-Unlike the two-phase regression estimator and $\hat Y_{DC-Est}$ this
-linearization only has uncertainty in the second term. The first term is a
-population estimate. Let $\varepsilon_i = (y_i - z_i \phi^*)$. This means that
-
-\begin{align*}
-  V(\hat Y_{DC-Pop, \ell}) 
-  &= V(E[\hat Y_{DC-Pop, \ell} \mid A_1]) + E[V(\hat Y_{DC-Pop, \ell} \mid A_1)] \\
-  &= V\left(\sum_{i \in A_1} w_{1i} \pi_{2i|1} \hat w_{2i|1}(\lambda^*)
-  \varepsilon_i\right) + 
-  E\left[\sum_{i \in A_1} \pi_{2i|1}(1 - \pi_{2i|1}) w_{1i}^2 \hat w_{2i|1}(\lambda^*)^2
-    \varepsilon_i^2 \right]\\
-  &= \sum_{i \in U} \pi_{1i}(1 - \pi_{1i}) w_{1i}^2 \pi_{2i|1}^2 
-  \hat w_{2i|1}(\lambda^*)^2 \varepsilon_i^2 +
-  \sum_{i \in U} \pi_{1i}\pi_{2i|1}(1 - \pi_{2i|1}) w_{1i}^2 \hat w_{2i|1}(\lambda^*)^2
-    \varepsilon_i^2\\
-  &= \sum_{i \in U} w_{1i} w_{2i|1}(\lambda^*)^2 \pi_{2i|1}
-  ((1 - \pi_{1i})\pi_{2i|1} + (1 - \pi_{2i|1})) \varepsilon_i^2.
-\end{align*}
-
-Since $w_{2i|1}(\lambda^*) \pi_{2i|1} = 1$, there are two potential estimators
-of the variance,
-
-\begin{align*}
-  \hat V_1 &= \sum_{i \in A_2} w_{1i}^2 w_{2i|1}(\hat \lambda)^2 
-  ((1 - \pi_{1i})\pi_{2i|1} + (1 - \pi_{2i|1})) \varepsilon_i^2\\
-  \hat V_2 &= \sum_{i \in A_2}  w_{1i}^2 d_{2i|1}^2
-  ((1 - \pi_{1i})\pi_{2i|1} + (1 - \pi_{2i|1})) \varepsilon_i^2.
-\end{align*}
-
-In the current simulation, we use $\hat V_1$, but I have tried $\hat V_2$ and
-the results are similar.
 \end{document}

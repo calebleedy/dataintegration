@@ -914,6 +914,10 @@ INPUT ./tables/nndcsim_mean.tex
 INPUT tables/nndcsim_mean.tex
 INPUT ./tables/nndcsim_mean.tex
 INPUT tables/nndcsim_mean.tex
+INPUT ./tables/msdcsim1.tex
+INPUT tables/msdcsim1.tex
+INPUT ./tables/msdcsim1.tex
+INPUT tables/msdcsim1.tex
 INPUT ./prelim_paper.bbl
 INPUT prelim_paper.bbl
 INPUT ./prelim_paper.bbl
@@ -943,4 +947,5 @@ INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb
+INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb
