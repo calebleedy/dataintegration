@@ -39,11 +39,12 @@ gen_pop <- function(obs) {
   x2 <- runif(obs, 0, 4)
   x3 <- rnorm(obs, 0, 1)
   x4 <- runif(obs, 0.1, 0.9)
+  z <- rnorm(obs, 0, 1)
   eps <- rnorm(obs)
 
-  y <- 3 * x1 + 2 * x2 + eps
+  y <- 3 * x1 + 2 * x2 + 0.5 * z + eps
 
-  return(tibble(X1 = x1, X2 = x2, X3 = x3, X4 = x4, Y = y))
+  return(tibble(X1 = x1, X2 = x2, X3 = x3, X4 = x4, Z = z, Y = y))
 }
 
 #' This function adds sampling probabilites to a population data frame.
@@ -120,7 +121,7 @@ pi_star <- function(p1_df, p2_df, pop_obs, sampling = "poisson-poisson") {
       for (j in 1:nrow(p2_df)) {
         if (i == j) {
           pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
-          tmp[i, j] <- ((pi2i - (pi2i)^2 / pi2i) * p2_df$Y[i]^2 / (pi2i^2)
+          tmp[i, j] <- ((pi2i - (pi2i)^2) / pi2i) * p2_df$Y[i]^2 / (pi2i^2)
         } else {
           pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
           pi2j <- p2_df$pi2[j] * p2_df$pi1[j]
@@ -381,32 +382,32 @@ dc_ybar <-
 
       # # This works but why 1 / nrow(p2_df) in v1 instead of 1 / nrow(p1_df)?
       # Because, we essentially do not use the first stage.
-      # var_eps <- var(eps2)
-      # v1 <- (1 / nrow(p2_df) - 1 / nrow(pop_df)) * var_eps
-      # v2 <- 
-      #   sum((1 - p2_df$pi2) / (p2_df$pi1^2 * (1 / dc_w)^2) * eps2^2) / nrow(pop_df)^2
-      # vhat <- v1 + v2
+       var_eps <- var(eps2)
+       v1 <- (1 / nrow(p2_df) - 1 / nrow(pop_df)) * var_eps
+       v2 <- 
+         sum((1 - p2_df$pi2) / (p2_df$pi1^2 * (1 / dc_w)^2) * eps2^2) / nrow(pop_df)^2
+       vhat <- v1 + v2
 
-      tmp <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
-      for (i in 1:nrow(p2_df)) {
-        for (j in 1:nrow(p2_df)) {
-          if (i == j) {
-            pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
-            tmp[i, j] <- ((pi2i - (pi2i)^2 / pi2i) * eps2[i]^2 / (pi2i^2)
-          } else {
-            pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
-            pi2j <- p2_df$pi2[j] * p2_df$pi1[j]
-            pi2ijp1ij <- 
-              p2_df$pi2[i] * p2_df$pi2[j] * p2_df$pi1[i] * 
-              (nrow(p1_df) - 1) / (nrow(pop_df) - 1)
-            tmp[i, j] <- 
-              ((pi2ijp1ij - pi2i * pi2j) / pi2ijp1ij) * 
-              eps2[i] / pi2i * eps2[j] / pi2j  
-          }
-        }
-      }
+      # tmp <- matrix(NA, nrow = nrow(p2_df), ncol = nrow(p2_df))
+      # for (i in 1:nrow(p2_df)) {
+      #   for (j in 1:nrow(p2_df)) {
+      #     if (i == j) {
+      #       pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
+      #       tmp[i, j] <- ((pi2i - (pi2i)^2) / pi2i) * eps2[i]^2 / (pi2i^2)
+      #     } else {
+      #       pi2i <- p2_df$pi2[i] * p2_df$pi1[i]
+      #       pi2j <- p2_df$pi2[j] * p2_df$pi1[j]
+      #       pi2ijp1ij <- 
+      #         p2_df$pi2[i] * p2_df$pi2[j] * p2_df$pi1[i] * 
+      #         (nrow(p1_df) - 1) / (nrow(pop_df) - 1)
+      #       tmp[i, j] <- 
+      #         ((pi2ijp1ij - pi2i * pi2j) / pi2ijp1ij) * 
+      #         eps2[i] / pi2i * eps2[j] / pi2j  
+      #     }
+      #   }
+      # }
 
-      vhat <- sum(as.numeric(tmp)) / nrow(pop_df)^2
+      # vhat <- sum(as.numeric(tmp)) / nrow(pop_df)^2
 
     }
 

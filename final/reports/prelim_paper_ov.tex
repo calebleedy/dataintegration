@@ -105,14 +105,14 @@ and finally, we consider the more general approach of having multiple sources.
 
 \subsection{Background}
 
-Consider a finite population of size $N$ containing elements $(X_i, Y_i)$ where
-an initial (Phase 1) sample of size $n_1$ is selected and $X_i$ is observed. Then
+Consider a finite population of size $N$ containing elements $(\bf X_i, Y_i)$ where
+an initial (Phase 1) sample of size $n_1$ is selected and $\bf X_i$ is observed. Then
 from the Phase 1 sample of elements, a (Phase 2) sample of size $n_2 < n_1$ is
 selected and $Y_i$ is observed. This is two-phase sampling (See 
 \cite{fuller2009sampling}, \cite{kim2024statistics} for general references.) The
 goal of two-phase sampling is to construct an estimator of $\bar Y_N$ 
 that uses both the observed information in the Phase 2 sample and also the extra
-auxiliary information from $X$ in the Phase 1 sample.
+auxiliary information from $\bf X$ in the Phase 1 sample.
 The challenge is doing this efficiently.
 
 An easy-to-implement unbiased estimator in the spirit of a Horvitz-Thompson (HT)
@@ -138,30 +138,31 @@ unbiased estimator:
 
 $$ \hat Y_{\pi^*} = \sum_{i \in A_2} \frac{y_i}{\pi_{2i | 1} \pi_{1i}}.$$
 
-While unbiased (see \cite{kim2024statistics}), the $\pi^*$-estimator
-does not account for the additional information contained in the auxiliary Phase
-1 variable $X$. The two-phase regression estimator $\hat Y_{reg, tp}$ does incorporate 
-information for $X$ by using the estimate $\hat X_1$ from the Phase 1 sample.
-This is how we can leverage the external information $\hat X_1$ to improve the
-initial $\pi^*$-estimator in the second phase sample.
-The two-phase regression estimator has the form,
+While unbiased (see \cite{kim2024statistics}), the $\pi^*$-estimator does not
+account for the additional information contained in the auxiliary Phase 1
+variable $\bf X$. The two-phase regression estimator $\hat Y_{reg, tp}$ does
+incorporate information for $\bf X$ by using the estimate $\hat{\bf X_1}$ from
+the Phase 1 sample. This is how we can leverage the external information 
+$\hat{\bf{X_1}}$ to improve the initial $\pi^*$-estimator in the second phase
+sample. The two-phase regression estimator has the form,
 
 $$ \hat Y_{reg, tp} 
-= \sum_{i \in A_1} \frac{1}{\pi_{1i}} x_i \hat \beta_q+ \sum_{i \in A_2}
-\frac{1}{\pi_{1i}\pi_{2i|1}} (y_i - x_i \hat \beta_q)$$
+= \sum_{i \in A_1} \frac{1}{\pi_{1i}} \bf x_i \hat{\bm \beta_q} + 
+\sum_{i \in A_2} \frac{1}{\pi_{1i}\pi_{2i|1}} (y_i - \bf x_i \hat{\bm \beta_q})$$
 
-where for $q_i = q(x_i)$ and is a function of $x_i$,
+where for $q_i = q(\bf x_i)$ and is a function of $\bf x_i$,
 $$
-\hat \beta_q = \left(\sum_{i \in A_2} 
-  \frac{x_i x_i'}{\pi_{1i} q_i}\right)^{-1} 
-\sum_{i \in A_2} \frac{x_i y_i}{\pi_{1i} q_i}.$$ 
+\hat{\bm \beta_q} = \left(\sum_{i \in A_2} 
+  \frac{\bf x_i \bf x_i'}{\pi_{1i} q_i}\right)^{-1} 
+\sum_{i \in A_2} \frac{\bf x_i y_i}{\pi_{1i} q_i}.$$ 
 
 The regression estimator is the minimum variance design consistent linear
 estimator which is easily shown to be the case because $\hat Y_{reg, tp} =
 \sum_{i \in A_2} \hat w_{2i} y_i / \pi_{1i}$ where 
 
-$$\hat w_{2i} = \argmin_{w} \sum_{i \in A_2} (w_{2i} - \pi_{2i|1}^{-1})^2 q_i \text{ such
-that } \sum_{i \in A_2} w_{2i} x_i / \pi_{1i} = \sum_{i \in A_1} x_i / \pi_{1i}.$$
+$$\hat w_{2i} = \argmin_{w} \sum_{i \in A_2} (w_{2i} - \pi_{2i|1}^{-1})^2 q_i
+\text{ such that } \sum_{i \in A_2} w_{2i} \bf x_i / \pi_{1i} = \sum_{i \in A_1}
+\bf x_i / \pi_{1i}.$$
 
 This means that $\hat Y_{reg, tp}$ is also a calibration estimator. The idea
 that regression estimation is a form of calibration was noted by
@@ -183,9 +184,9 @@ has a nice feature that its two terms can be thought about as minimizing the
 variance and bias correction,
 
 $$ \hat Y_{reg, tp} 
-= \underbrace{\sum_{i \in A_1} \frac{x_i \hat \beta_q}{\pi_{1i}}}_{
+= \underbrace{\sum_{i \in A_1} \frac{\bf x_i \hat{\bm \beta_q}}{\pi_{1i}}}_{
   \text{ Minimizing the variance}} + \underbrace{\sum_{i \in A_2}
-\frac{1}{\pi_{1i}\pi_{2i|1}} (y_i - x_i \hat \beta_q)}_{
+\frac{1}{\pi_{1i}\pi_{2i|1}} (y_i - \bf x_i \hat{\bm \beta_q})}_{
 \text{Bias correction}}.$$
 
 The \cite{deville1992calibration} method incorporates the design weights into
@@ -200,9 +201,9 @@ estimators of \cite{deville1992calibration}.
 
 The method of \cite{kwon2024debiased} requires known finite population 
 calibration levels. It does not handle the
-two-phase setup where we need to estimate the finite population total of $x$
+two-phase setup where we need to estimate the finite population total of $\bf x$
 from the Phase 1 sample. In the rest of the section, we extend this method to 
-two phase sampling so that we have a valid 
+two-phase sampling so that we have a valid 
 estimator when including estimated Phase 1 weights with appropriate variance
 estimation.
 
@@ -218,8 +219,8 @@ where $G: \mathcal{V} \to \R$ is strictly convex, differentiable function
 subject to the constraints:
 
 \begin{equation}\label{eq:calconst1}
-  \sum_{i \in A_2} \frac{x_i w_{2i}q_i}{\pi_{1i}} = 
-\sum_{i \in A_1} \frac{x_iq_i}{\pi_{1i}}
+  \sum_{i \in A_2} \frac{\bf x_i w_{2i}q_i}{\pi_{1i}} = 
+\sum_{i \in A_1} \frac{\bf x_iq_i}{\pi_{1i}}
 \end{equation}
 
 and 
@@ -238,64 +239,64 @@ population quantities on the right hand side of \eqref{eq:calconst1}.
 Writing $w_{1i} = \pi_{1i}^{-1}$, the the goal is to solve
 
 \begin{equation}\label{eq:primal}
-  \argmin_{w_{2|1}} \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i}) q_i 
+  \argmin_{w_{2|1}} \sum_{i \in A_2} w_{1i} G(w_{2i}) q_i 
   \text{ such that}
-  \sum_{i \in A_2} w_{1i} w_{2i|1} z_i q_i = \sum_{i \in A_1} w_{1i} z_i q_i
+  \sum_{i \in A_2} w_{1i} w_{2i|1} \bf z_i q_i = \sum_{i \in A_1} w_{1i} \bf z_i q_i
 \end{equation}
 
-where  $z_i = (x_i / q_i, g(\pi_{2i|1}^{-1}))$. 
+where  $\bf z_i = (\bf x_i / q_i, g(\pi_{2i|1}^{-1}))$. 
 Let $\hat w_{2i|1}$ be the solution to Equation~\eqref{eq:primal}. The resulting 
 estimator of $Y_N$ is $\hat Y_{DCE} = \sum_{i \in A_2} w_{1i} \hat w_{2i|1} y_i$.
 To solve this problem we can use the method of Lagrange multipliers. We need to
 minimize the Lagrangian function
 
 \begin{equation}\label{eq:legragedc1}
-  L(w_{2i|1}, \lambda) = \sum_{i \in A_2} w_{1i} G(w_{2i|1}) q_i + \lambda 
-  \left( \sum_{i \in A_1} w_{1i} z_i q_i -
-    \sum_{i \in A_2} w_{1i} w_{2i|1} z_i q_i\right).
+  L(w_{2i|1}, \bm \lambda) = \sum_{i \in A_2} w_{1i} G(w_{2i|1}) q_i 
+  + \bm \lambda \left( \sum_{i \in A_1} w_{1i} \bf z_i q_i -
+    \sum_{i \in A_2} w_{1i} w_{2i|1} \bf z_i q_i\right).
 \end{equation}
 
 Differntiating with respect to $w_{2i|1}$ and setting this expression equal to
 zero, yields the fact that $\hat w_{2i|1}$ satisfies 
 
-$$ \hat w_{2i|1}(\hat \lambda) = g^{-1}(\hat \lambda^T z_i) $$
+$$ \hat w_{2i|1}(\hat{\bm \lambda}) = g^{-1}(\hat{\bm \lambda}^T \bf z_i) $$
 
-where $\hat \lambda$ is the solution to
+where $\hat{\bm \lambda}$ is the solution to
 
 \begin{equation}\label{eq:lamdc1}
-  \left( \sum_{i \in A_1} w_{1i} z_i q_i -
-    \sum_{i \in A_2} w_{1i} w_{2i|1}(\hat \lambda) z_i q_i\right) = 0.
+  \left( \sum_{i \in A_1} w_{1i} \bf z_i q_i -
+  \sum_{i \in A_2} w_{1i} w_{2i|1}(\hat{\bm \lambda}) \bf z_i q_i\right) = 0.
 \end{equation}
 
 \subsection{Theoretical Results}
 
 % \textcolor{red}{In Theorem 1, you used $\hat{\lambda}$ without defining it.  }
 \begin{theorem}[Design Consistency]\label{thm:dc1}
-  Let $\lambda^*$ be the probability limit of $\hat \lambda$.
+  Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$.
   Under some regularity conditions,
 
-  $$\hat Y_{DCE} = \hat Y_\ell(\lambda^*, \phi^*) + O_p(N / n_2)$$
+  $$\hat Y_{DCE} = \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + O_p(N / n_2)$$
 
   where
 
-  $$\hat Y_{\ell}(\lambda, \phi^*) = \hat Y_{DCE}(\hat \lambda) + 
-  \left(\sum_{i \in A_1} w_{1i} z_i q_i - \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(
-  \lambda) z_i q_i\right)\phi^*$$
+  $$\hat Y_{\ell}(\bm \lambda, \bm \phi^*) = \hat Y_{DCE}(\hat{\bm \lambda}) + 
+  \left(\sum_{i \in A_1} w_{1i} \bf z_i q_i - \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(
+  \bm \lambda) z_i q_i\right)\bm \phi^*$$
 
   and
 
-  $$\phi^* = 
-  \left[\sum_{i \in U} \frac{\pi_{2i|1}z_i z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
-  \sum_{i \in U} \frac{\pi_{2i|1}z_i y_i}{g'(d_{2i|1})}.$$
+  $$\bm \phi^* = 
+  \left[\sum_{i \in U} \frac{\pi_{2i|1}\bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
+  \sum_{i \in U} \frac{\pi_{2i|1}\bf z_i y_i}{g'(d_{2i|1})}.$$
 
    \begin{eqnarray*}
-   \hat Y_{\ell}( \lambda^*, \phi^*) &=&   \hat{Y}_{\pi^*} + 
-  \left(\sum_{i \in A_1} w_{1i} x_i  -  \sum_{i \in A_2} w_{1i} \pi_{2i \mid
-  1}^{-1} x_i  \right)^T \phi_1^* + \left(\sum_{i \in A_1} w_{1i} g_i   -
-\sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1}g_i  \right)^T \phi_2^*  
+   \hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) &=&   \hat{Y}_{\pi^*} + 
+  \left(\sum_{i \in A_1} w_{1i} \bf x_i  -  \sum_{i \in A_2} w_{1i} \pi_{2i \mid
+  1}^{-1} \bf x_i  \right)^T \bm \phi_1^* + \left(\sum_{i \in A_1} w_{1i} g_i  -
+  \sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1}g_i  \right)^T \phi_2^*  
   \end{eqnarray*} 
   and  $$\begin{pmatrix}
-  \phi_1^* \\
+  \bm \phi_1^* \\
   \phi_2^* 
   \end{pmatrix}
   = \left[ \sum_{i \in U} \frac{\pi_{2i \mid 1} }{ g'(d_{2i|1}) q_i} 
@@ -317,56 +318,58 @@ with $g_i = g( \pi_{2i |1}^{-1}) q_i$.
   The first order conditions show that
 
   $$\frac{\partial \mathcal{L}}{\partial w_{2i|1}}: g(w_{2i|1}) w_{1i}q_i -
-    \lambda w_{1i} z_i q_i = 0.$$
+  w_{1i} \bm \lambda \bf z_i q_i = 0.$$
 
-  Hence, $\hat w_{2i}(\lambda) = g^{-1}(\lambda^T z_i)$ and $\hat \lambda$ is
-  determined by Equation~\eqref{eq:lamdc1}. When the sample size gets large, we
-  have $\hat w_{2i|1}(\hat \lambda) \to d_{2i|1}$ which means that $\hat \lambda
-  \to \lambda^*$ where $\lambda^* = (\bf 0, 1)$. Then using the linearization
-  technique of \cite{randles1982asymptotic}, we can construct a regression
-  estimator, 
+  Hence, $\hat w_{2i}(\bm \lambda) = g^{-1}(\bm \lambda^T \bf z_i)$ and
+  $\hat{\bm \lambda}$ is determined by Equation~\eqref{eq:lamdc1}. When the
+  sample size gets large, we have $\hat w_{2i|1}(\hat{\bm \lambda}) \to
+  d_{2i|1}$ which means that $\hat{\bm \lambda} \to \bm \lambda^*$ where $\bm
+  \lambda^* = (\bf 0, 1)$. Then using the linearization technique of
+  \cite{randles1982asymptotic}, we can construct a regression estimator, 
 
-  $$\hat Y_\ell(\hat \lambda, \phi)  = \hat Y_{DCE}(\hat \lambda) + 
-  \left(\sum_{i \in A_1} w_{1i} z_i q_i - \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(\hat
-  \lambda) z_i q_i\right)\phi.$$
+  $$\hat Y_\ell(\hat{\bm \lambda}, \bm \phi)  = \hat Y_{DCE}(\hat{\bm \lambda}) + 
+  \left(\sum_{i \in A_1} w_{1i} \bm z_i q_i - \sum_{i \in A_2} w_{1i} 
+  \hat w_{2i|1}(\hat{\bm \lambda}) \bf z_i q_i\right)\bm \phi.$$
 
-  Notice that $\hat Y_\ell(\hat \lambda, \phi) = \hat Y_{DCE}(\hat \lambda)$ for
-  all $\phi \in \mathbb{R}$. We choose $\phi^*$ such that
+  Notice that $\hat Y_\ell(\hat{\bm \lambda}, \bm \phi) = \hat Y_{DCE}(\hat{\bm
+  \lambda})$ for all $\bm \phi$. We choose $\bm \phi^*$ such that
 
-  $$E\left[\frac{\partial}{\partial \lambda} \hat Y_\ell(\lambda^*, \phi^*)\right]=0.$$
+  $$E\left[\frac{\partial}{\partial \bm \lambda} \hat Y_\ell(\bm \lambda^*,
+  \bm \phi^*)\right]=0.$$
 
-  Using the fact that $g^{-1}(\lambda^* z_i) = g^{-1}(g(d_{2i|1})) = d_{2i|1}$
+  Using the fact that $g^{-1}(\bm \lambda^* \bf z_i) = g^{-1}(g(d_{2i|1})) = d_{2i|1}$
   and $(g^{-1})'(x) = 1 / g'(g^{-1}(x))$, we have
 
   \begin{align*}
-    \phi^*
-    &= E\left[\sum_{i \in A_2} \frac{w_{1i}z_i z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
-    E\left[\sum_{i \in A_2} \frac{w_{1i}z_i y_i}{g'(d_{2i|1})}\right]\\
-    &= \left[\sum_{i \in U} \frac{\pi_{2i|1}z_i z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
-    \left[\sum_{i \in U} \frac{\pi_{2i|1} z_i y_i}{g'(d_{2i|1})}\right]\\
+    \bm \phi^*
+    &= E\left[\sum_{i \in A_2} \frac{w_{1i}\bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
+    E\left[\sum_{i \in A_2} \frac{w_{1i}\bf z_i y_i}{g'(d_{2i|1})}\right]\\
+    &= \left[\sum_{i \in U} \frac{\pi_{2i|1} \bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
+    \left[\sum_{i \in U} \frac{\pi_{2i|1} \bf z_i y_i}{g'(d_{2i|1})}\right]\\
   \end{align*}
 
   Thus, the linearization estimator is
 
-  $$\hat Y_\ell(\lambda^*, \phi^*) = \sum_{i \in A_1} w_{1i} q_i z_i \phi^* +
-  \sum_{i \in A_2} w_{1i} d_{2i|1} (y_i - q_i z_i \phi^*).$$
+  $$\hat Y_\ell(\bm \lambda^*, \bm \phi^*) = 
+  \sum_{i \in A_1} w_{1i} q_i \bf z_i \bm \phi^* +
+  \sum_{i \in A_2} w_{1i} d_{2i|1} (y_i - q_i \bf z_i \bm \phi^*).$$
 
   By construction using a Taylor expansion yields,
 
   \begin{align*}
-    \hat Y_{DCE}(\hat \lambda) 
-    &= \hat Y_\ell(\lambda^*, \phi^*) + 
-    E\left[\frac{\partial}{\partial \lambda}\hat Y_\ell(\lambda^*,
-    \phi^*)\right](\hat \lambda - \lambda^*) + \frac{1}{2}
-    E\left[\frac{\partial}{\partial \lambda^2} \hat Y_{DCE}(\lambda^*)\right] (\hat
-    \lambda - \lambda^*)^2\\
-    &= \hat Y_\ell(\lambda^*, \phi^*) + O(N)O_p(n_2^{-1}).
+    \hat Y_{DCE}(\hat{\bm \lambda}) 
+    &= \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + 
+    E\left[\frac{\partial}{\partial \bm \lambda}\hat Y_\ell(\bm \lambda^*,
+    \bm \phi^*)\right](\hat{\bm \lambda} - \bm \lambda^*) + \frac{1}{2}
+    E\left[\frac{\partial}{\partial \bm \lambda^2} \hat Y_{DCE}(\bm \lambda^*)\right] 
+    (\hat{\bm \lambda} - \bm \lambda^*)^2\\
+    &= \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + O(N)O_p(n_2^{-1}).
   \end{align*}
-%\textcolor{red}{(The remainder term shoould be $O_p(N)O_p(n_2^{-1})$.)}
+
   The final equality comes from the fact that 
-  $E\left[\frac{\partial}{\partial \lambda}\hat Y_\ell(\lambda^*, \phi^*)\right]
-  = 0$, $\frac{\partial}{\partial \lambda^2} \hat w_{2i|1}(\lambda^*)$ is
-  bounded and $|\hat \lambda - \lambda^*| = O_p(n_2^{-1/2})$, which proves our
+  $E\left[\frac{\partial}{\partial \bm \lambda}\hat Y_\ell(\bm \lambda^*, \bm \phi^*)\right]
+  = 0$, $\frac{\partial}{\partial \bm \lambda^2} \hat w_{2i|1}(\bm \lambda^*)$ is
+  bounded and $||\hat{\bm \lambda} - \bm \lambda^*|| = O_p(n_2^{-1/2})$, which proves our
   result.
 \end{proof}
 
@@ -408,27 +411,34 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 \begin{itemize}
   \item[1.] $\pi^*$-estimator: $\hat Y_{\pi^*} = N^{-1} \sum_{i \in A_2}
     \frac{y_i}{\pi_{1i} \pi_{2i|1}},$
-  \item[2.] Two Phase Regression estimator (TP-Reg): 
+  \item[2.] Two-Phase Regression estimator (TP-Reg): 
     $\hat Y_{reg} = \sum_{i \in A_1} \frac{\bf x_i' \hat \beta}{\pi_{1i}} + 
     \sum_{i \in A_2} \frac{1}{\pi_{1i}\pi_{2i|1}}(y_i - \bf x_i' \hat \beta)$ 
     where $\hat \beta = 
     \left(\sum_{i \in A_2} \bf x_i \bf x_i'\right)^{-1} \sum_{i \in A_2} \bf x_i y_i$
-    and $\bf x_i = (x_{1i}, x_{2i})^T$,
+    and $\bf x_i = (1, x_{1i}, x_{2i})^T$,
     % \textcolor{red}{Dr. Kim, should I modify the simulation so that the
     % regression estimator also includes $g(\pi_{2i|1}^{-1})$ as a covariate?}
 
-    \textcolor{red}{You should include an intercept in $\bf x_i$. }
+    %\textcolor{red}{You should include an intercept in $\bf x_i$. }
+    %\textcolor{blue}{I have been including an intercept, but I forgot to add it
+    %into these notes.}
   \item[3.] Debiased Calibration with Population Constraints (DC-Pop): This 
     solves 
 
   \begin{equation}
-    \argmin_{w_{2|1}} \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i})
-    \text{ such that}
-    \sum_{i \in A_2} w_{1i} w_{2i|1} z_i = \sum_{i \in U} z_i.
+    \argmin_{w_{2|1}} \sum_{i \in A_2} w_{1i} G(w_{2i}) \text{ such that}
+    \sum_{i \in A_2} w_{1i} w_{2i|1} \bf z_i = \sum_{i \in U} \bf z_i.
   \end{equation}
 
   \item[4.] Debiased Calibration with Estimated Population Constraints (DC-Est):
     This solves Equation~\eqref{eq:primal} with $q_i = 1$.
+  \item[5.] Linearized Debiased Calibration with Population Constraints (Eta-Pop):
+    This is the linearized estimate DC-Pop using the linearization in
+    Theorem~\ref{thm:dc1}.
+  \item[6.] Linearized Debiased Calibration with Estimated Population
+    Constraints (Eta-Est): This is the linearized estimate DC-Est using the
+    linearization in Theorem~\ref{thm:dc1}.
 \end{itemize}
 
 In addition to estimating the mean parameter $\bar Y_N$, we also construct
@@ -451,20 +461,22 @@ approach we give the variance estimate in Table~\ref{tab:varforms}.
     & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_\eta + 
       \sum\limits_{i \in A_2} \frac{w_{1i}}{N^2} 
         \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
-    & {\scriptsize$ \eta_i = x_i'\beta + \delta_{2i} w_{2i|1}\varepsilon_i,\;
-        \varepsilon_i = (y_i - x_i' \beta)$} \\
+    & {\scriptsize$ \eta_i = \bf x_i'\bm \beta + \delta_{2i} w_{2i|1}\varepsilon_i,\;
+        \varepsilon_i = (y_i - \bf x_i' \bm \beta)$} \\
     DC-Pop  
     & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_\varepsilon + 
       \sum\limits_{i \in A_2} \frac{w_{1i}}{N^2} 
         \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
-    & {\scriptsize$\eta_i = z_i' \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
-        \varepsilon_i = (y_i - z_i'\phi)$} \\
+    & {\scriptsize$\eta_i = \bf z_i' \bm \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
+        \varepsilon_i = (y_i - \bf z_i'\bm \phi)$} \\
     DC-Est  
     & {\scriptsize$\left(\frac{1}{n_1} - \frac{1}{N}\right) \hat s^2_\eta + 
       \sum\limits_{i \in A_2} \frac{w_{1i}}{N^2} 
         \frac{(1 - \pi_{2i|1})}{\pi_{2i|1}^2}\varepsilon_i^2$}
-    & {\scriptsize$\eta_i = z_i' \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
-        \varepsilon_i = (y_i - z_i' \phi)$} \\
+    & {\scriptsize$\eta_i = \bf z_i' \bm \phi + \delta_{2i}w_{2i|1}\varepsilon_i,\;
+        \varepsilon_i = (y_i - \bf z_i' \bm \phi)$} \\
+    Eta-Pop & Same as DC-Pop & \\
+    Eta-Est & Same as DC-Est & \\
     \bottomrule
   \end{tabular}
   \caption{This table gives the formulas for each variance estimator used in
@@ -473,7 +485,24 @@ estimatator see Appendix A.}
   \label{tab:varforms}
 \end{table}
 
-%\textcolor{red}{I am not sure about the variance estimation formula in Table 1. They are different from what we discussed before. I wonder whether you can make the sampling rate $n/N$ negligible so that the second term becomes insignificant. How about making $N=50,000$, $n_1=500$, and $n_2=200$?}
+%\textcolor{red}{I am not sure about the variance estimation formula in Table 1. 
+%They are different from what we discussed before. I wonder whether you can make
+%the sampling rate $n/N$ negligible so that the second term becomes
+%insignificant. How about making $N=50,000$, $n_1=500$, and $n_2=200$?}
+%
+%\textcolor{blue}{The result with $N = 50,000$, $n_1 = 500$ and $E[n_2] \approx
+%200$}
+%
+%\begin{table}[ht!]
+%  \centering
+%  {\color{blue}\input{tables/tpdcsim50000_mean.tex}}
+%% This table was generated from ../../src/explore/proto-dctpmcmc.R
+%  \caption{\textcolor{blue}{This table shows the results of Simulation Study 1 with
+%      a different finite population and Phase 2 selection probability.
+%      It displays the Bias, RMSE, empirical 95\% confidence interval, and a
+%      t-statistic assessing the unbiasedness of each estimator for the
+%      estimators: $\pi^*$, TP-Reg, DC-Pop, and DC-Est.}}
+%\end{table}
 
 
 We run the simulation $1000$ times for each of these methods and compute the
@@ -494,8 +523,11 @@ DC-Est.}
 \label{tab:tpdc-mean}
 \end{table}
 
-\textcolor{red}{Dr. Kim is this confidence interval good enough? It seems
-slightly high for me.}
+\textcolor{red}{While DC-Est still does not outperform TP-Reg, it is equivalent
+to Eta-Est, which is a regression estimator.}
+
+\textcolor{red}{The variance estimates look good now. I needed to think of
+DC-Pop as a regression estimator instead of a two-phase regression estimator.}
 
 \textcolor{red}{I also give the mean variance estimates, the Monte Carlo mean,
 as well as a test for bias.}
@@ -510,127 +542,116 @@ as well as a test for bias.}
 \label{tab:tpdc-var}
 \end{table}
 
+
 \section{Topic 2: Non-nested Two-Phase Sampling}
 
 \subsection{Background}
 
-Now we consider the sampling mechanism known as non-nested two phase sampling 
-(\cite{hidiroglou2001double}). In the last section, we considered two phase sampling
+Now we consider the sampling mechanism known as non-nested two-phase sampling 
+(\cite{hidiroglou2001double}). In the last section, we considered two-phase sampling
 in which the Phase 2 sample was a subset of the Phase 1 sample. With non-nested
-two phase sampling the Phase 2 sample is independent of the Phase 1 sample. It
+two-phase sampling the Phase 2 sample is independent of the Phase 1 sample. It
 is a separate independent sample of the same population. Like traditional two
 phase sampling, we consider the Phase 1 sample, $A_1$, to consist of
-observations of $(X_i)_{i = 1}^{n_1}$ and the Phase 2 sample, $A_2$, to consist
-of observations of $(X_i, Y_i)_{i = 1}^{n_2}$. 
+observations of $(\bf X_i)_{i = 1}^{n_1}$ and the Phase 2 sample, $A_2$, to consist
+of observations of $(\bf X_i, Y_i)_{i = 1}^{n_2}$. 
 
-Whereas the classical two phase estimator uses a single Horvitz-Thompson
+Whereas the classical two-phase estimator uses a single Horvitz-Thompson
 estimator of the Phase 1 sample to construct estimates for calibration totals,
-in the non-nested two phase sample we have two independent Horvitz-Thompson
-estimators of the total of $X$,
+in the non-nested two-phase sample we have two independent Horvitz-Thompson
+estimators of the total of $\bf X$,
 
-$$\hat X_1 = \sum_{i \in A_1}^{n_1} d_{1i} x_i \text{ and } 
-\hat X_2 = \sum_{i \in A_2}^{n_2} d_{2i} x_i $$
+$$\hat{\bf X_1} = \sum_{i \in A_1}^{n_1} d_{1i} \bf x_i \text{ and } 
+\hat{\bf X_2} = \sum_{i \in A_2}^{n_2} d_{2i} \bf x_i $$
 
 where $d_{1i} = \pi_{1i}^{-1}$, $d_{2i} = \pi_{2i}^{-1}$, $\pi_{1i}$ is the
 probability of $i \in A_1$ and $\pi_{2i} = \Pr(i \in A_2)$. 
-%\textcolor{red}{I don't know if it makes sense to change the Phase 2
-%selection probability as $\pi_{2i|1}$. (\textcolor{blue}{No. We do not know
-%$\pi_{2i |1}$ and it is not necessary.}) Should I keep it at $\pi_{2i}$?
-%\textcolor{blue}{(Yes, $\pi_{2i}$ is available to us.) } But if
-%I do, how is the two phase setup useful?} 
-%\textcolor{blue}{Non-nested two-phase sampling is different from the classical
-%  two-phase sampling. We are not using the two-phase setup of Section 2  here.
-%  We do not have to call it two-phase sampling. However, if we define $A_c=A_1
-%  \cup A_2$ then $A_c$ serves the role of the first-phase sample in the
-%  two-phase sampling. Then, our goal is to compute an estimator of $X$ from
-%  $A_c$. The second-phase sample would be $A_2$. 
-%}
-We can combine these estimates to get
-$\hat X_c = W \hat X_1 + (1 - W)\hat X_2$ for some matrix $W$ (see
-\cite{merkouris2004combining} for the optimal choice of $W$), and can then define
-a regression estimator as
+We can combine these estimates using the effective sample size 
+(\cite{kish1965survey}) to get
+$\hat{\bf X_c} = (n_{1, eff} \hat{\bf X_1} + n_{2, eff}\hat{\bf X_2}) / 
+(n_{1, eff} + n_{2, eff})$ where $n_{1, eff}$ and $n_{2, eff}$ are the effective
+sample size for $A_1$ and $A_2$ respectively. Then we can define a regression
+estimator as
 
 $$
-\hat Y_{NN, reg} = \hat Y_2 + (\hat X_c - \hat X_2)^T \hat \beta_q = 
-\hat Y_2 + (\hat X_1 - \hat X_2)^T W^T\hat \beta_q 
+\hat Y_{NN, reg} = \hat Y_2 + (\hat{\bf X_c} - \hat{\bf X_2})^T \hat{\bm \beta_q} = 
+\hat Y_2 + (\hat{\bf X_1} - \hat{\bf X_2})^T W\hat{\bm \beta_q}
 $$
 
-where % \textcolor{red}{(we may need transpose in $W$)}
+where, $W = n_{1, eff} / (n_{1, eff} + n_{2, eff})$, and
 
-$$\hat \beta_q = \left(\sum_{i \in A_2} \frac{x_i x_i^T}{q_i}\right)^{-1}
-\sum_{i \in A_2} \frac{x_i y_i}{q_i} \text{ and }\hat Y_2 = \sum_{i \in A_2}
-d_{2i} y_i. $$
+$$\hat{\bm \beta_q} = \left(\sum_{i \in A_2} 
+\frac{\bf x_i \bf x_i^T}{q_i}\right)^{-1} 
+\sum_{i \in A_2} \frac{\bf x_i y_i}{q_i} \text{ and
+}\hat Y_2 = \sum_{i \in A_2} d_{2i} y_i. $$
 
 Since the samples $A_1$ and $A_2$ are independent, 
 
 $$V(\hat Y_{NN, reg}) = V\left(\sum_{i \in A_2} \frac{1}{\pi_{2i}}(y_i -
-x_i^TW\beta^*_q)\right) + (\beta^*_q)^T W^T V(\hat X_1) W \beta_q^*$$
+\bf x_i^TW\bm \beta^*_q)\right) + (\bm \beta^*_q)^T W^T V(\hat{\bf X_1}) W \bm \beta_q^*$$
 
-where $\beta_q^*$ is the probability limit of $\hat \beta_q$. Like the two phase
+where $\bm \beta_q^*$ is the probability limit of $\hat{\bm \beta_q}$. Like the two-phase
 sample this regression estimator can be viewed as the solution to the following
 calibration equation 
 
 \begin{equation}\label{eq:nncal}
   \hat w_2 = \argmin_{w_2} Q(w_2) = \sum_{i \in A_2} (w_{2i} - d_{2i})^2 q_i 
-  \text{ such that } \sum_{i \in A_2} w_{2i} x_i = \hat X_c
+  \text{ such that } \sum_{i \in A_2} w_{2i} \bf x_i = \hat{\bf X_c}
 \end{equation}
 
 and $\hat Y_{NN, reg} = \sum_{i \in A_2} \hat w_{2i} y_i$ where $\hat
 w_{2i}$ is the solution to Equation~\ref{eq:nncal}.
 
 We extend the debiased calibration estimator of \cite{kwon2024debiased} to the
-non-nested two phase sampling case where we use a combined estimate $\hat X_c$
-as the calibration totals instead of using the true totals from the finite
-population.
+non-nested two-phase sampling case where we use a combined estimate 
+$\hat{\bm X_c}$ as the calibration totals instead of using the true totals from
+the finite population.
 
 \subsection{Methodology}
 
-The methodology for the non-nested two phase sample is very similar to the setup
+The methodology for the non-nested two-phase sample is very similar to the setup
 described as part of Topic 1. Given a strictly convex differentiable function,
 $G: \mathcal{V} \to \mathbb{R}$, the goal is to solve
 
 \begin{equation}\label{eq:nnopt}
-\hat w_2 = \argmin_w \sum_{i \in A_2} G(w_{2i}) q_i \text{ such that } 
-\sum_{i \in A_2} w_{2i} x_i = \hat X_{c} \text{ and } 
+\hat w_2 = \argmin_w \sum_{i \in A_2} G\left(w_{2i}\right) q_i 
+\text{ with } 
+\sum_{i \in A_2} w_{2i} \bf x_i = \hat{\bf X_{c}} \text{ and } 
 \sum_{i \in A_2} w_{2i} g(d_{2i}) q_i = \sum_{i \in U} g(d_{2i}) q_i
 \end{equation}
 
 for $g(x) = G'(x)$ and a known choice of $q_i \in \mathbb{R}$. 
-%\textcolor{red}{(Instead of using $\hat{X}_{\rm GLS}$, we used $\hat{X}_c$
-%before. Please make notation consistent. )}
-
 The difference
 between solving Equation~\ref{eq:nnopt} and Equation~\ref{eq:primal} is that the
-estimator $\hat X_{c}$ is estimated from the combined sample $A_c= A_1 \cup
-A_2$. Before using
-$\hat X_{c}$ in the debiased calibration estimator, we need to estimate it
-from the non-nested samples.
+estimator $\hat{\bf X_c}$ is estimated from the combined sample $A_c= A_1 \cup
+A_2$. Before using $\hat{\bf X_c}$ in the debiased calibration estimator, we
+need to estimate it from the non-nested samples. We can get multiple estimates
+of $\hat{\bf X}$, 
 
-We can get multiple estimates of $\hat X$, 
+$$\hat{\bf X_1} = \sum_{i \in A_1} d_{1i} \bf x_i \text{ and }
+\hat{\bf X_2} = \sum_{i \in A_2} d_{2i} \bf x_i.$$
 
-$$\hat X_1 = \sum_{i \in A_1} d_{1i} x_i \text{ and }
-\hat X_2 = \sum_{i \in A_2} d_{2i} x_i.$$
+Let $V_1$ and $V_2$ be known variance matrices for $\hat{\bf X_1}$ and 
+$\hat{\bf X_2}$, then the optimal combined estimate is 
 
-Let $V_1$ and $V_2$ be known variance matrices for $\hat X_1$ and $\hat X_2$,
-then the optimal combined estimate is 
+$$\hat{\bf X_c} = \frac{V_1^{-1} \hat{\bf X_1} + V_2^{-1} 
+\hat{\bf X_2}}{V_1^{-1} + V_2^{-1}}.$$
 
-$$\hat X_c = \frac{V_1^{-1} \hat X_1 + V_2^{-1} \hat X_2}{V_1^{-1} + V_2^{-1}}.$$
-
-We can constuct a non-nested two phase estimator $\hat Y_{NNE}$ for $Y_N$ where
+We can constuct a non-nested two-phase estimator $\hat Y_{NNE}$ for $Y_N$ where
 $\hat Y_{NNE} = \sum_{i \in A_2} \hat w_{2i} y_i$ and $\hat w_{2i}$ solves
-Equation~\ref{eq:nnopt}. Like the classical two phase approach, to solve this
+Equation~\ref{eq:nnopt}. Like the classical two-phase approach, to solve this
 setup we minimize the Lagrangian,
 
 \begin{equation}\label{eq:legragedc2}
-  L(w_{2i}, \lambda) = \sum_{i \in A_2} G(w_{2i}) q_i + \lambda 
-  \left( \hat T - \sum_{i \in A_2} w_{2i} z_i q_i\right).
+  L(w_{2i}, \bm \lambda) = \sum_{i \in A_2} G(w_{2i}) q_i + 
+  \bm \lambda \left( \hat{\bf T} - \sum_{i \in A_2} w_{2i} \bf z_i q_i\right).
 \end{equation}
 
 with 
 
-$$\hat T = 
+$$\hat{\bf T} = 
 \begin{bmatrix}
-  \hat X_c \\ \sum_{i \in U} g(d_{2i}) q_i
+  \hat{\bf X_c} \\ \sum_{i \in U} g(d_{2i}) q_i
 \end{bmatrix}.
 $$
 
@@ -648,82 +669,83 @@ $$
 Differntiating with respect to $w_{2i}$ and setting this expression equal to
 zero, yields the fact that $\hat w_{2i}$ satisfies 
 
-$$ \hat w_{2i}(\hat \lambda) = g^{-1}(\hat \lambda^T z_i) $$
+$$ \hat w_{2i}(\hat{\bm \lambda}) = g^{-1}(\hat{\bm \lambda^T} \bf z_i) $$
 
-where $\hat \lambda$ is the solution to
+where $\hat{\bm \lambda}$ is the solution to
 
 \begin{equation}\label{eq:lamdc2}
-  \left( \hat T - \sum_{i \in A_2} w_{2i}(\hat \lambda) z_i q_i\right) = 0.
+  \left( \hat{\bf T} - \sum_{i \in A_2} w_{2i}(\hat{\bm \lambda}) \bf z_i
+  q_i\right) = 0.
 \end{equation}
 
 \subsection{Theoretical Results}
 
 \begin{theorem}[Design Consistency]\label{thm:dc2}
-  Allowing $\lambda^*$ to be the probability limit of $\hat \lambda$,
-  under some regularity conditions, $\hat Y_{NNE} = \hat Y_{\ell, NNE}(\lambda^*,
-  \phi^*) + O_p(Nn_2^{-1})$ where
+  Allowing $\bm \lambda^*$ to be the probability limit of $\hat{\bm \lambda}$,
+  under some regularity conditions, $\hat Y_{NNE} = \hat Y_{\ell, NNE}(\bm \lambda^*,
+  \bm \phi^*) + O_p(Nn_2^{-1})$ where
 
-  $$\hat Y_{\ell, NNE}(\lambda^*, \phi^*) = \sum_{i \in A_2} \hat w_{2i}(
-  \lambda^*) + \left(\hat T - \sum_{i \in A_2} \hat w_{2i}(\lambda^*) z_i q_i\right)
-  \phi^*$$
+  $$\hat Y_{\ell, NNE}(\bm \lambda^*, \bm \phi^*) = \sum_{i \in A_2} \hat w_{2i}(
+  \bm \lambda^*) + \left(\hat{\bf T} - \sum_{i \in A_2} \hat w_{2i}(
+  \bm \lambda^*) \bf z_i q_i\right) \bm \phi^*$$
 
   and 
-  $$\phi^* =
+  $$\bm \phi^* =
   \left(\sum_{i \in U} \frac{\pi_{2i} q_i}{g'(d_{2i})} 
   \begin{bmatrix}
-    x_i^2 / q_i & x_i g(d_{2i}) / q_i \\
-    x_i g(d_{2i}) / q_i & g(d_{2i})^2
+    \bf x_i^2 / q_i & \bf x_i g(d_{2i}) / q_i \\
+    \bf x_i g(d_{2i}) / q_i & g(d_{2i})^2
   \end{bmatrix}
   \right)^{-1}
   \sum_{i \in U} \frac{\pi_{2i} y_i}{g'(d_{2i})} 
-  \begin{bmatrix} x_i / q_i \\ g(d_i) \end{bmatrix}.
+  \begin{bmatrix} \bf x_i / q_i \\ g(d_i) \end{bmatrix}.
   $$
-% \textcolor{red}{$T$  is not defined. }
 \end{theorem}
 
 \begin{proof}
-  The proof of this result is very similar to the proof the Theorem~\ref{thm:dc1}.
-  The biggest difference is that the total for $X$ is estimated from both samples
-  using $\hat X_c$ instead of $\hat X_{HT}$ from the Phase 1 sample.
+  The proof of this result is very similar to the proof the
+  Theorem~\ref{thm:dc1}. The biggest difference is that the total for $\bf X$ is
+  estimated from both samples using $\hat{\bf X_c}$ instead of $\hat{\bf
+  X_{HT}}$ from the Phase 1 sample.
 
-  Since $\hat Y_{NNE} = \sum_{i \in A_2} \hat w_{2i}(\hat \lambda)y_i$ where
-  $\hat \lambda$ solves
+  Since $\hat Y_{NNE} = \sum_{i \in A_2} \hat w_{2i}(\hat{\bm \lambda})y_i$ where
+  $\hat{\bm \lambda}$ solves
 
   \begin{equation}
-    \sum_{i \in A_2} \hat w_{2i}(\lambda) q_i
+    \sum_{i \in A_2} \hat w_{2i}(\bm \lambda) q_i
     \underbrace{
     \begin{bmatrix} 
-      x_i / q_i \\ g(d_i)
-  \end{bmatrix}}_{z_i} = T
+      \bf x_i / q_i \\ g(d_i)
+  \end{bmatrix}}_{\bf z_i} = \bf T
   \end{equation}
 
   we have 
 
-  $$\hat Y_{\ell, NNE} (\hat \lambda, \phi) = \sum_{i \in A_2} \hat w_{2i}(\hat
-  \lambda) + \left(T - \sum_{i \in A_2} \hat w_{2i}(\hat \lambda) z_i q_i\right)
-  \phi.$$
+  $$\hat Y_{\ell, NNE} (\hat{\bm \lambda}, \bm \phi) = \sum_{i \in A_2} \hat
+  w_{2i}(\hat{\bm \lambda}) + \left(\bf T - \sum_{i \in A_2} \hat
+  w_{2i}(\hat{\bm \lambda}) \bf z_i q_i\right) \bm \phi.$$
 
-  If we choose $\phi^*$ such that $E\left[\frac{\partial}{\partial \lambda} 
-    \hat Y_{\ell, NNE}(\lambda^*, \phi^*)\right] = 0$, then
+  If we choose $\bm \phi^*$ such that $E\left[\frac{\partial}{\partial \bm \lambda} 
+    \hat Y_{\ell, NNE}(\bm \lambda^*, \bm \phi^*)\right] = 0$, then
 
-  $$\phi^* =
+  $$\bm \phi^* =
   \begin{bmatrix}
-    \phi^*_1 \\ \phi^*_2
+    \bm \phi^*_1 \\ \bm \phi^*_2
   \end{bmatrix} = 
   \left(\sum_{i \in U} \frac{\pi_{2i} q_i}{g'(d_{2i})} 
   \begin{bmatrix}
-    x_i^2 / q_i & x_i g(d_{2i}) / q_i \\
-    x_i g(d_{2i}) / q_i & g(d_{2i})^2
+    \bf x_i^2 / q_i & \bf x_i g(d_{2i}) / q_i \\
+    \bf x_i g(d_{2i}) / q_i & g(d_{2i})^2
   \end{bmatrix}
   \right)^{-1}
   \sum_{i \in U} \frac{\pi_{2i} y_i}{g'(d_{2i})} 
-  \begin{bmatrix} x_i / q_i \\ g(d_i) \end{bmatrix}.
+  \begin{bmatrix} \bf x_i / q_i \\ g(d_i) \end{bmatrix}.
   $$
 
-  Hence, by a Taylor expansion around $\hat \lambda$,
+  Hence, by a Taylor expansion around $\hat{\bm \lambda}$,
   
-  $$\hat Y_{NNE}(\hat \lambda) = \hat Y_{\ell, NNE}(\lambda^*, \phi^*) +
-  O_p(Nn_2^{-1}).$$
+  $$\hat Y_{NNE}(\hat{\bm \lambda}) = \hat Y_{\ell, NNE}(\bm \lambda^*, 
+  \bm \phi^*) + O_p(Nn_2^{-1}).$$
 
 \end{proof}
 
@@ -732,87 +754,92 @@ where $\hat \lambda$ is the solution to
 
   \begin{align*}
     \Var(\hat Y_{NNE}(\hat \lambda)
-    &= (\phi_1^*)^T \Var(\hat X_c) \phi_1^* + 
+    &= (\bm \phi_1^*)^T \Var(\hat{\bf X_c}) \bm \phi_1^* + 
     \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} 
-      (y_i - z_i \phi^* q_i)(y_j - z_j \phi^* q_j)\\
-    &\qquad + (1 - W)\phi_1^* \sum_{i \in U} \sum_{j \in U} \Delta_{2ij} d_{2i} x_i
-      d_{2j}(y_j - z_j \phi^*_1 q_j)\\
+      (y_i - \bf z_i \bm \phi^* q_i)(y_j - \bf z_j \bm \phi^* q_j)\\
+    &\qquad + (1 - W)\bm \phi_1^* \sum_{i \in U} \sum_{j \in U} \Delta_{2ij}
+    d_{2i} \bf x_i d_{2j}(y_j - \bf z_j \bm \phi^*_1 q_j)\\
   \end{align*}
 
   We can estimate the variance using
 
   \begin{align*}
     \hat V_{NNE} 
-    &= (\hat \phi_1)^T \Var(\hat X_c) \hat \phi_1 + 
+    &= (\hat{\bm \phi_1})^T \Var(\hat{\bf X_c}) \hat{\bm \phi_1} + 
     \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}\pi_{2i}\pi_{2j}} 
-    (y_i - z_i \hat \phi q_i)(y_j - z_j \hat \phi q_j) \\
-    &\qquad + (1 - W)\hat \phi_1 \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}}
-    \frac{x_i}{\pi_{2i}} \frac{(y_j - z_j \hat \phi_1 q_j)}{\pi_{2j}}
+    (y_i - \bf z_i \hat{\bm \phi} q_i)(y_j - \bf z_j \hat{\bm \phi} q_j) \\
+    &\qquad + (1 - W)\hat{\bm \phi_1} \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}}
+    \frac{\bf x_i}{\pi_{2i}} \frac{(y_j - \bf z_j \hat{\bm \phi_1} q_j)}{\pi_{2j}}
   \end{align*}
 
   where 
   
-  $$\hat \phi =
+  $$\hat{\bm \phi} =
   \begin{bmatrix}
-    \hat \phi_1 \\ \hat \phi_2
+    \hat{\bm \phi_1} \\ \hat \phi_2
   \end{bmatrix} = 
   \left(\sum_{i \in A_2} \frac{q_i}{g'(d_{2i})} 
   \begin{bmatrix}
-    x_i^2 / q_i & x_i g(d_{2i}) / q_i \\
-    x_i g(d_{2i}) / q_i & g(d_{2i})^2
+    \bf x_i^2 / q_i & \bf x_i g(d_{2i}) / q_i \\
+    \bf x_i g(d_{2i}) / q_i & g(d_{2i})^2
   \end{bmatrix}
   \right)^{-1}
   \sum_{i \in A_2} \frac{y_i}{g'(d_{2i})} 
-  \begin{bmatrix} x_i / q_i \\ g(d_i) \end{bmatrix}.
+  \begin{bmatrix} \bf x_i / q_i \\ g(d_i) \end{bmatrix}.
   $$
 \end{theorem}
 
 \begin{proof}
   From Theorem~\ref{thm:dc2}, we know that $\hat Y_{NNE}(\hat \lambda) = 
-  \hat Y_{\ell, NNE}(\lambda^*, \phi^*) + O_p(Nn_2^{-1})$. Hence, the variance
-  of $\hat Y_{NNE}(\hat \lambda)$ is 
+  \hat Y_{\ell, NNE}(\bm \lambda^*, \bm \phi^*) + O_p(Nn_2^{-1})$. Hence, the
+  variance of $\hat Y_{NNE}(\hat{\bm \lambda})$ is 
 
   \begin{align*}
-    \Var(\hat Y_{NNE}(\hat \lambda)) 
-    &= \Var(\hat Y_{\ell, NNE}(\lambda^*, \phi^*) + O_p(Nn_2^{-1})) \\ 
-    &= \Var\left(\sum_{i \in A_2} \hat w_{2i}(\lambda^*) y_i + \left(T - \sum_{i
-    \in A_2} \hat w_{2i}(\lambda^*) z_i q_i\right)\phi^*\right)\\
-    &= (\phi_1^*)^T \Var(\hat X_c) \phi_1^* + 
-    \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} (y_i - z_i \phi^* q_i)(y_j - z_j \phi^* q_j)\\
-    &\qquad+ 2 \Cov\left(\hat X_c \phi_1^*, \sum_{i \in A_2} \frac{(y_i - z_i \phi^*
-    q_i)}{\pi_{2i}}\right) \\
-    &= (\phi_1^*)^T \Var(\hat X_c) \phi_1^* + 
-    \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} (y_i - z_i \phi^* q_i)(y_j - z_j \phi^* q_j)\\
-    &\qquad + (1 - W)\phi_1^* \sum_{i \in U} \sum_{j \in U} \Delta_{2ij} \frac{x_i}{\pi_{2i}}
-    \frac{(y_j - z_j \phi^*_1 q_j)}{\pi_{2j}}\\
+    \Var(\hat Y_{NNE}(\hat{\bm \lambda})) 
+    &= \Var(\hat Y_{\ell, NNE}(\bm \lambda^*, \bm \phi^*) + O_p(Nn_2^{-1})) \\ 
+    &= \Var\left(\sum_{i \in A_2} \hat w_{2i}(\bm \lambda^*) y_i + 
+      \left(\bf T - \sum_{i \in A_2} \hat w_{2i}(\bm \lambda^*) \bf z_i
+    q_i\right)\bm \phi^*\right)\\
+    &= (\bm \phi_1^*)^T \Var(\hat{\bf X_c}) \bm \phi_1^* + 
+    \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} 
+    (y_i - \bf z_i \bm \phi^* q_i)(y_j - \bf z_j \bm \phi^* q_j)\\
+    &\qquad+ 2 \Cov\left(\hat{\bf X_c} \bm \phi_1^*, \sum_{i \in A_2} 
+      \frac{(y_i - \bf z_i \bm \phi^* q_i)}{\pi_{2i}}\right) \\
+    &= (\bm \phi_1^*)^T \Var(\hat{\bf X_c}) \bm \phi_1^* + 
+    \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} 
+    (y_i - \bf z_i \bm \phi^* q_i)(y_j - \bf z_j \bm \phi^* q_j)\\
+    &\qquad + (1 - W)\bm \phi_1^* \sum_{i \in U} \sum_{j \in U} \Delta_{2ij} 
+    \frac{x_i}{\pi_{2i}} \frac{(y_j - \bf z_j \bm \phi^*_1 q_j)}{\pi_{2j}}\\
   \end{align*}
 
-  where the last equality comes from the fact that $\hat X_c = W\hat X_1 + (1 -
-  W) \hat X_2$. To have an unbiased estimator of the variance we can use:
+  where the last equality comes from the fact that $\hat{\bf X_c} = W\hat{\bf
+  X_1} + (1 - W) \hat{\bf X_2}$. To have an unbiased estimator of the variance
+  we can use:
 
   \begin{align*}
     \hat V_{NNE} 
-    &= (\hat \phi_1)^T \Var(\hat X_c) \hat \phi_1 + 
+    &= (\hat{\bm \phi_1})^T \Var(\hat{\bf X_c}) \hat{\bm \phi_1} + 
     \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}\pi_{2i}\pi_{2j}} 
-    (y_i - z_i \hat \phi q_i)(y_j - z_j \hat \phi q_j) \\
-    &\qquad + (1 - W)\hat \phi_1 \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}}
-    \frac{x_i}{\pi_{2i}} \frac{(y_j - z_j \hat \phi_1 q_j)}{\pi_{2j}}
+    (y_i - \bf z_i \hat{\bm \phi} q_i)(y_j - \bf z_j \hat{\bm \phi} q_j) \\
+    &\qquad + (1 - W)\hat \phi_1 \sum_{i \in A_2} \sum_{j \in A_2} 
+    \frac{\Delta_{2ij}}{\pi_{2ij}} \frac{x_i}{\pi_{2i}} 
+    \frac{(y_j - \bf z_j \hat{\bm \phi_1} q_j)}{\pi_{2j}}
   \end{align*}
 
   where 
   
-  $$\hat \phi =
+  $$\hat{\bm \phi} =
   \begin{bmatrix}
-    \hat \phi_1 \\ \hat \phi_2
+    \hat{\bm \phi_1} \\ \hat \phi_2
   \end{bmatrix} = 
   \left(\sum_{i \in A_2} \frac{q_i}{g'(d_{2i})} 
   \begin{bmatrix}
-    x_i^2 / q_i & x_i g(d_{2i}) / q_i \\
-    x_i g(d_{2i}) / q_i & g(d_{2i})^2
+    \bf x_i^2 / q_i & \bf x_i g(d_{2i}) / q_i \\
+    \bf x_i g(d_{2i}) / q_i & g(d_{2i})^2
   \end{bmatrix}
   \right)^{-1}
   \sum_{i \in A_2} \frac{y_i}{g'(d_{2i})} 
-  \begin{bmatrix} x_i / q_i \\ g(d_i) \end{bmatrix}.
+  \begin{bmatrix} \bf x_i / q_i \\ g(d_i) \end{bmatrix}.
   $$
 
 \end{proof}
@@ -842,7 +869,7 @@ where $\Phi_3$ is the CDF of a t-distribution with 3 degrees of freedom.
 %random sampling. }
 We consider a finite population of size $N = 10,000$ with the Phase 1 
 sampling being a simple random sample (SRS) of size $n_1 = 1000$. The Phase 2
-sample is a Poisson sample with an expected sample size of 
+sample is a Poisson sample with an expected sample size of about 300.
 
 and
 Phase 2 sampling occuring under Poisson (Bernoulli) sampling. This yields a
@@ -856,13 +883,24 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 \begin{itemize}
   \item[1.] HT-estimator: $\hat Y_{HT} = N^{-1} \sum_{i \in A_2}
     \frac{y_i}{\pi_{2i}},$
-  \item[2.] Regression estimator (Reg): (FIXME)
+  \item[2.] Regression estimator (Reg): Let $\hat Y_{NN, reg} = \hat Y_{HT} + (
+    \hat{\bf X_c} - \hat{\bf X_{2, HT}}) \hat{\bm \beta_2}$ where $\hat Y_{HT} =
+    \sum_{i \in A_2} d_{2i} y_i$, $\hat{\bf X_c} = W \hat{\bf X_{1, HT}} + (1 -
+    W)\hat{\bf X_{2, HT}}$, $W = n_{1,eff} / (n_{1,eff} + n_{2, eff})$,
+    $\hat{\bf X_{1, HT}} = \sum_{i \in A_1} d_{1i} \bf x_{i}$, $\hat{\bf X_{2,
+    HT}} = \sum_{i \in A_2} d_{2i} \bf x_{i}$, $\bf x_i = (1, x_{1i}, x_{2i})^T$
+    and 
+
+    $$ \hat{\bm \beta_2} = \left(\sum_{i \in A_2} \bf x_i \bf x_i^T\right)^{-1}
+    \sum_{i \in A_2} \bf x_i y_i.$$
+
+    Then $\hat{\bar Y}_{NN, reg} = \hat Y_{NN, reg} / N$.
   \item[3.] Debiased Calibration with Population Constraints (DC-Pop): This 
     solves 
 
   \begin{equation*}
   \hat w_2 = \argmin_w \sum_{i \in A_2} G(w_{2i}) q_i \text{ with } 
-  \sum_{i \in A_2} w_{2i} x_i = \sum_{i \in U} x_i \text{ and } 
+  \sum_{i \in A_2} w_{2i} \bf x_i = \sum_{i \in U} \bf x_i \text{ and } 
   \sum_{i \in A_2} w_{2i} g(d_{2i}) q_i = \sum_{i \in U} g(d_{2i}) q_i
   \end{equation*}
 
@@ -871,88 +909,258 @@ proposed method for the parameter $\bar Y_N$ with four approaches:
 \end{itemize}
 
 In addition to estimating the mean parameter $\bar Y_N$, we also construct
-variance estimates $\hat V(\hat Y)$ for each estimate $\hat Y$. For each
-approach we give the variance estimate in Table~\ref{tab:varforms}.
+variance estimates $\hat V(\hat Y)$ for each estimate $\hat Y$.
+% For each approach we give the variance estimate in Table~\ref{tab:varforms2}.
+
+We run the simulation $1000$ times for each of these methods and compute the
+Bias ($E[\hat Y] - \bar Y_N$), the RMSE ($\sqrt{\Var(\hat Y - \bar Y_N)}$), a 95\%
+empirical confidence interval ($\sum_{b = 1}^{1000} |\hat Y^{(b)} - \bar Y_N| \leq 
+\Phi(0.975)\sqrt{\hat V(\hat Y^{(b)})^{(b)}}$), and a T-test that assesses the
+unbiasedness of each estimator where $\hat Y^{(b)}$ is the result from the $b$th
+simulation replicate. The results are in Table~\ref{tab:nndc-mean}.
+
+\begin{table}[ht!]
+  \centering
+\input{tables/nndcsim_mean.tex}
+% This table was generated from ../../src/explore/proto-dctpmcmc.R
+\caption{This table shows the results of Simulation Study 2. It displays the
+Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+unbiasedness of each estimator for the estimators: HT, Reg, DC-Pop, and
+DC-Est.}
+\label{tab:nndc-mean}
+\end{table}
 
 
-\section{Topic 3: Multi-source Two-Phase Sampling}
+\section{Topic 3: Multi-Source Two-Phase Sampling}
+
+\subsection{Background}
+
+When considering non-nested two-phase sampling, we focused on the case of having
+two samples. Now, we consider incorporating more than two independent samples
+together with a debiasing constraint. First, we consider the case in which we
+want to estimate the $\theta = E[Y]$ and $Y$ is only observed in one sample.
+Then we will consider the case where $Y$ may be in multiple samples.
+
+Consider the setup in which we have independent samples $A_0, A_1, \dots, A_M$
+where $Y$ is observed only in $A_0$ but $\bf X$ is observed in all of the
+samples with elements $\bf X^{(0)}$ observed in $A_0$ and $\bf X^{(m)}$ observed
+in $A_m$ for each $m = 1, \dots, M$. Like the non-nested case, we assume that
+each survey is sampling independently from the same population sampling frame.
+
+The traditional multi-source approach (\cite{kim2024statistics}) is to use
+generalized least squares (GLS) to obtain an optimal estimator of $X$ from the
+samples $A_1, \dots, A_M$. Then we can incorporate this information in the
+estimation of $\theta$ by using the following estimate 
+
+$$\hat \theta = \sum_{i \in A_0} \hat w_i y_i$$
+
+where 
+
+\begin{equation}\label{eq:mstps}
+\hat w = \argmin_w \sum_{i \in A_0} G(w_i)q_i \text{ such that } \sum_{i \in
+A_0} w_i \bf x_i = \hat X_{GLS}^{(0)}
+\end{equation}
+
+where $\hat X_{GLS}^{(0)}$ is the GLS estimate of $X$ for all of the
+$X$-variables measured in sample $A_0$, and $G$ is a generalized entropy
+function. 
+
+% Outline
+% Instead of incorporating data from one additional source, we want to combine
+% data from multiple sources
+% * Use GLS (generalized from effective sample size)
+% * We need to add debiasing constraint 
+%   * What do we do if we have multiple surveys for which we observe Y?
+%   * How do we incorporate the selection probability?
+
+\subsection{Methodology}
+
+In order to have a design consistent estimator that incorporates information from
+samples $A_0, A_1, \dots, A_M$, we want to add the debiasing constraints, 
+
+$$ \sum_{i \in A_0} w_{i} \bf x_i q_i = \sum_{i \in U} g(d_i) q_i $$ 
+
+where $g(x) = \partial G(x) / \partial x$ and $d_i$ are the design weights for
+sample $A_0$. This yields the optimization problem:
+
+\begin{equation}\label{eq:dc3}
+  \hat w = \argmin_w \sum_{i \in A_0} G(w_i) q_i + \lambda\left(\hat T - \sum_{i
+  \in A_0} w_i \bf z_i\right)
+\end{equation}
+
+where $\hat T = (\hat{\bf X}^{(0)}, \sum_{i \in U} g(d_i) q_i)^T$ and 
+$\bf z_i = (\bf x_i^T, g(d_i)q_i)^T$. A more general approach considers the case
+in which multiple samples can observe $Y$. In this case, assume that we have
+samples $A_1, \dots A_{M_1}$ for which we observe elements of $\bf X$ and $Y$
+and samples $B_1, \dots, B_{M_2}$ for which we only observed elements of $\bf
+X$. We denote $\bf X^{(A_m)}$ and $\bf X^{(B_m)}$ as the columns of $\bf X$
+observed in samples $A_m$ and $B_m$ respectively. Then the final
+estimator\footnote{This is sort of like stratified sampling with unknown strata.}
+is 
+
+$$ \hat Y = M_1^{-1} \sum_{m = 1}^{M_1} \sum_{i \in A_m} \hat w_{im} y_i $$
+
+and $\hat w_{im}$ solves  
+
+\begin{equation}\label{eq:dc32}
+  \hat w = \argmin_w \sum_{i \in A_m} G(w_i) q_i + \lambda\left(\hat T_m - \sum_{i
+  \in A_m} w_i \bf z_i\right)
+\end{equation}
+
+where $\hat T = (\hat{\bf X}^{(A_m)}, \sum_{i \in U} g(d_{im}) q_i)^T$ and $d_{im}$
+are the design weights for $A_m$.
+
+\subsection{Theoretical Results}
+
+\subsection{Simulation Study 3.1}
+
+We first run a simulation for the case in which we only have one sample in which
+we observe $Y$. We have the following superpopulation model with $N=10000$
+elements:
+
+
+$$
+\begin{aligned}
+X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
+X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
+X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
+Z_i &\stackrel{ind}{\sim} N(0, 1) \\
+\varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
+\pi_{0i} &= \min(\max(\Phi(-x_{1i}), 0.02), 0.9)\\
+\pi_{1i} &= n_1 / N.\\
+\pi_{2i} &= \Phi(x_{2i} - 2) \\
+\end{aligned}
+$$
+
+We observe the following columns in each sample
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    Sample & $X_1$ & $X_2$ & $X_3$ & $Y$ \\
+    \midrule
+   $A_0$  & \checkmark     & \checkmark     & \checkmark     &  \checkmark \\    
+   $A_1$  & \checkmark     &       & \checkmark     &    \\  
+   $A_2$  & \checkmark     & \checkmark     &       &    \\  
+   \bottomrule
+  \end{tabular}
+\end{table}
+
+For the sampling mechanism both $A_0$ and $A_1$ are selected using a Poisson
+sample with response probabilities $\pi_{0i}$ and $\pi_{1i}$ respectively. The
+sample $A_2$ is a simple random sample with $n_1 = 2000$. We compare five
+different estimators for $\theta = E[Y]$.
+
+\begin{itemize}
+  \item[1.] Horvitz-Thompson estimator (HT): $\hat Y = N^{-1} \sum_{i \in A_0}
+    \frac{y_i}{\pi_{0i}}$,
+  \item[2.] Non-nested regression (NNReg): This is the non-nested regression from
+    Equation~\eqref{eq:nnopt} with only using information from Samples $A_0$ and
+    $A_1$,
+  \item[3.] Multi-Source proposed (MSEst): This is the proposed estimator from
+    Equation~\eqref{eq:dc3},
+  \item[4.] Multi-Source population (MSPop): This is the proposed estimator with
+    using the true value of $T_1$ from the population,
+  \item[5.] Multi-Source regression (MSReg): This is the linearized regression
+    estimator from FIXME.
+\end{itemize}
+
+\begin{table}[ht!]
+  \centering
+  \input{tables/msdcsim1.tex}
+% This table was generated from ../../src/explore/20240506-msdcsim.qmd
+\caption{This table shows the results of Simulation Study 2. It displays the
+Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+unbiasedness of each estimator for the estimators: HT, NNReg, MSPop, MSEst, and
+MSReg.}
+\label{tab:msdc-mean}
+\end{table}
+
+As expected MSPop has the lowest RMSE because it also uses the population
+totals. It seems like MSEst and MSReg are almost equivalent, which is good
+because they are also supposed to be identical. The MSEst estimator outperforms
+NNReg because it also uses information from $A_2$, even though it implicitly
+uses a regression estimator with $X_3$ as a covariate, which is unnecessary.
+
+\subsection{Simulation Study 3.2}
+
+Building off of the previous simulation study, we now consider the case for
+which we observe $Y$ in separate samples.
+We have the following superpopulation model with $N = 10,000$ elements:
+
+$$
+\begin{aligned}
+X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
+X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
+X_{3i} &\stackrel{ind}{\sim} N(5, 1) \\
+\varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
+\pi_{A1i} &= \min(\max(\Phi(-x_{1i}), 0.02), 0.9)\\
+\pi_{A2i} &= \min(\max(\Phi(x_{3i} - 6), 0.02), 0.95) \\
+\pi_{B1i} &= n_1 / N\\
+\pi_{B2i} &= \Phi(x_{2i} - 2) \\
+\end{aligned}
+$$
+
+We observe the following columns in each sample
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    Sample & $X_1$ & $X_2$ & $X_3$ & $Y$ \\
+    \midrule
+   $A_1$  & \checkmark     & \checkmark     & \checkmark     &  \checkmark \\    
+   $A_2$  & \checkmark     & & \checkmark     &  \checkmark \\    
+   $B_1$  & \checkmark     &       & \checkmark     &    \\  
+   $B_2$  & \checkmark     & \checkmark     &       &    \\  
+   \bottomrule
+  \end{tabular}
+\end{table}
+
+For the sampling mechanism $A_1$, $A_2$ and $B_2$ are selected using a Poisson
+sample with response probabilities $\pi_{A1i}$, $\pi_{A2i}$ and $\pi_{B1i}$
+respectively. The $B_2$ sample is a simple random sample (SRS). We estimate the
+following methods:
+
+\begin{itemize}
+  \item[1.] Horvitz-Thompson estimator for $A_1$ (HTA1):
+
+    $$\hat Y_{HT, A_1} = \sum_{i \in A_1} \frac{y_i}{\pi_{A1i}}.$$
+  \item[2.] Horvitz-Thompson estimator for $A_2$ (HTA1):
+    $$\hat Y_{HT, A_2} = \sum_{i \in A_2} \frac{y_i}{\pi_{A2i}}.$$
+  \item[3.] Weighted Horvitz-Thompson estimator (WHT):
+    $$\hat Y_{WHT} = \frac{\hat Y_{HT, A_1} / \hat V_{A_1} + \hat Y_{HT, A_2} /
+    \hat V_{A_2}}{1 / \hat V_{A_1} + 1 / \hat V_{A_2}}$$
+
+    where $\hat V_{A_m}$ is the estimated variance of the Horvitz-Thompson
+    estimator $\hat Y_{HT, A_m}$.
+  \item[4.] Multi-Source proposed (MSEst): This is the proposed estimator from
+    Equation~FIXME.
+  \item[5.] Multi-Source population (MSPop): This is the proposed estimator with
+    using the true value of $T_1$ from the population,
+  \item[6.] Multi-Source regression (MSReg): This is the linearized regression
+    estimator from FIXME.
+\end{itemize}
+
+\begin{table}[ht!]
+  \centering
+  \input{tables/msdcsim2.tex}
+% This table was generated from ../../src/explore/20240511-msdcsim2.qmd
+\caption{This table shows the results of Simulation Study 2. It displays the
+Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+unbiasedness of each estimator for the estimators: HT, NNReg, MSPop, MSEst, and
+MSReg.}
+\label{tab:msdc2-mean}
+\end{table}
+
+% FIXME: Change to GLS estimate of Y.
 
 \newpage 
 
 \bibliographystyle{chicago}
 \bibliography{references}
 
-\newpage
-
-\appendix
-
-\section{Derivation of the Estimated Variance of DC-Pop in Simulation 1}
-
-We know that $\hat Y_{DC-Pop} = \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(\hat
-\lambda) y_i$ where $\hat w_{2i|1}$ solves
-
-  \begin{equation}
-    \argmin_{w_{2|1}} \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i})
-    \text{ such that}
-    \sum_{i \in A_2} w_{1i} w_{2i|1} z_i = \sum_{i \in U} z_i.
-  \end{equation}
-
-This means that using the technique of \cite{randles1982asymptotic},
-the linearization of $\hat Y_{DC-Pop}$ is 
-
-$$\hat Y_{DC-Pop, \ell} = \sum_{i \in A_2} w_{1i} \hat w_{2i|1}(\hat \lambda) y_i + 
-\left( \sum_{i \in U} z_i - 
-\sum_{i \in A_2} w_{1i} w_{2i|1}(\hat \lambda) z_i \right) \phi.$$
-
-Since $\phi^*$ satisfies $E\left[\frac{\partial}{\partial \lambda} \hat Y_{DC-Pop,
-\ell}(\lambda^*, \phi^*)\right] = 0$, $\phi^*$ is the same as it is for $\hat Y_{DC-Est,
-\ell}$ with $q_i = 1$,
-
-  \begin{align*}
-    \phi^*
-    &= E\left[\sum_{i \in A_2} \frac{w_{1i}z_i z_i^T }{g'(d_{2i|1})}\right]^{-1}
-    E\left[\sum_{i \in A_2} \frac{w_{1i}z_i y_i}{g'(d_{2i|1})}\right]\\
-    &= \left[\sum_{i \in U} \frac{\pi_{2i|1}z_i z_i^T}{g'(d_{2i|1})}\right]^{-1}
-    \left[\sum_{i \in U} \frac{\pi_{2i|1} z_i y_i}{g'(d_{2i|1})}\right].\\
-  \end{align*}
-
-Hence,
-
-$$
-\hat Y_{DC-Pop, \ell} = \sum_{i \in U} z_i \phi^* + \sum_{i \in A_2} w_{1i} \hat
-w_{2i|1}(\lambda^*) (y_i - z_i \phi^*).
-$$
-
-Unlike the two-phase regression estimator and $\hat Y_{DC-Est}$ this
-linearization only has uncertainty in the second term. The first term is a
-population estimate. Let $\varepsilon_i = (y_i - z_i \phi^*)$. This means that
-
-\begin{align*}
-  V(\hat Y_{DC-Pop, \ell}) 
-  &= V(E[\hat Y_{DC-Pop, \ell} \mid A_1]) + E[V(\hat Y_{DC-Pop, \ell} \mid A_1)] \\
-  &= V\left(\sum_{i \in A_1} w_{1i} \pi_{2i|1} \hat w_{2i|1}(\lambda^*)
-  \varepsilon_i\right) + 
-  E\left[\sum_{i \in A_1} \pi_{2i|1}(1 - \pi_{2i|1}) w_{1i}^2 \hat w_{2i|1}(\lambda^*)^2
-    \varepsilon_i^2 \right]\\
-  &= \sum_{i \in U} \pi_{1i}(1 - \pi_{1i}) w_{1i}^2 \pi_{2i|1}^2 
-  \hat w_{2i|1}(\lambda^*)^2 \varepsilon_i^2 +
-  \sum_{i \in U} \pi_{1i}\pi_{2i|1}(1 - \pi_{2i|1}) w_{1i}^2 \hat w_{2i|1}(\lambda^*)^2
-    \varepsilon_i^2\\
-  &= \sum_{i \in U} w_{1i} w_{2i|1}(\lambda^*)^2 \pi_{2i|1}
-  ((1 - \pi_{1i})\pi_{2i|1} + (1 - \pi_{2i|1})) \varepsilon_i^2.
-\end{align*}
-
-Since $w_{2i|1}(\lambda^*) \pi_{2i|1} = 1$, there are two potential estimators
-of the variance,
-
-\begin{align*}
-  \hat V_1 &= \sum_{i \in A_2} w_{1i}^2 w_{2i|1}(\hat \lambda)^2 
-  ((1 - \pi_{1i})\pi_{2i|1} + (1 - \pi_{2i|1})) \varepsilon_i^2\\
-  \hat V_2 &= \sum_{i \in A_2}  w_{1i}^2 d_{2i|1}^2
-  ((1 - \pi_{1i})\pi_{2i|1} + (1 - \pi_{2i|1})) \varepsilon_i^2.
-\end{align*}
-
-In the current simulation, we use $\hat V_1$, but I have tried $\hat V_2$ and
-the results are similar.
 \end{document}
-

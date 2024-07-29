@@ -24,7 +24,8 @@ p1_type <- "srs"
 # p1_pi <- "ifelse(pnorm(-pop_df$X2) < 0.10, 0.10, pnorm(-pop_df$X2))"
 p1_pi <- "1200 / nrow(pop_df)"
 p2_type <- "poisson"
-p2_pi <- "ifelse(pt(-pop_df$X1 + 1, 3) > 0.9, 0.9, pt(-pop_df$X1 + 1, 3))"
+# p2_pi <- "ifelse(pt(-pop_df$X1 + 1, 3) > 0.9, 0.9, pt(-pop_df$X1 + 1, 3))"
+p2_pi <- "pmin(pmax(pt(pop_df$Z - 1, 3), 0.02), 0.7)"
 comb <- paste0(p1_type, "-", p2_type)
 
 # ************
@@ -118,9 +119,7 @@ mc_res %>%
     Est == "pistar" ~ "$\\pi^*$")
   ) %>%
   arrange(Ind) %>%
-  select(Est, Bias, RMSE, EmpCI, Ttest) 
-
-%>%
+  select(Est, Bias, RMSE, EmpCI, Ttest) %>%
   knitr::kable("latex", booktabs = TRUE, escape = FALSE, digits = 3) %>%
   cat(file = paste0("tables/tpdcsim",  "_mean.tex"))
 

@@ -56,8 +56,8 @@ X_{2i} &\stackrel{ind}{\sim} Unif(0, 4) \\
 X_{3i} &\stackrel{ind}{\sim} N(0, 1) \\
 Z_i &\stackrel{ind}{\sim} N(0, 1) \\
 \varepsilon_i &\stackrel{ind}{\sim} N(0, 1) \\
-Y_{i} &= 3 X_{1i} + 2 X_{2i} + \varepsilon_i \\
-\pi_{0i} &= \min(\max(\Phi(-x_{1i}), 0.02), 0.9)\\
+Y_{i} &= 3 X_{1i} + 2 X_{2i} + Z_i + \varepsilon_i \\
+\pi_{0i} &= \min(\max(\Phi(z_{i} - 2), 0.02), 0.9)\\
 \pi_{1i} &= n_1 / N\\
 \pi_{2i} &= \Phi(x_{2i} - 2) \\
 \end{aligned}
@@ -87,9 +87,9 @@ gen_pop <- function(N_obs, n1_obs) {
 
   eps <- rnorm(N_obs)
 
-  y <- 3 * x1 + 2 * x2 + eps
+  y <- 3 * x1 + 2 * x2 + z + eps
 
-  pi0 <- pmin(pmax(pnorm(-x1), 0.02), 0.9)
+  pi0 <- pmin(pmax(pnorm(z - 2), 0.02), 0.9)
   # pi1 <- pnorm(-z - 1) # Informative sampling. Do we want this?
   pi1 <- n1_obs / N_obs
   # pi2 <- pmin(pmax(pnorm(x2 - 4), 0.01), 0.9)
@@ -448,7 +448,9 @@ mc_res %>%
     Est == "HT" ~ 1)
   ) %>%
   arrange(Ind) %>%
-  select(Est, Bias, RMSE, EmpCI, Ttest) %>%
+  select(Est, Bias, RMSE, EmpCI, Ttest) 
+
+%>%
   knitr::kable("latex", booktabs = TRUE, digits = 4) %>%
   cat(file = "tables/msdcsim1.tex")
 

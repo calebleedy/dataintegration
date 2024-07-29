@@ -749,7 +749,7 @@ where $\hat{\bm \lambda}$ is the solution to
 
 \end{proof}
 
-\begin{theorem}[Variance Estimation]
+\begin{theorem}[Variance Estimation]\label{thm:nnve}
   The variance of $\hat Y_{NNE}$ is 
 
   \begin{align*}
@@ -869,7 +869,7 @@ where $\Phi_3$ is the CDF of a t-distribution with 3 degrees of freedom.
 %random sampling. }
 We consider a finite population of size $N = 10,000$ with the Phase 1 
 sampling being a simple random sample (SRS) of size $n_1 = 1000$. The Phase 2
-sample is a Poisson sample with an expected sample size of 
+sample is a Poisson sample with an expected sample size of about 300.
 
 and
 Phase 2 sampling occuring under Poisson (Bernoulli) sampling. This yields a
@@ -989,16 +989,19 @@ sample $A_0$. This yields the optimization problem:
 \end{equation}
 
 where $\hat T = (\hat{\bf X}^{(0)}, \sum_{i \in U} g(d_i) q_i)^T$ and 
-$\bf z_i = (\bf x_i^T, g(d_i)q_i)^T$. A more general approach considers the case
-in which multiple samples can observe $Y$. In this case, assume that we have
-samples $A_1, \dots A_{M_1}$ for which we observe elements of $\bf X$ and $Y$
-and samples $B_1, \dots, B_{M_2}$ for which we only observed elements of $\bf
-X$. We denote $\bf X^{(A_m)}$ and $\bf X^{(B_m)}$ as the columns of $\bf X$
-observed in samples $A_m$ and $B_m$ respectively. Then the final
-estimator\footnote{This is sort of like stratified sampling with unknown strata.}
-is 
+$\bf z_i = ((\bf x_i^{(0)})^T, g(d_i)q_i)^T$. Then the estimator is $\hat Y_{MS}
+= \sum_{i \in A_0} w_{i} y_i$.
 
-$$ \hat Y = M_1^{-1} \sum_{m = 1}^{M_1} \sum_{i \in A_m} \hat w_{im} y_i $$
+A more general approach considers
+the case in which multiple samples can observe $Y$. In this case, assume that we
+have samples $A_1, \dots A_{M_1}$ for which we observe elements of $\bf X$ and
+$Y$ and samples $B_1, \dots, B_{M_2}$ for which we only observed elements of
+$\bf X$. We denote $\bf X^{(A_m)}$ and $\bf X^{(B_m)}$ as the columns of $\bf X$
+observed in samples $A_m$ and $B_m$ respectively. Then the final
+estimator\footnote{This is sort of like stratified sampling with unknown
+strata.} is 
+
+$$ \hat Y_{MSE} = M_1^{-1} \sum_{m = 1}^{M_1} \sum_{i \in A_m} \hat w_{im} y_i $$
 
 and $\hat w_{im}$ solves  
 
@@ -1007,17 +1010,90 @@ and $\hat w_{im}$ solves
   \in A_m} w_i \bf z_i\right)
 \end{equation}
 
-where $\hat T = (\hat{\bf X}^{(A_m)}, \sum_{i \in U} g(d_{im}) q_i)^T$ and $d_{im}$
+where $\hat T = (\hat{\bf X}^{(A_m)}, \sum_{i \in U} g(d_{im}) q_i)^T$, $\bf
+z_i^{T} = ((\bf x_i^{(A_m)})^T, g(d_{im})q_i)^T$ and $d_{im}$
 are the design weights for $A_m$.
 
 \subsection{Theoretical Results}
+
+We prove the theory for the simpler case in which we have samples $A_0, A_1,
+\dots, A_{M}$. 
+
+\begin{theorem}[Design Consistency]
+  Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$.
+  Under regularity conditions,
+
+  $$\hat Y_{MS} = \hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) + O_p(N / n_0)$$
+
+  where
+
+  $$\hat Y_\ell(\bm \lambda^*, \bm \phi^*) = \hat Y_{DCE} + \left(
+    \hat T - \sum_{i \in A_0} \hat w_{0i}(\bm \lambda^*) \bf z_i q_i
+  \right)\bm \phi^*$$
+
+  and 
+
+  $$\bm \phi^* = \left[\sum_{i \in U} \frac{\pi_{0i} \bf z_i \bf z_i^T
+  q_i}{g'(d_{0i})}\right]^{-1} \sum_{i \in U} \frac{\pi_{0i} \bf z_i
+  y_i}{g'(d_{0i})}.$$
+\end{theorem}
+
+\begin{proof}
+  This proof follows from the proof of Theorem~\ref{thm:dc2}. The only
+  difference is that we have $\hat X_{GLS}$ instead of $\hat X_c$, but the final
+  result still holds.
+\end{proof}
+
+Since this result holds for each simple case, and our general case is the
+average of each of the simple cases that we observe, the result holds for
+Equation~\eqref{eq:dc32} as we assume each $A_m$ is independent of each other.
+
+\begin{theorem}[Variance Estimation]
+  Under regularity conditions,
+
+  $$
+  \begin{aligned}
+    V(\hat Y_{MS}) 
+    &= M_1^{-2} \left(\sum_{m = 1}^{M_1} 
+    \Big\{(\bm \phi_1^{(m)*})^T\Var(\hat{\bf X}_{GLS}^{(m)})
+      (\bm \phi_1^{(m)*})^T \right.\\
+    &+ \left.
+      \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{mij}}{\pi_{mi}\pi_{mj}}
+      (y_i - \bf z_i^{(m)}\bm \phi^{(m)*}q_i)
+      (y_j - \bf z_j^{(m)}\bm \phi^{(m)*}q_j) \Big\} \right).
+  \end{aligned}
+  $$
+
+  We can estimate the variance with
+
+  $$
+  \begin{aligned}
+    \hat V(\hat Y_{MS}) 
+    &= M_1^{-2} \left(\sum_{m = 1}^{M_1} 
+      \Big\{(\hat{\bm \phi_1}^{(m)})^T\hat \Var(\hat{\bf X}_{GLS}^{(m)})
+        (\hat{\bm \phi_1}^{(m)})^T \right.\\
+    &+ \left.
+      \sum_{i \in A_m} \sum_{j \in A_m} \frac{\Delta_{mij}}{\pi_{mij}\pi_{mi}\pi_{mj}}
+      (y_i - \bf z_i^{(m)}\hat{\bm \phi}^{(m)}q_i)
+      (y_j - \bf z_j^{(m)}\hat{\bm \phi}^{(m)}q_j) \Big\} \right).
+  \end{aligned}
+  $$
+
+\end{theorem}
+
+\begin{proof}
+  This result follows the same argument as Theorem~\eqref{thm:nnve}. The result
+  holds because each sample $A_m$ is independent from the other $A_{m'}$. Since,
+  the score equation for the regression estimator asserts that $\sum_{i \in A_m}
+  \bf z_i (y_i - \bf z_i \hat{\bm \phi}^{(m)}) = \bf 0$, the covariance terms
+  should be approximately zero.
+\end{proof}
 
 \subsection{Simulation Study 3.1}
 
 We first run a simulation for the case in which we only have one sample in which
 we observe $Y$. We have the following superpopulation model with $N=10000$
 elements:
-
 
 $$
 \begin{aligned}
