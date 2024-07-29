@@ -13,7 +13,7 @@ variables $Y_k$.
 2. Extending Step 1 to multiple samples with non-monotone missingness.
 3. Merging one probability sample with a non-probability sample in which the 
 missingness is non-monotone.
-4. Extending Step 3 to mulitple non-probability samples.
+4. Extending Step 3 to multiple non-probability samples.
 
 # Related Literature
 
