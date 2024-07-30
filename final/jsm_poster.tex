@@ -1,0 +1,357 @@
+% Unofficial ISU Poster template.
+% A fork of https://github.com/anishathalye/gemini
+% also refer to https://github.com/yhkwon/gemini-isu
+
+% .pptx or illustrator version is available on https://www.print.iastate.edu/PrintingResources/DesignTemplates/
+
+\documentclass[final]{beamer}
+
+% ====================
+% Packages
+% ====================
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[size=custom,width=120,height=72,scale=1.0]{beamerposter}
+\usetheme{gemini}
+\usecolortheme{gemini}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{amsmath}
+\usepackage{bm}
+\pgfplotsset{compat=1.14}
+\usepackage{anyfontsize}
+\usepackage[backend=biber, style=bwl-FU]{biblatex}
+\addbibresource{poster.bib}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\suchthat}{such\; that}
+% ====================
+% Lengths
+% ====================
+
+% If you have N columns, choose \sepwidth and \colwidth such that
+% (N+1)*\sepwidth + N*\colwidth = \paperwidth
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.025\paperwidth}
+\setlength{\colwidth}{0.3\paperwidth}
+
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+% ====================
+% Title
+% ====================
+
+\title{\hspace{25cm}Debiased Calibration for Generalized Two-Phase Sampling}
+
+%\author{Your Name}
+\author{Caleb Leedy \inst{1} \and Jae-Kwang Kim \inst{1}}
+
+%\institute[shortinst]{Some Institute}
+\institute[shortinst]{\inst{1} Iowa State University}
+
+% ====================
+% Footer (optional)
+% ====================
+
+\footercontent{
+  \href{https://github.com}{Github: https://github.com/calebleedy} \hfill
+JSM Poster Session \hfill
+  \href{mailto:cleedy@iastate.edu}{cleedy@iastate.edu}}
+% (can be left out to remove footer)
+
+% ====================
+% Logo (optional)
+% ====================
+
+% use this to include logos on the left and/or right side of the header:
+% \logoright{\includegraphics[height=7cm]{logo1.pdf}}
+% \logoleft{\includegraphics[height=7cm]{logo2.pdf}}
+
+% ====================
+% Body
+% ====================
+
+\begin{document}
+\addtobeamertemplate{headline}{}
+{
+    \begin{tikzpicture}[remember picture,overlay]
+        \node [anchor=north west, inner sep=3cm] at ([xshift=0.0cm,yshift=1.0cm]current page.north west){\includegraphics[height=2.5cm]{logos/watermark.png}}; % Iowa State University watermark
+        % ISU watermark can be found on https://www.brandmarketing.iastate.edu/wordmark/primary/
+        \node [anchor=north west, inner sep=3cm] at ([xshift=0.0cm,yshift=-2.5cm]current page.north west){\huge \textbf{Statistics Department}}; % Department name
+        %\node [anchor=north east, inner sep=3cm] at ([xshift=0.0cm,yshift=1.0cm]current page.north east){\includegraphics[height=5cm]{logos/logo.png}}; % Use this if you want to add a logo on your right top corner.
+    \end{tikzpicture}
+}
+
+\begin{frame}[t]
+\begin{columns}[t]
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Introduction}
+
+    In classical two-phase sampling, one first selects a sample $A_1$ from a
+    finite population $U$ of size $N$, and observes $({\bf X}_i)_{i = 1}^{n_1}$.
+    Then one selects a sample $A_2$ from $A_1$ and observes 
+    $({\bf X}_i, Y_i)_{i = 1}^{n_2}$. We take the
+    framework of two-phase sampling and view data integration as specific case
+    of observing a variable of interest $Y$ within a single data set while we
+    also observe common covariates $({\bf X}_i)$ between both the data set with
+    $Y$ as well as an outside auxilary sample. This is an important practical
+    problem \cite{yang2020statistical}, 
+    \cite{dagdoug2023model}. We focus on the case:
+
+    \begin{itemize}
+      \item Where all of the surveys are probability samples, 
+      \item Where we only have summary level information instead of individual
+        observation values,
+      \item When we want the estimate the finite population total of $Y$,
+        $$Y_T = \sum_{i \in U} y_i.$$
+    \end{itemize}
+
+    \heading{Notation}
+
+    \begin{itemize}
+      \item Let $\pi_{1i}$ be the probability that element $i$ is selected into
+        the Phase 1 sample, $A_1$.
+      \item Let $\pi_{2i|1}$ be the probability that element $i$ is selected into
+        the Phase 1 sample, $A_2$ conditional on the fact that $i \in A_1$.
+      \item Let $d_{1i} = 1 / \pi_{1i}$ and $d_{2i|1} = 1 / \pi_{2i|1}$.
+      \item We use $\delta_{1i}$ and $\delta_{2i}$ to indicate if an observation
+        in contained within $A_1$ and $A_2$ respectively.
+    \end{itemize}
+
+  \end{block}
+
+  \begin{block}{Goal}
+
+    We want a two-phase sampling framework to
+
+    \begin{itemize}
+      \item[1.] Combine information from multiple data sources,
+      \item[2.] In a way that is efficient, and
+      \item[3.] Approximately design unbiased.
+    \end{itemize}
+
+  \end{block}
+
+  % NOTE: Use the "alertblock" to highlight a particular section in green.
+  \begin{block}{Comparable Methods}
+
+    \begin{itemize}
+      \item The \textbf{double expansion estimator} of \cite{kott1997can}
+        is a Horvitz-Thompson like estimator that is design unbiased, but
+        inefficient:
+
+        $$
+        \hat Y_{\rm{DEE}} = \sum_{i \in A_2} \frac{y_i}{\pi_{1i}\pi_{2i|1}}.
+        $$
+      \item The \textbf{two-phase regression estimator} is approximately design
+        unbiased but not as efficient as our proposed method:
+        $$
+        \hat Y_{\rm{Reg}} = 
+        \sum_{i \in A_1} \frac{{\bf{x}}_i \hat{\bm{\beta}}_q}{\pi_{1i}} + 
+        \sum_{i \in A_2} \frac{1}{\pi_{1i}\pi_{2i|1}}(y_i - 
+        {\bf{x}}_i \hat{\bm{\beta}}_q)
+        $$
+
+        where $q_i = q(\bf x_i)$ and 
+
+        $$
+        \hat{\bm \beta}_q = \left(\sum_{i \in A_2} 
+        \frac{{\bf{x}}_i {\bf{x}}_i'}{\pi_{1i} q_i}\right)^{-1} 
+        \sum_{i \in A_2} \frac{{\bf{x}}_i y_i}{\pi_{1i} q_i}.
+        $$
+
+    \end{itemize}
+
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Methodology}
+
+    \heading{Generalized Calibration}
+
+    \begin{itemize}
+      \item In a seminal paper, \cite{deville1992calibration} generalized the
+        regression estimator to other loss functions besides squared-error loss
+        for a sample $A$ with auxilary information about $X$. Their generalized
+        loss function minimizes,
+
+        $$
+        \sum_{i \in A} G(w_{i}, d_{i}) \suchthat \sum_{i \in
+        A} d_{i} w_{i} {\bf x_i} = \sum_{i \in U} {\bf x_i}.
+        $$
+
+        for a non-negative, strictly convex function with respect to $w$
+        function $G$, with a minimum at $g(w_i, d_i) = \frac{\partial G}{\partial
+        w}$ defined on an interval containing $d_{i}$ with $g(w_i, d_i)$
+        continuous.
+    \end{itemize}
+
+    \heading{Calibration with Generalized Entropy}
+
+    \begin{itemize}
+      \item Recently, \cite{kwon2024debiased} proposed a calibration estimator that
+        uses a generalized entropy function $G(w)$ (\cite{gneiting2007strictly})
+        instead of the generalized loss function $G(w, d)$ of
+        \cite{deville1992calibration}. They separate the bias calibration from
+        the minimization term and solve the following equation for estimated
+        sample weights:
+
+        $$
+        \hat w_{i} = \argmin_{w} \sum_{i \in A} G(w_i)
+        \suchthat \sum_{i \in A} w_{i} {\bf{x}}_i = 
+        \sum_{i \in U} {\bf{z}}_i,
+        \sum_{i \in A} w_i g(d_i) = \sum_{i \in U} g(d_i) .
+        $$
+
+      \item Our proposed method extends their result to two-phase sampling.
+    \end{itemize}
+
+  \end{block}
+
+  \begin{alertblock}{Proposal}
+
+    Let ${\bf{z}}_i = ({\bf x}_i / q_i, g(d_{2i|1}))^T$, the proposed debiased
+    calibration estimator is 
+    \vspace{-1.0cm}
+
+    \begin{equation}
+    \hat Y_{\rm{DCE}} = \sum_{i \in A_2} d_{1i} \hat w_{2i|1} y_i
+    \end{equation}
+
+    \vspace{-1.0cm}
+
+    where 
+    \vspace{-0.5cm}
+
+    \begin{equation}\label{eq:wmin}
+    \hat w_{2i|1} = \argmin_{w_{2|1}} \sum_{i \in A_2} w_{1i} G(w_{2i|1}) q_i
+    \suchthat \sum_{i \in A_2} d_{1i} w_{2i|1} {\bf{z}}_i q_i = 
+    \sum_{i \in A_1} d_{1i} {\bf{z}}_i q_i.
+    \end{equation}
+    
+    \vspace{-0.5cm}
+  \end{alertblock}
+
+  \begin{exampleblock}{Theoretical Results: Asymptotic Design Consistency}
+
+  %\begin{theorem}[Design Consistency]\label{thm:dc1}
+    Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$,
+    where $\hat{\bm \lambda}$ are the corresponding Lagrange multipliers from
+    Equation~\ref{eq:wmin}.
+    Under some regularity conditions, $\bm \lambda^* = ({\bf 0}^T, 1)^T$ and
+
+    $$\hat Y_{\rm{DCE}} = \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + O_p(N / n_2)$$
+
+    where
+    \vspace{-1.3cm}
+
+    $$\hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) = \hat Y_{\rm{DEE}}+ 
+    \left(\sum_{i \in A_1} d_{1i} {\bf z}_i q_i - \sum_{i \in A_2} d_{1i} 
+    \pi_{2i \mid 1}^{-1}  {\bf z}_i q_i\right)\bm \phi^*$$
+
+    \vspace{-1.3cm}
+    and
+    \vspace{-0.3cm}
+
+    $$
+    \bm \phi^* = 
+    \left[\sum_{i \in U} \frac{\pi_{2i|1}{\bf z}_i {\bf z}_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
+    \sum_{i \in U} \frac{\pi_{2i|1}{\bf z}_i y_i}{g'(d_{2i|1})}.
+    $$
+
+    \vspace{-0.5cm}
+  %\end{theorem}
+
+  \end{exampleblock}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Simulation Study}
+
+  For a finite population of size $N = 10,000$, and $n_1 = 1000$,
+
+  \begin{itemize}
+    \item $X_{1i} \stackrel{ind}{\sim} N(2, 1)$,
+      $X_{2i} \stackrel{ind}{\sim} \rm{Unif}(0, 4)$,
+      $Z_{i} \stackrel{ind}{\sim} N(0, 1)$,
+      $\varepsilon_i \stackrel{ind}{\sim} N(0, 1)$
+    \item $Y_{i} = 3 X_{1i} + 2 X_{2i} + 0.5 Z_i + \varepsilon_i$
+    \item $\pi_{1i} = n_1 / N$,
+      $\pi_{2i|1} = \max(\min(\Phi_3(z_{i} - 1), 0.7), 0.02)$.
+  \end{itemize}
+
+  where $\Phi_3$ is the CDF of a t-distribution with 3 degrees of freedom. We
+  compare the following algorithms:
+
+  \begin{itemize}
+    \item[1.] Double Expansion Estimator (DEE)
+    \item[2.] Two-Phase Regression estimator (TP-Reg)
+    \item[3.] Debiased Calibration with Population Constraints (DC-Pop): This 
+      solves 
+
+    \begin{equation*}
+      \argmin_{w_{2|1}} \sum_{i \in A_2} d_{1i} G(w_{2i}) \suchthat
+      \sum_{i \in A_2} d_{1i} w_{2i|1} {\bf z}_i = \sum_{i \in U} {\bf z}_i.
+    \end{equation*}
+
+    \item[4.] Debiased Calibration with Estimated Population Constraints (DC-Est):
+      This solves Equation~\eqref{eq:wmin} with $q_i = 1$.
+  \end{itemize}
+
+  \begin{table}[ht!]
+    \centering
+  \input{tpdcsim_mean.tex}
+  % This table was generated from ../../src/explore/proto-dctpmcmc.R
+  \caption{This table shows the results of the simulation study. It displays the
+  Bias, RMSE, empirical 95\% confidence interval, and a t-statistic assessing the
+  unbiasedness of each estimator for the estimators: DEE, TP-Reg, DC-Pop, and
+  DC-Est.}
+  \label{tab:tpdc-mean}
+  \end{table}
+  \end{block}
+
+  \begin{block}{Extensions}
+
+    We also consider the following extensions:
+
+    \begin{itemize}
+      \item Non-nested two-phase sampling: when $A_1$ and $A_2$ are independent.
+      \item Multi-source sampling: when $Y$ is contained in a sample $A_0$ that
+        shares common covariates $\bf X$, with samples $A_1$, $A_2$, \dots, $A_M$.
+    \end{itemize}
+  \end{block}
+
+  \vspace{-1.0cm}
+
+  \begin{block}{References}
+
+    %\footnotesize{\bibliographystyle{plainnat}\bibliography{poster}}
+    \printbibliography
+
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+\end{columns}
+\end{frame}
+
+\end{document}
+

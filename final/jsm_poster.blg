@@ -1,0 +1,15 @@
+[0] Config.pm:307> INFO - This is Biber 2.19
+[0] Config.pm:310> INFO - Logfile is 'jsm_poster.blg'
+[83] biber:340> INFO - === Tue Jul 30, 2024, 07:48:53
+[96] Biber.pm:419> INFO - Reading 'jsm_poster.bcf'
+[150] Biber.pm:979> INFO - Found 6 citekeys in bib section 0
+[168] Biber.pm:4419> INFO - Processing section 0
+[179] Biber.pm:4610> INFO - Looking for bibtex file 'poster.bib' for section 0
+[181] bibtex.pm:1713> INFO - LaTeX decoding ...
+[218] bibtex.pm:1519> INFO - Found BibTeX data source 'poster.bib'
+[279] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[279] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[279] Biber.pm:4239> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[279] Biber.pm:4245> INFO - No sort tailoring available for locale 'en-US'
+[289] bbl.pm:660> INFO - Writing 'jsm_poster.bbl' with encoding 'UTF-8'
+[292] bbl.pm:763> INFO - Output to jsm_poster.bbl

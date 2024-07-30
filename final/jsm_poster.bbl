@@ -1,0 +1,258 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global}
+    \entry{dagdoug2023model}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=5a3e0374250e47403aaead471974f2ed}{%
+           family={Dagdoug},
+           familyi={D\bibinitperiod},
+           given={Mehdi},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=5e8d3edd8738c8fdc1b7b3a5f40ebb25}{%
+           family={Goga},
+           familyi={G\bibinitperiod},
+           given={Camelia},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=67e11ed6a3cca21518316306e8e93e58}{%
+           family={Haziza},
+           familyi={H\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Taylor \& Francis}%
+      }
+      \strng{namehash}{7061178ac64f049ba3f4f19790c9dc14}
+      \strng{fullhash}{7061178ac64f049ba3f4f19790c9dc14}
+      \strng{bibnamehash}{7061178ac64f049ba3f4f19790c9dc14}
+      \strng{authorbibnamehash}{7061178ac64f049ba3f4f19790c9dc14}
+      \strng{authornamehash}{7061178ac64f049ba3f4f19790c9dc14}
+      \strng{authorfullhash}{7061178ac64f049ba3f4f19790c9dc14}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American Statistical Association}
+      \field{number}{542}
+      \field{title}{Model-assisted estimation through random forests in finite population sampling}
+      \field{volume}{118}
+      \field{year}{2023}
+      \field{pages}{1234\bibrangedash 1251}
+      \range{pages}{18}
+    \endentry
+    \entry{deville1992calibration}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=b18d444f78c1202ade9ba3edd9f2d7fe}{%
+           family={Deville},
+           familyi={D\bibinitperiod},
+           given={Jean-Claude},
+           giveni={J\bibinithyphendelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=247c163f8c5be93296320c7b9cc5ac27}{%
+           family={Sarndal},
+           familyi={S\bibinitperiod},
+           given={Carl-Erik},
+           giveni={C\bibinithyphendelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Taylor \& Francis}%
+      }
+      \strng{namehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{fullhash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{bibnamehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{authorbibnamehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{authornamehash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \strng{authorfullhash}{19c17b10c24366f15c2ea2cf8c80f785}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American statistical Association}
+      \field{number}{418}
+      \field{title}{Calibration estimators in survey sampling}
+      \field{volume}{87}
+      \field{year}{1992}
+      \field{pages}{376\bibrangedash 382}
+      \range{pages}{7}
+    \endentry
+    \entry{gneiting2007strictly}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=cf94799d213c0ab2fd2012473da7440b}{%
+           family={Gneiting},
+           familyi={G\bibinitperiod},
+           given={Tilmann},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=205b9f60128ee13642fa79b6f1330d63}{%
+           family={Raftery},
+           familyi={R\bibinitperiod},
+           given={Adrian\bibnamedelima E},
+           giveni={A\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Taylor \& Francis}%
+      }
+      \strng{namehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{fullhash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{bibnamehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{authorbibnamehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{authornamehash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \strng{authorfullhash}{e1cf3b58d0c2bb5af66e55c7f264277d}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American statistical Association}
+      \field{number}{477}
+      \field{title}{Strictly proper scoring rules, prediction, and estimation}
+      \field{volume}{102}
+      \field{year}{2007}
+      \field{pages}{359\bibrangedash 378}
+      \range{pages}{20}
+    \endentry
+    \entry{kott1997can}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=9985ccd7f6246e279768bdfa8005ad42}{%
+           family={Kott},
+           familyi={K\bibinitperiod},
+           given={P\bibnamedelima Stukel},
+           giveni={P\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3735d4b97d08cb164d6d475e4f53a6bb}{%
+           family={Stukel},
+           familyi={S\bibinitperiod},
+           given={DM},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{3ef50eafe48a043048855e5315d95d3a}
+      \strng{fullhash}{3ef50eafe48a043048855e5315d95d3a}
+      \strng{bibnamehash}{3ef50eafe48a043048855e5315d95d3a}
+      \strng{authorbibnamehash}{3ef50eafe48a043048855e5315d95d3a}
+      \strng{authornamehash}{3ef50eafe48a043048855e5315d95d3a}
+      \strng{authorfullhash}{3ef50eafe48a043048855e5315d95d3a}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Survey Methodology}
+      \field{number}{2}
+      \field{title}{Can the jackknife be used with a two-phase sample}
+      \field{volume}{23}
+      \field{year}{1997}
+      \field{pages}{81\bibrangedash 89}
+      \range{pages}{9}
+    \endentry
+    \entry{kwon2024debiased}{misc}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f2e44f66cb5676ac7978b5de8513a3e7}{%
+           family={Kwon},
+           familyi={K\bibinitperiod},
+           given={Yonghyun},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jae\bibnamedelima Kwang},
+           giveni={J\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19c577e26cee5860d2a83e19c9fd6ce3}{%
+           family={Qiu},
+           familyi={Q\bibinitperiod},
+           given={Yumou},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{fullhash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{bibnamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authorbibnamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authornamehash}{2df7493c037080a0a8d05578a9de473d}
+      \strng{authorfullhash}{2df7493c037080a0a8d05578a9de473d}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{stat.ME}
+      \field{eprinttype}{arXiv}
+      \field{title}{Debiased calibration estimation using generalized entropy in survey sampling}
+      \field{year}{2024}
+      \verb{eprint}
+      \verb 2404.01076
+      \endverb
+    \endentry
+    \entry{yang2020statistical}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=625adcd640f37c51b209b82b979454e9}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Shu},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jae\bibnamedelima Kwang},
+           giveni={J\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{7ba01cc2d9247dfb8246abab89baae6f}
+      \strng{fullhash}{7ba01cc2d9247dfb8246abab89baae6f}
+      \strng{bibnamehash}{7ba01cc2d9247dfb8246abab89baae6f}
+      \strng{authorbibnamehash}{7ba01cc2d9247dfb8246abab89baae6f}
+      \strng{authornamehash}{7ba01cc2d9247dfb8246abab89baae6f}
+      \strng{authorfullhash}{7ba01cc2d9247dfb8246abab89baae6f}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Japanese Journal of Statistics and Data Science}
+      \field{title}{Statistical data integration in survey sampling: A review}
+      \field{volume}{3}
+      \field{year}{2020}
+      \field{pages}{625\bibrangedash 650}
+      \range{pages}{26}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
