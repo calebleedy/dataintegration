@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.18.0 (TeX Live 2024/Arch Linux)  (format=lualatex 2024.6.11)  30 JUL 2024 07:49
+This is LuaHBTeX, Version 1.18.0 (TeX Live 2024/Arch Linux)  (format=lualatex 2024.6.11)  2 AUG 2024 16:03
  restricted system commands enabled.
 **jsm_poster.tex
 (./jsm_poster.tex
@@ -827,14 +827,14 @@ Package beamerposter Info: checking size input, please wait. on input line 130.
 Package beamerposter Info: the input custom\ 6\ was correct, we proceed. on inp
 ut line 130.
 Package beamerposter Info: finished size input check. on input line 130.
-Package beamerposter Info: custom poster width=120 on input line 130.
+Package beamerposter Info: custom poster width=96 on input line 130.
 Package beamerposter Info: custom poster height=72 on input line 130.
 Package beamerposter Info: myfontscale=1.0 on input line 130.
  ( FP-UPN ( FP-MUL )
 ( FP-ROUND ) ) ( FP-UPN ( FP-SUB ) ) ( FP-UPN ( FP-SUB ) )
-Package beamerposter Info: paperwidth=3414.3307pt, paperheight=2048.59842pt on 
-input line 173.
-Package beamerposter Info: textwidth=3385.87794pt, textheight=2020.14566pt on i
+Package beamerposter Info: paperwidth=2731.46455pt, paperheight=2048.59842pt on
+ input line 173.
+Package beamerposter Info: textwidth=2703.01181pt, textheight=2020.14566pt on i
 nput line 174.
 Package beamerposter Info: fontscale=1.0, myfontscale=1.00 on input line 175.
  ( FP-UPN ( FP-MUL )
@@ -1244,6 +1244,18 @@ Package bm Info: No bold for \U/msa/m/n, using \pmb.
 Package bm Info: No bold for \U/msb/m/n, using \pmb.
 LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 149.
 )
+(/usr/share/texmf-dist/tex/generic/ulem/ulem.sty
+\UL@box=\box83
+\UL@hyphenbox=\box84
+\UL@skip=\skip85
+\UL@hook=\toks58
+\UL@height=\dimen339
+\UL@pe=\count384
+\UL@pixel=\dimen340
+\ULC@box=\box85
+Package: ulem 2019/11/18
+\ULdepth=\dimen341
+)
 (/usr/share/texmf-dist/tex/latex/anyfontsize/anyfontsize.sty
 Package: anyfontsize 2007/11/22 anyfontsize.sty by pts
 )
@@ -1252,7 +1264,7 @@ Package: biblatex 2023/03/05 v3.19 programmable bibliographies (PK/MW)
 
 (/usr/share/texmf-dist/tex/latex/logreq/logreq.sty
 Package: logreq 2010/08/04 v1.0 xml request logger
-\lrq@indent=\count384
+\lrq@indent=\count385
 
 (/usr/share/texmf-dist/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
@@ -1260,63 +1272,63 @@ File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 (/usr/share/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
 )
-\c@tabx@nest=\count385
-\c@listtotal=\count386
-\c@listcount=\count387
-\c@liststart=\count388
-\c@liststop=\count389
-\c@citecount=\count390
-\c@citetotal=\count391
-\c@multicitecount=\count392
-\c@multicitetotal=\count393
-\c@instcount=\count394
-\c@maxnames=\count395
-\c@minnames=\count396
-\c@maxitems=\count397
-\c@minitems=\count398
-\c@citecounter=\count399
-\c@maxcitecounter=\count400
-\c@savedcitecounter=\count401
-\c@uniquelist=\count402
-\c@uniquename=\count403
-\c@refsection=\count404
-\c@refsegment=\count405
-\c@maxextratitle=\count406
-\c@maxextratitleyear=\count407
-\c@maxextraname=\count408
-\c@maxextradate=\count409
-\c@maxextraalpha=\count410
-\c@abbrvpenalty=\count411
-\c@highnamepenalty=\count412
-\c@lownamepenalty=\count413
-\c@maxparens=\count414
-\c@parenlevel=\count415
-\blx@tempcnta=\count416
-\blx@tempcntb=\count417
-\blx@tempcntc=\count418
-\c@blx@maxsection=\count419
-\blx@maxsegment@0=\count420
-\blx@notetype=\count421
-\blx@parenlevel@text=\count422
-\blx@parenlevel@foot=\count423
-\blx@sectionciteorder@0=\count424
-\blx@sectionciteorderinternal@0=\count425
-\blx@entrysetcounter=\count426
-\blx@biblioinstance=\count427
-\labelnumberwidth=\skip85
-\labelalphawidth=\skip86
-\biblabelsep=\skip87
-\bibitemsep=\skip88
-\bibnamesep=\skip89
-\bibinitsep=\skip90
-\bibparsep=\skip91
-\bibhang=\skip92
+\c@tabx@nest=\count386
+\c@listtotal=\count387
+\c@listcount=\count388
+\c@liststart=\count389
+\c@liststop=\count390
+\c@citecount=\count391
+\c@citetotal=\count392
+\c@multicitecount=\count393
+\c@multicitetotal=\count394
+\c@instcount=\count395
+\c@maxnames=\count396
+\c@minnames=\count397
+\c@maxitems=\count398
+\c@minitems=\count399
+\c@citecounter=\count400
+\c@maxcitecounter=\count401
+\c@savedcitecounter=\count402
+\c@uniquelist=\count403
+\c@uniquename=\count404
+\c@refsection=\count405
+\c@refsegment=\count406
+\c@maxextratitle=\count407
+\c@maxextratitleyear=\count408
+\c@maxextraname=\count409
+\c@maxextradate=\count410
+\c@maxextraalpha=\count411
+\c@abbrvpenalty=\count412
+\c@highnamepenalty=\count413
+\c@lownamepenalty=\count414
+\c@maxparens=\count415
+\c@parenlevel=\count416
+\blx@tempcnta=\count417
+\blx@tempcntb=\count418
+\blx@tempcntc=\count419
+\c@blx@maxsection=\count420
+\blx@maxsegment@0=\count421
+\blx@notetype=\count422
+\blx@parenlevel@text=\count423
+\blx@parenlevel@foot=\count424
+\blx@sectionciteorder@0=\count425
+\blx@sectionciteorderinternal@0=\count426
+\blx@entrysetcounter=\count427
+\blx@biblioinstance=\count428
+\labelnumberwidth=\skip86
+\labelalphawidth=\skip87
+\biblabelsep=\skip88
+\bibitemsep=\skip89
+\bibnamesep=\skip90
+\bibinitsep=\skip91
+\bibparsep=\skip92
+\bibhang=\skip93
 \blx@bcfin=\read3
 \blx@bcfout=\write5
 \blx@langwohyphens=\language2
-\c@mincomprange=\count428
-\c@maxcomprange=\count429
-\c@mincompwidth=\count430
+\c@mincomprange=\count429
+\c@maxcomprange=\count430
+\c@mincompwidth=\count431
 Package biblatex Info: Trying to load biblatex default data model...
 Package biblatex Info: ... file 'blx-dm.def' found.
 
@@ -1327,88 +1339,88 @@ Package biblatex Info: Trying to load biblatex style data model...
 Package biblatex Info: ... file 'bwl-FU.dbx' not found.
 Package biblatex Info: Trying to load biblatex custom data model...
 Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count431
-\c@savedafterword=\count432
-\c@annotator=\count433
-\c@savedannotator=\count434
-\c@author=\count435
-\c@savedauthor=\count436
-\c@bookauthor=\count437
-\c@savedbookauthor=\count438
-\c@commentator=\count439
-\c@savedcommentator=\count440
-\c@editor=\count441
-\c@savededitor=\count442
-\c@editora=\count443
-\c@savededitora=\count444
-\c@editorb=\count445
-\c@savededitorb=\count446
-\c@editorc=\count447
-\c@savededitorc=\count448
-\c@foreword=\count449
-\c@savedforeword=\count450
-\c@holder=\count451
-\c@savedholder=\count452
-\c@introduction=\count453
-\c@savedintroduction=\count454
-\c@namea=\count455
-\c@savednamea=\count456
-\c@nameb=\count457
-\c@savednameb=\count458
-\c@namec=\count459
-\c@savednamec=\count460
-\c@translator=\count461
-\c@savedtranslator=\count462
-\c@shortauthor=\count463
-\c@savedshortauthor=\count464
-\c@shorteditor=\count465
-\c@savedshorteditor=\count466
-\c@labelname=\count467
-\c@savedlabelname=\count468
-\c@institution=\count469
-\c@savedinstitution=\count470
-\c@lista=\count471
-\c@savedlista=\count472
-\c@listb=\count473
-\c@savedlistb=\count474
-\c@listc=\count475
-\c@savedlistc=\count476
-\c@listd=\count477
-\c@savedlistd=\count478
-\c@liste=\count479
-\c@savedliste=\count480
-\c@listf=\count481
-\c@savedlistf=\count482
-\c@location=\count483
-\c@savedlocation=\count484
-\c@organization=\count485
-\c@savedorganization=\count486
-\c@origlocation=\count487
-\c@savedoriglocation=\count488
-\c@origpublisher=\count489
-\c@savedorigpublisher=\count490
-\c@publisher=\count491
-\c@savedpublisher=\count492
-\c@language=\count493
-\c@savedlanguage=\count494
-\c@origlanguage=\count495
-\c@savedoriglanguage=\count496
-\c@pageref=\count497
-\c@savedpageref=\count498
-\shorthandwidth=\skip93
-\shortjournalwidth=\skip94
-\shortserieswidth=\skip95
-\shorttitlewidth=\skip96
-\shortauthorwidth=\skip97
-\shorteditorwidth=\skip98
-\locallabelnumberwidth=\skip99
-\locallabelalphawidth=\skip100
-\localshorthandwidth=\skip101
-\localshortjournalwidth=\skip102
-\localshortserieswidth=\skip103
-\localshorttitlewidth=\skip104
-\localshortauthorwidth=\skip105
-\localshorteditorwidth=\skip106
+\c@afterword=\count432
+\c@savedafterword=\count433
+\c@annotator=\count434
+\c@savedannotator=\count435
+\c@author=\count436
+\c@savedauthor=\count437
+\c@bookauthor=\count438
+\c@savedbookauthor=\count439
+\c@commentator=\count440
+\c@savedcommentator=\count441
+\c@editor=\count442
+\c@savededitor=\count443
+\c@editora=\count444
+\c@savededitora=\count445
+\c@editorb=\count446
+\c@savededitorb=\count447
+\c@editorc=\count448
+\c@savededitorc=\count449
+\c@foreword=\count450
+\c@savedforeword=\count451
+\c@holder=\count452
+\c@savedholder=\count453
+\c@introduction=\count454
+\c@savedintroduction=\count455
+\c@namea=\count456
+\c@savednamea=\count457
+\c@nameb=\count458
+\c@savednameb=\count459
+\c@namec=\count460
+\c@savednamec=\count461
+\c@translator=\count462
+\c@savedtranslator=\count463
+\c@shortauthor=\count464
+\c@savedshortauthor=\count465
+\c@shorteditor=\count466
+\c@savedshorteditor=\count467
+\c@labelname=\count468
+\c@savedlabelname=\count469
+\c@institution=\count470
+\c@savedinstitution=\count471
+\c@lista=\count472
+\c@savedlista=\count473
+\c@listb=\count474
+\c@savedlistb=\count475
+\c@listc=\count476
+\c@savedlistc=\count477
+\c@listd=\count478
+\c@savedlistd=\count479
+\c@liste=\count480
+\c@savedliste=\count481
+\c@listf=\count482
+\c@savedlistf=\count483
+\c@location=\count484
+\c@savedlocation=\count485
+\c@organization=\count486
+\c@savedorganization=\count487
+\c@origlocation=\count488
+\c@savedoriglocation=\count489
+\c@origpublisher=\count490
+\c@savedorigpublisher=\count491
+\c@publisher=\count492
+\c@savedpublisher=\count493
+\c@language=\count494
+\c@savedlanguage=\count495
+\c@origlanguage=\count496
+\c@savedoriglanguage=\count497
+\c@pageref=\count498
+\c@savedpageref=\count499
+\shorthandwidth=\skip94
+\shortjournalwidth=\skip95
+\shortserieswidth=\skip96
+\shorttitlewidth=\skip97
+\shortauthorwidth=\skip98
+\shorteditorwidth=\skip99
+\locallabelnumberwidth=\skip100
+\locallabelalphawidth=\skip101
+\localshorthandwidth=\skip102
+\localshortjournalwidth=\skip103
+\localshortserieswidth=\skip104
+\localshorttitlewidth=\skip105
+\localshortauthorwidth=\skip106
+\localshorteditorwidth=\skip107
 Package biblatex Info: Trying to load enhanced support for Unicode engines...
 Package biblatex Info: ... file 'blx-unicode.def' found.
 
@@ -1424,19 +1436,19 @@ Package biblatex Info: ... file 'biblatex.def' found.
 
 (/usr/share/texmf-dist/tex/latex/biblatex/biblatex.def
 File: biblatex.def 2023/03/05 v3.19 biblatex compatibility (PK/MW)
-\c@textcitecount=\count499
-\c@textcitetotal=\count500
-\c@textcitemaxnames=\count501
-\c@biburlbigbreakpenalty=\count502
-\c@biburlbreakpenalty=\count503
-\c@biburlnumpenalty=\count504
-\c@biburlucpenalty=\count505
-\c@biburllcpenalty=\count506
+\c@textcitecount=\count500
+\c@textcitetotal=\count501
+\c@textcitemaxnames=\count502
+\c@biburlbigbreakpenalty=\count503
+\c@biburlbreakpenalty=\count504
+\c@biburlnumpenalty=\count505
+\c@biburlucpenalty=\count506
+\c@biburllcpenalty=\count507
 \biburlbigskip=\muskip18
 \biburlnumskip=\muskip19
 \biburlucskip=\muskip20
 \biburllcskip=\muskip21
-\c@smartand=\count507
+\c@smartand=\count508
 )
 Package biblatex Info: Trying to load bibliography style 'bwl-FU'...
 Package biblatex Info: ... file 'bwl-FU.bbx' found.
@@ -1453,8 +1465,8 @@ Package biblatex Info: ... file 'standard.bbx' found.
 
 (/usr/share/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
 File: standard.bbx 2023/03/05 v3.19 biblatex bibliography style (PK/MW)
-\c@bbx:relatedcount=\count508
-\c@bbx:relatedtotal=\count509
+\c@bbx:relatedcount=\count509
+\c@bbx:relatedtotal=\count510
 )))
 Package biblatex Info: Trying to load citation style 'bwl-FU'...
 Package biblatex Info: ... file 'bwl-FU.cbx' found.
@@ -1493,10 +1505,10 @@ Package biblatex Info: ... and expl3
 (/usr/share/texmf-dist/tex/latex/biblatex/blx-case-expl3.sty
 Package: blx-case-expl3 2023/03/05 v3.19 expl3 case changing code for biblatex
 ))
-\sepwidth=\skip107
-\colwidth=\skip108
-\@quotelevel=\count510
-\@quotereset=\count511
+\sepwidth=\skip108
+\colwidth=\skip109
+\@quotelevel=\count511
+\@quotereset=\count512
 
 (./jsm_poster.aux)
 \openout1 = jsm_poster.aux
@@ -1535,11 +1547,11 @@ LaTeX Font Info:    ... okay on input line 79.
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: includehead includefoot 
-* h-part:(L,W,R)=(28.45274pt, 3357.42522pt, 28.45274pt)
+* h-part:(L,W,R)=(28.45274pt, 2674.55907pt, 28.45274pt)
 * v-part:(T,H,B)=(0.0pt, 2048.59842pt, 0.0pt)
-* \paperwidth=3414.3307pt
+* \paperwidth=2731.46455pt
 * \paperheight=2048.59842pt
-* \textwidth=3357.42522pt
+* \textwidth=2674.55907pt
 * \textheight=2020.14569pt
 * \oddsidemargin=-43.81725pt
 * \evensidemargin=-43.81725pt
@@ -1563,17 +1575,17 @@ LaTeX Font Info:    ... okay on input line 79.
 
 (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count512
-\scratchdimen=\dimen339
-\scratchbox=\box83
-\nofMPsegments=\count513
-\nofMParguments=\count514
-\everyMPshowfont=\toks58
-\MPscratchCnt=\count515
-\MPscratchDim=\dimen340
-\MPnumerator=\count516
-\makeMPintoPDFobject=\count517
-\everyMPtoPDFconversion=\toks59
+\scratchcounter=\count513
+\scratchdimen=\dimen342
+\scratchbox=\box86
+\nofMPsegments=\count514
+\nofMParguments=\count515
+\everyMPshowfont=\toks59
+\MPscratchCnt=\count516
+\MPscratchDim=\dimen343
+\MPnumerator=\count517
+\makeMPintoPDFobject=\count518
+\everyMPtoPDFconversion=\toks60
 ) (/usr/share/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
@@ -1658,24 +1670,62 @@ LaTeX Font Info:    Calculating math sizes for size <35.83> on input line 79.
 <logos/watermark.png, id=21, 3013.2575pt x 225.84375pt>
 File: logos/watermark.png Graphic file (type png)
 <use logos/watermark.png>
-Package luatex.def Info: logos/watermark.png  used on input line 354.
-(luatex.def)             Requested size: 949.04323pt x 71.13188pt.
- (./tpdcsim_mean.tex)
+Package luatex.def Info: logos/watermark.png  used on input line 363.
+(luatex.def)             Requested size: 759.24377pt x 56.9055pt.
+
+Overfull \hbox (0.54306pt too wide) detected at line 363
+[] \OT1/lmr/m/n/24.88 = [] [] \OML/lmm/m/it/24.88 G\OT1/lmr/m/n/24.88 (\OML/lmm
+/m/it/24.88 w[]\OT1/lmr/m/n/24.88 ) [] [] \OML/lmm/m/it/24.88 w[]\OT1/lmr/bx/n/
+24.88 x[] \OT1/lmr/m/n/24.88 = [] \OT1/lmr/bx/n/24.88 x[]\OML/lmm/m/it/24.88 ; 
+[] w[]g\OT1/lmr/m/n/24.88 (\OML/lmm/m/it/24.88 d[]\OT1/lmr/m/n/24.88 ) = [] \OM
+L/lmm/m/it/24.88 g\OT1/lmr/m/n/24.88 (\OML/lmm/m/it/24.88 d[]\OT1/lmr/m/n/24.88
+ )\OML/lmm/m/it/24.88 :
+ []
+
+(./tpdcsim_mean.tex)
 ! Undefined control sequence.
 \beamer@@tmpl@bibliography item ->\insertbiblabel 
                                                   
-l.354 \end{frame}
+l.363 \end{frame}
                
 ? Q
 OK, entering \batchmode...
 
-Overfull \vbox (16.49158pt too high) detected at line 354
+Underfull \hbox (badness 2626) in paragraph at lines 363--363
+[][][]\TU/Lato(1)/m/n/24.88 Dev-ille, Jean-Claude and Carl-Erik Sarn-dal (1992).
+[] ``Cal-i-bra-tion es-ti-ma-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 363--363
+[][][]\TU/Lato(1)/m/n/24.88 Gneit-ing, Tilmann and Adrian E Raftery (2007).[] ``
+Strictly
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 363--363
+\TU/Lato(1)/m/n/24.88 proper scor-ing rules, pre-dic-tion, and es-ti-ma-tion''.[] In:
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 363--363
+[][][]\TU/Lato(1)/m/n/24.88 Kwon, Yonghyun, Jae Kwang Kim, and Yu-mou Qiu (2024)
+.[]
+ []
+
+
+Overfull \hbox (42.05022pt too wide) in paragraph at lines 363--363
+|   []\TU/Lato(1)/m/n/24.88 .[]
+ []
+
+
+Overfull \vbox (9.44614pt too high) detected at line 363
  []
 
 File: logos/watermark.png Graphic file (type png)
 <use logos/watermark.png>
-Package luatex.def Info: logos/watermark.png  used on input line 354.
-(luatex.def)             Requested size: 949.04323pt x 71.13188pt.
+Package luatex.def Info: logos/watermark.png  used on input line 363.
+(luatex.def)             Requested size: 759.24377pt x 56.9055pt.
  [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 <./logos/watermark.png>]
@@ -1701,36 +1751,35 @@ Package logreq Info: Writing requests to 'jsm_poster.run.xml'.
 )
 
 Here is how much of LuaTeX's memory you used:
- 46984 strings out of 476447
- 381545,2373549 words of node,token memory allocated
- 87345 words of node memory still in use:
-   907 hlist, 117 vlist, 74 rule, 502 disc, 109 local_par, 129 math, 2190 glue, 
-966 kern, 338 penalty, 5513 glyph, 1856 attribute, 92 glue_spec, 1856 attribute_
-list, 26 write, 1 save_pos, 194 pdf_literal, 10 pdf_start_link, 10 pdf_end_link,
- 9 pdf_dest, 10 pdf_action, 434 pdf_colorstack, 1 pdf_setmatrix, 1 pdf_save, 1 p
-df_restore nodes
-   avail lists: 1:1,2:558,3:1739,4:1476,5:2978,6:338,7:24031,8:71,9:3521,10:20,1
-1:1523
- 67781 multiletter control sequences out of 65536+600000
- 142 fonts using 19868207 bytes
- 128i,20n,116p,725b,1992s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texmf-dist/fonts/opentype/public/lm/lmmono12-regular.otf></usr/share
-/texmf-dist/fonts/truetype/typoland/lato/Lato-LightItalic.ttf>{/usr/share/texmf-
-dist/fonts/enc/dvips/lm/lm-mathit.enc}</usr/share/texmf-dist/fonts/truetype/typo
-land/lato/Lato-Regular.ttf></usr/share/texmf-dist/fonts/truetype/typoland/lato/L
-ato-Bold.ttf>{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share
-/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}</usr/share/texmf-dist/fonts/truetype/t
-ypoland/lato/Lato-Light.ttf></usr/share/texmf-dist/fonts/opentype/impallari/rale
-way/Raleway-Regular.otf></usr/share/texmf-dist/fonts/opentype/impallari/raleway/
-Raleway-Bold.otf></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pf
-b></usr/share/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf-dist
-/fonts/type1/public/lm/lmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/lm/l
-mmib10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmr17.pfb></usr/share/te
-xmf-dist/fonts/type1/public/lm/lmsy10.pfb>
-Output written on jsm_poster.pdf (1 page, 320357 bytes).
+ 47061 strings out of 476447
+ 381557,2373549 words of node,token memory allocated
+ 81081 words of node memory still in use:
+   896 hlist, 117 vlist, 82 rule, 450 disc, 107 local_par, 121 math, 2116 glue, 
+892 kern, 326 penalty, 4923 glyph, 1760 attribute, 93 glue_spec, 1760 attribute_
+list, 22 write, 1 save_pos, 194 pdf_literal, 7 pdf_start_link, 7 pdf_end_link, 7
+ pdf_dest, 7 pdf_action, 414 pdf_colorstack, 1 pdf_setmatrix, 1 pdf_save, 1 pdf_
+restore nodes
+   avail lists: 1:1,2:558,3:1681,4:1416,5:2756,6:332,7:22015,8:69,9:3494,10:16,1
+1:1366
+ 67855 multiletter control sequences out of 65536+600000
+ 142 fonts using 19427207 bytes
+ 128i,20n,116p,725b,1984s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texmf-dist/fonts/opentype/public/lm/lmmono12-regular.otf>{/usr/share
+/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}</usr/share/texmf-dist/fonts/truety
+pe/typoland/lato/Lato-Regular.ttf></usr/share/texmf-dist/fonts/truetype/typoland
+/lato/Lato-Bold.ttf>{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/us
+r/share/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}</usr/share/texmf-dist/fonts/tru
+etype/typoland/lato/Lato-Light.ttf></usr/share/texmf-dist/fonts/opentype/impalla
+ri/raleway/Raleway-Regular.otf></usr/share/texmf-dist/fonts/opentype/impallari/r
+aleway/Raleway-Bold.otf></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+ex10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/share/tex
+mf-dist/fonts/type1/public/lm/lmmi12.pfb></usr/share/texmf-dist/fonts/type1/publ
+ic/lm/lmmib10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmr17.pfb></usr/s
+hare/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
+Output written on jsm_poster.pdf (1 page, 304998 bytes).
 
-PDF statistics: 131 PDF objects out of 1000 (max. 8388607)
- 88 compressed objects within 1 object stream
- 12 named destinations out of 1000 (max. 131072)
+PDF statistics: 119 PDF objects out of 1000 (max. 8388607)
+ 79 compressed objects within 1 object stream
+ 10 named destinations out of 1000 (max. 131072)
  24 words of extra memory for PDF output out of 10000 (max. 100000000)
 

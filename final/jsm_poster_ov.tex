@@ -20,7 +20,7 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{amsmath}
-\usepackage{bm}
+\usepackage{bm, ulem}
 \pgfplotsset{compat=1.14}
 \usepackage{anyfontsize}
 \usepackage[backend=biber, style=bwl-FU]{biblatex}
@@ -102,9 +102,9 @@ JSM Poster Session \hfill
     framework of two-phase sampling and view data integration as specific case
     of observing a variable of interest $Y$ within a single data set while we
     also observe common covariates $({\bf X}_i)$ between both the data set with
-    $Y$ as well as an outside auxilary sample. This is an important practical
+    $Y$ as well as an outside auxiliary sample. \sout{This is an important practical
     problem \cite{yang2020statistical}, 
-    \cite{dagdoug2023model}. We focus on the case:
+    \cite{dagdoug2023model}.} We focus on the case:
 
     \begin{itemize}
       \item Where all of the surveys are probability samples, 
@@ -185,7 +185,7 @@ JSM Poster Session \hfill
     \begin{itemize}
       \item In a seminal paper, \cite{deville1992calibration} generalized the
         regression estimator to other loss functions besides squared-error loss
-        for a sample $A$ with auxilary information about $X$. Their generalized
+        for a sample $A$ with auxiliary information about $X$. Their generalized
         loss function minimizes,
 
         $$
@@ -248,17 +248,17 @@ JSM Poster Session \hfill
   \begin{exampleblock}{Theoretical Results: Asymptotic Design Consistency}
 
   %\begin{theorem}[Design Consistency]\label{thm:dc1}
-    Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$,
+   \sout{Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$,
     where $\hat{\bm \lambda}$ are the corresponding Lagrange multipliers from
-    Equation~\ref{eq:wmin}.
-    Under some regularity conditions, $\bm \lambda^* = ({\bf 0}^T, 1)^T$ and
+    Equation~\ref{eq:wmin}.}
+    Under some regularity conditions, \sout{$\bm \lambda^* = ({\bf 0}^T, 1)^T$} and
 
-    $$\hat Y_{\rm{DCE}} = \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + O_p(N / n_2)$$
+    $$\hat Y_{\rm{DCE}} = \hat Y_\ell + O_p(N / n_2), $$
 
-    where
+    where 
     \vspace{-1.3cm}
 
-    $$\hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) = \hat Y_{\rm{DEE}}+ 
+    $$\hat Y_{\ell} = \hat Y_{\rm{DEE}}+ 
     \left(\sum_{i \in A_1} d_{1i} {\bf z}_i - \sum_{i \in A_2} d_{1i} 
     \pi_{2i \mid 1}^{-1}  {\bf z}_i \right)\bm \phi^*$$
 
@@ -277,6 +277,7 @@ JSM Poster Session \hfill
 
   \end{exampleblock}
 
+%\textcolor{red}{The linearization expression does not involve $\blambda^*$. }
 \end{column}
 
 \separatorcolumn
@@ -353,6 +354,6 @@ JSM Poster Session \hfill
 \end{columns}
 \end{frame}
 
-\end{document}
 
+\end{document}
 

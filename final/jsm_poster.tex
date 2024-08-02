@@ -12,7 +12,7 @@
 
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[size=custom,width=120,height=72,scale=1.0]{beamerposter}
+\usepackage[size=custom,width=96,height=72,scale=1.0]{beamerposter}
 \usetheme{gemini}
 \usecolortheme{gemini}
 \usepackage{graphicx}
@@ -20,7 +20,7 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{amsmath}
-\usepackage{bm}
+\usepackage{bm, ulem}
 \pgfplotsset{compat=1.14}
 \usepackage{anyfontsize}
 \usepackage[backend=biber, style=bwl-FU]{biblatex}
@@ -46,7 +46,7 @@
 % Title
 % ====================
 
-\title{\hspace{25cm}Debiased Calibration for Generalized Two-Phase Sampling}
+\title{\hspace{32cm}Debiased Calibration for Generalized Two-Phase Sampling}
 
 %\author{Your Name}
 \author{Caleb Leedy \inst{1} \and Jae-Kwang Kim \inst{1}}
@@ -80,7 +80,7 @@ JSM Poster Session \hfill
 \addtobeamertemplate{headline}{}
 {
     \begin{tikzpicture}[remember picture,overlay]
-        \node [anchor=north west, inner sep=3cm] at ([xshift=0.0cm,yshift=1.0cm]current page.north west){\includegraphics[height=2.5cm]{logos/watermark.png}}; % Iowa State University watermark
+        \node [anchor=north west, inner sep=3cm] at ([xshift=0.0cm,yshift=1.0cm]current page.north west){\includegraphics[height=2.0cm]{logos/watermark.png}}; % Iowa State University watermark
         % ISU watermark can be found on https://www.brandmarketing.iastate.edu/wordmark/primary/
         \node [anchor=north west, inner sep=3cm] at ([xshift=0.0cm,yshift=-2.5cm]current page.north west){\huge \textbf{Statistics Department}}; % Department name
         %\node [anchor=north east, inner sep=3cm] at ([xshift=0.0cm,yshift=1.0cm]current page.north east){\includegraphics[height=5cm]{logos/logo.png}}; % Use this if you want to add a logo on your right top corner.
@@ -102,9 +102,10 @@ JSM Poster Session \hfill
     framework of two-phase sampling and view data integration as specific case
     of observing a variable of interest $Y$ within a single data set while we
     also observe common covariates $({\bf X}_i)$ between both the data set with
-    $Y$ as well as an outside auxiliary sample. This is an important practical
-    problem \cite{yang2020statistical}, 
-    \cite{dagdoug2023model}. We focus on the case:
+    $Y$ as well as an outside auxiliary sample. 
+    %\sout{This is an important practical problem \cite{yang2020statistical}, 
+    %\cite{dagdoug2023model}.} 
+    We focus on the case:
 
     \begin{itemize}
       \item Where all of the surveys are probability samples, 
@@ -114,6 +115,7 @@ JSM Poster Session \hfill
         $$Y_T = \sum_{i \in U} y_i.$$
     \end{itemize}
 
+    \vspace{-0.3cm}
     \heading{Notation}
 
     \begin{itemize}
@@ -128,6 +130,7 @@ JSM Poster Session \hfill
 
   \end{block}
 
+  \vspace{-0.7cm}
   \begin{block}{Goal}
 
     We want a two-phase sampling framework to
@@ -141,6 +144,7 @@ JSM Poster Session \hfill
   \end{block}
 
   % NOTE: Use the "alertblock" to highlight a particular section in green.
+  \vspace{-0.7cm}
   \begin{block}{Comparable Methods}
 
     \begin{itemize}
@@ -161,6 +165,7 @@ JSM Poster Session \hfill
         $$
 
         where $q_i = q(\bf x_i)$ and 
+        \vspace{-0.5cm}
 
         $$
         \hat{\bm \beta}_q = \left(\sum_{i \in A_2} 
@@ -182,6 +187,7 @@ JSM Poster Session \hfill
 
     \heading{Generalized Calibration}
 
+    \vspace{-0.3cm}
     \begin{itemize}
       \item In a seminal paper, \cite{deville1992calibration} generalized the
         regression estimator to other loss functions besides squared-error loss
@@ -201,6 +207,7 @@ JSM Poster Session \hfill
 
     \heading{Calibration with Generalized Entropy}
 
+    \vspace{-0.3cm}
     \begin{itemize}
       \item Recently, \cite{kwon2024debiased} proposed a calibration estimator that
         uses a generalized entropy function $G(w)$ (\cite{gneiting2007strictly})
@@ -248,23 +255,25 @@ JSM Poster Session \hfill
   \begin{exampleblock}{Theoretical Results: Asymptotic Design Consistency}
 
   %\begin{theorem}[Design Consistency]\label{thm:dc1}
-    Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$,
-    where $\hat{\bm \lambda}$ are the corresponding Lagrange multipliers from
-    Equation~\ref{eq:wmin}.
-    Under some regularity conditions, $\bm \lambda^* = ({\bf 0}^T, 1)^T$ and
+    %\sout{Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$,
+    %where $\hat{\bm \lambda}$ are the corresponding Lagrange multipliers from
+    %Equation~\ref{eq:wmin}.}
+    Under some regularity conditions, %\sout{$\bm \lambda^* = ({\bf 0}^T, 1)^T$} and
+    \vspace{-0.7cm}
 
-    $$\hat Y_{\rm{DCE}} = \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + O_p(N / n_2)$$
+    $$\hat Y_{\rm{DCE}} = \hat Y_\ell + O_p(N / n_2), $$
 
-    where
+    \vspace{-1.0cm}
+    where 
     \vspace{-1.3cm}
 
-    $$\hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) = \hat Y_{\rm{DEE}}+ 
+    $$\hat Y_{\ell} = \hat Y_{\rm{DEE}}+ 
     \left(\sum_{i \in A_1} d_{1i} {\bf z}_i - \sum_{i \in A_2} d_{1i} 
     \pi_{2i \mid 1}^{-1}  {\bf z}_i \right)\bm \phi^*$$
 
     \vspace{-1.3cm}
     and
-    \vspace{-0.3cm}
+    \vspace{-0.7cm}
 
     $$
     \bm \phi^* = 
@@ -338,7 +347,7 @@ JSM Poster Session \hfill
     \end{itemize}
   \end{block}
 
-  \vspace{-1.0cm}
+  %\vspace{-1.0cm}
 
   \begin{block}{References}
 

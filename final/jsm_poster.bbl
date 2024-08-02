@@ -19,50 +19,6 @@
 
 \refsection{0}
   \datalist[entry]{nyt/global//global/global}
-    \entry{dagdoug2023model}{article}{}
-      \name{author}{3}{}{%
-        {{un=0,uniquepart=base,hash=5a3e0374250e47403aaead471974f2ed}{%
-           family={Dagdoug},
-           familyi={D\bibinitperiod},
-           given={Mehdi},
-           giveni={M\bibinitperiod},
-           givenun=0}}%
-        {{un=0,uniquepart=base,hash=5e8d3edd8738c8fdc1b7b3a5f40ebb25}{%
-           family={Goga},
-           familyi={G\bibinitperiod},
-           given={Camelia},
-           giveni={C\bibinitperiod},
-           givenun=0}}%
-        {{un=0,uniquepart=base,hash=67e11ed6a3cca21518316306e8e93e58}{%
-           family={Haziza},
-           familyi={H\bibinitperiod},
-           given={David},
-           giveni={D\bibinitperiod},
-           givenun=0}}%
-      }
-      \list{publisher}{1}{%
-        {Taylor \& Francis}%
-      }
-      \strng{namehash}{7061178ac64f049ba3f4f19790c9dc14}
-      \strng{fullhash}{7061178ac64f049ba3f4f19790c9dc14}
-      \strng{bibnamehash}{7061178ac64f049ba3f4f19790c9dc14}
-      \strng{authorbibnamehash}{7061178ac64f049ba3f4f19790c9dc14}
-      \strng{authornamehash}{7061178ac64f049ba3f4f19790c9dc14}
-      \strng{authorfullhash}{7061178ac64f049ba3f4f19790c9dc14}
-      \field{sortinit}{D}
-      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
-      \field{extradatescope}{labelyear}
-      \field{labeldatesource}{}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of the American Statistical Association}
-      \field{number}{542}
-      \field{title}{Model-assisted estimation through random forests in finite population sampling}
-      \field{volume}{118}
-      \field{year}{2023}
-      \field{pages}{1234\bibrangedash 1251}
-      \range{pages}{18}
-    \endentry
     \entry{deville1992calibration}{article}{}
       \name{author}{2}{}{%
         {{un=0,uniquepart=base,hash=b18d444f78c1202ade9ba3edd9f2d7fe}{%
@@ -214,43 +170,6 @@
       \verb{eprint}
       \verb 2404.01076
       \endverb
-    \endentry
-    \entry{yang2020statistical}{article}{}
-      \name{author}{2}{}{%
-        {{un=0,uniquepart=base,hash=625adcd640f37c51b209b82b979454e9}{%
-           family={Yang},
-           familyi={Y\bibinitperiod},
-           given={Shu},
-           giveni={S\bibinitperiod},
-           givenun=0}}%
-        {{un=0,uniquepart=base,hash=6b3b1e8cd4e1f7a7a6d59d3d9e04d10b}{%
-           family={Kim},
-           familyi={K\bibinitperiod},
-           given={Jae\bibnamedelima Kwang},
-           giveni={J\bibinitperiod\bibinitdelim K\bibinitperiod},
-           givenun=0}}%
-      }
-      \list{publisher}{1}{%
-        {Springer}%
-      }
-      \strng{namehash}{7ba01cc2d9247dfb8246abab89baae6f}
-      \strng{fullhash}{7ba01cc2d9247dfb8246abab89baae6f}
-      \strng{bibnamehash}{7ba01cc2d9247dfb8246abab89baae6f}
-      \strng{authorbibnamehash}{7ba01cc2d9247dfb8246abab89baae6f}
-      \strng{authornamehash}{7ba01cc2d9247dfb8246abab89baae6f}
-      \strng{authorfullhash}{7ba01cc2d9247dfb8246abab89baae6f}
-      \field{sortinit}{Y}
-      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
-      \field{extradatescope}{labelyear}
-      \field{labeldatesource}{}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{Japanese Journal of Statistics and Data Science}
-      \field{title}{Statistical data integration in survey sampling: A review}
-      \field{volume}{3}
-      \field{year}{2020}
-      \field{pages}{625\bibrangedash 650}
-      \range{pages}{26}
     \endentry
   \enddatalist
 \endrefsection
