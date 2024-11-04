@@ -1,0 +1,444 @@
+---
+title: "Real Data Analysis: MCBS Data"
+author: "Caleb Leedy"
+date: "October 25, 2024"
+from: markdown+emoji
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    grid:
+      margin-width: 450px
+bibliography: references.bib
+reference-location: margin
+comments:
+  hypothesis: true
+---
+
+# Summary
+
+This report 
+
+1. Understands the MCBS data,
+2. Understands the ACS data,
+3. Applies our data integration method to these surveys.
+
+# Data
+
+```{r}
+#| label: setup
+
+library(dplyr)
+library(readr)
+library(haven)
+library(stringr)
+library(purrr)
+library(nleqslv)
+
+```
+
+```{r}
+#| label: load data
+
+# # mcbs_df <- read_delim("data/MCBS/MCBSPUF_2021_1_fall.txt") # Did not work
+# mcbs_fall_df <- read_csv("data/MCBS/puf2021_1_fall.csv")
+# mcbs_winter_df <- read_csv("data/MCBS/puf2021_2_winter.csv")
+# mcbs_summer_df <- read_csv("data/MCBS/puf2021_3_summer.csv")
+
+```
+
+The summer supplement contains information about whether an individual took a
+COVID vaccine. The variable is `CVS_ONEDOSE`. Demographic information is found
+in the fall supplement. Individuals between data sets can be matched using the
+`PUF_ID`. The corresponding `MCBSPUF_2021_<NUM>_<SEASON>.txt` file contains a
+description of data responses.
+
+I also downloaded CPS data to get information about people below the poverty
+line: Table A-5 from 
+[here](https://www.census.gov/data/tables/2022/demo/income-poverty/p60-277.html).
+This provides a mean for the percentage of older Americans are below the poverty
+line in 2021. (Note: The ACS also has the variable `POVPIP` which is the
+income-to-poverty percentage.)
+
+Futhermore, we have data from the American Community Survey to get additional
+demographic information.
+
+```{r}
+#| label: acs data
+
+# acs_a <- read_csv("data/ACS/psam_pusa.csv")
+# acs_b <- read_csv("data/ACS/psam_pusb.csv")
+# acs_df <- bind_rows(acs_a, mutate(acs_b, ST = as.character(ST)))
+
+```
+
+We can see the variable codes in the `data/ACS/PUMS_Data_Dictionary_2021.pdf`.
+We have the following common variables between the MCBS and ACS:
+
+| Variable | MCBS Code | ACS Code |
+|----------|-----------|----------|
+| Sex      | DEM_SEX   | SEX      |
+| Education | DEM_EDU  | SCHL     |
+| Marital Status | DEM_MARSTA | MAR (MSP?) |
+| Race / Ethnicity | DEM_RACE | RAC1P |
+| On Medicare | ADM_H_MEDSTA  | HINS3 | 
+| On Medicaid | ADM_DUAL_FLAG_YR | FHINS4C |
+
+Since ACS contains information about age, we can reweight the data to only
+include people 65 years or older. We also have data from the 
+~~CPS containing information about sex, education, and marital status.~~
+CMS containing information about the total number of people enrolled in Medicare
+in 2021.
+
+## Cleaning the Data
+
+We need to ensure that the data from MCBS and ACS are encoded in the same
+way.
+
+```{r}
+#| label: understanding acs data
+
+# acs_df %>%
+#   group_by(SERIALNO) %>%
+#   summarize(Count = n()) %>%
+#   arrange(desc(Count))
+# 
+# # What is the unique identifier for the ACS data?
+# # RT - record type
+# # SERIALNO - HU or GQ serial number
+# # DIVISION - division based on Census. Ex. New England, Middle Atlantic
+# # SPORDER - person number (1 - 20)
+# # PUMA - public use microdata area code
+# #
+# # I believe SERIALNO + SPORDER will be unique
+# 
+# acs_df %>%
+#   mutate(tmp_id = str_c(SERIALNO, SPORDER)) %>%
+#   group_by(tmp_id) %>%
+#   summarize(Count = n()) %>%
+#   arrange(desc(Count))
+# 
+# # It is unique!
+
+```
+
+```{r}
+#| label: cleaning sex category
+
+# unique(acs_df$SEX)            # Male: 1, Female: 2
+# unique(mcbs_fall_df$DEM_SEX)  # Male: 1, Female: 2
+
+```
+
+
+Cleaning the school category
+
+MCBS: `DEM_EDU` contains the following categories:
+
+| Category | Response |
+|----------|----------|
+| Less than high school | 1 |
+| High school or vocational | 2 |
+| More than high school | 3 |
+| Refused | R |
+| Don't know | D |
+
+The ACS needs to be transformed into this scale:
+
+| Category | Response |
+|----------|----------|
+| Less than high school | bb and 01 - 15 | 
+| High school or vocational | 16 - 19 | 
+| More than high school | 20 - 24 |
+
+
+Cleaning Marital Status
+
+MCBS: `DEM_MARSTA` contains the following categories:
+
+| Category | Response |
+|----------|----------|
+| Married | 1 |
+| Widowed | 2 |
+| Divorced / Separated | 3 |
+| Never married | 4 |
+| Refused | R |
+
+The ACS needs to be transformed into this scale:
+
+| Category | ACS Response |
+|----------|----------|
+| Married | 1 |
+| Widowed | 2 |
+| Divorced / Separated | 3, 4 |
+| Never married | 5 |
+
+The actual cleaning of the data is found in `../build/clean_acs_data.R` with the
+associated saved data set.
+
+# Getting Uncertainty Estimates
+
+According to the PUMS Handbook (see `references/` folder) the way to get
+uncertainty estimates in the ACS is to compute the estimate with the weight
+`PWGTP`. Call the $X$. Then compute the estimate with the weights `PWGTP1`
+through `PWGTP80`. Call these $X_1, \dots, X_{80}$. Then an estimate for the
+variance is 
+
+$$\hat V = \frac{4}{80} \sum_{i = 1}^{80} (X_i - X)^2.$$
+
+We need to compute the uncertainty for the following variables: `DEM_EDU`,
+`DEM_MARSTA`, and `DEM_RACE`.
+
+```{r}
+#| label: acs uncertainty
+acs_cl <- read_csv("../build/cleaned_acs_data.csv")
+acs_med <- filter(acs_cl, HINS3 == 1)
+
+# Transform categorical to logical vectors
+acs_med <- acs_med %>%
+  mutate(edulths = (DEM_EDU == "1"),
+         edueqhs = (DEM_EDU == "2"),
+         edumths = (DEM_EDU == "3")) %>%
+  mutate(marmar = (DEM_MARSTA == "1"),
+         marwid = (DEM_MARSTA == "2"),
+         mardiv = (DEM_MARSTA == "3"),
+         marsin = (DEM_MARSTA == "4")) %>%
+  mutate(sexm = (DEM_SEX == "1"),
+         sexf = (DEM_SEX == "2")) %>%
+  mutate(racew = (DEM_RACE == "1"),
+         raceb = (DEM_RACE == "2"),
+         raceh = (DEM_RACE == "3"))
+
+get_est_uncertainty <- function(acs_med, varname, def_w = "PWGTP") {
+
+  # Estimate Mean
+  # est <- sum(acs_med[[varname]] * acs_med[[def_w]]) / sum(acs_med[[def_w]])
+  est <- sum(acs_med[[varname]] * acs_med[[def_w]])
+  
+  # Estimate Variance
+  alt_est <- rep(NA, 80)
+  for (i in 1:80) {
+    w_str <- str_c("PWGTP", i)
+    # alt_est[i] <- sum(acs_med[[varname]] * acs_med[[w_str]]) / sum(acs_med[[w_str]])
+    alt_est[i] <- sum(acs_med[[varname]] * acs_med[[w_str]])
+  }
+
+  v_est <- 4 / 80 * sum((est - alt_est)^2)
+    
+  return(list(est = est, var = v_est))
+
+}
+
+param_df <- 
+  tibble(varname = c("HINS3", "edulths", "edueqhs", "edumths",
+                     "marmar", "marwid", "mardiv", "marsin",
+                     "sexm", "sexf",
+                     "racew", "raceb", "raceh"),
+         type = c("TOT", "EDU", "EDU", "EDU", "MARSTA", "MARSTA", "MARSTA", "MARSTA",
+                  "SEX", "SEX", "RACE", "RACE", "RACE")
+  )
+
+```
+
+## Clean MCBS Data
+
+```{r}
+#| label: clean MCBS
+
+mcbs_fall_df <- read_csv("data/MCBS/puf2021_1_fall.csv")
+mcbs_summer_df <- read_csv("data/MCBS/puf2021_3_summer.csv")
+
+# The fall segment contains demographic information while the summer segment
+# contains the covid questions
+
+mcbs_all <- 
+  left_join(select(mcbs_summer_df, PUF_ID, starts_with("CVS_"), starts_with("PUFS")),
+            select(mcbs_fall_df, PUF_ID, starts_with("DEM_")),
+            by = join_by(PUF_ID))
+
+mcbs_all <- mcbs_all %>%
+  mutate(edulths = (DEM_EDU == "1"),
+         edueqhs = (DEM_EDU == "2"),
+         edumths = (DEM_EDU == "3")) %>%
+  mutate(marmar = (DEM_MARSTA == "1"),
+         marwid = (DEM_MARSTA == "2"),
+         mardiv = (DEM_MARSTA == "3"),
+         marsin = (DEM_MARSTA == "4")) %>%
+  mutate(sexm = (DEM_SEX == "1"),
+         sexf = (DEM_SEX == "2")) %>%
+  mutate(racew = (DEM_RACE == "1"),
+         raceb = (DEM_RACE == "2"),
+         raceh = (DEM_RACE == "3"))
+
+```
+
+# Data Integration
+
+The CMS data is considered a population level data. There is no uncertainty in
+this result.
+
+```{r}
+#| label: add CMS data
+cov_ests <- 
+  bind_rows(
+  purrr::map_dfr(param_df$varname, function(vn) {
+    out <- get_est_uncertainty(acs_med, vn)
+    return(tibble(Data = "ACS", Name = vn, Est = out$est, Var = out$var))
+  }),
+  purrr::map_dfr(param_df$varname[-1], function(vn) {
+    out <- get_est_uncertainty(mcbs_all, vn, def_w = "PUFSWGT")
+    return(tibble(Data = "MCBS", Name = vn, Est = out$est, Var = out$var))
+  }))
+
+mcbs_tot_est <- 
+  get_est_uncertainty(mutate(mcbs_all, ones = 1), "ones", def_w = "PUFSWGT")
+  
+cov_ests <- cov_ests %>% 
+  add_row(Data = "CMS", Name = "tot", Est = 63892626, Var = 1) %>%
+  add_row(Data = "CMS", Name = "sexm", Est = 29159084, Var = 1) %>%
+  add_row(Data = "CMS", Name = "sexf", Est = 34733542, Var = 1) %>%
+  mutate(Name = ifelse(Name %in% c("HINS3", "ones"), "tot", Name)) %>%
+  add_row(Data = "MCBS", Name = "tot", Est = mcbs_tot_est$est, Var = mcbs_tot_est$var)
+  
+```
+
+```{r}
+#| label: data integration
+
+#' This  function does the debiased calibration
+#'
+#' @param zmat - A n x p matrix
+#' @param w1i - A vector of length n
+#' @param d2i - A vector of length n
+#' @param T1 - A vector of length p
+#' @param qi - A scaler or a vector of length n
+#' @param entropy - One of "EL", "ET"
+solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
+
+  f <- function(lam, zmat, w1i, d2i, T1, qi, entropy, returnw = FALSE) {
+
+    if (entropy == "EL") {
+      w <- -d2i / drop(zmat %*% lam)
+    } else if (entropy == "ET") {
+      w <- d2i * exp(drop(zmat %*% lam))
+    } else {
+      stop("We only accept entropy of EL or ET.")
+    }
+
+    if (returnw) {
+      return(w)
+    } else {
+      return(drop((w * w1i * qi) %*% zmat) - T1)
+    }
+  }
+
+  j <- function(lam, zmat, w1i, d2i, T1, qi, entropy) {
+    if (entropy == "EL") {
+      res <- t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
+    } else if (entropy == "ET") {
+      res <- t(zmat) %*% diag((w1i * qi * d2i) * exp(drop(zmat %*% lam))) %*% zmat
+    }
+
+    return(res)
+  }
+
+  init <- c(rep(0, ncol(zmat) - 1), 1)
+  res <- 
+  nleqslv(init, f, jac = j, zmat = zmat, w1i = w1i, d2i = d2i,
+          T1 = T1, qi = qi, entropy = entropy,
+          method = "Newton", control = list(maxit = 1e5, allowSingular = TRUE))
+
+  resw <- f(res$x, zmat, w1i, d2i, T1, qi, entropy, returnw = TRUE)
+
+  if (!(res$termcd %in% c(1))) {
+    return(NA)
+  }
+
+  return(resw)
+
+}
+
+data_int_mcbsacs <- function(mcbs_all, cov_ests) {
+
+  qi = 1
+  entropy = "EL"
+
+  # Default: p0_df -> mcbs_all
+  # d_vec <- 1 / p0_df$pi0
+  d_vec <- mcbs_all$PUFSWGT
+  if (entropy == "EL") {
+    gdi <- -1 / d_vec
+    # FIXME: We need an estimate of gdip
+    gdip <- -1 / (1 / pop_df$pi0)
+    # END FIXME:
+    gpinv <- d_vec^2
+  } else if (entropy == "ET") {
+    gdi <- log(d_vec)
+    gdip <- log(1 / pop_df$pi0)
+    gpinv <- d_vec
+  } else {
+    stop("This type of entropy has not yet been implemented.")
+  }
+
+  samp_X <- model.matrix(~edulths + edueqhs + 
+                         marmar + marwid + mardiv + 
+                         sexm + racew + raceb + raceh, data = mcbs_all)
+  zmat <- cbind(samp_X, gdi)
+  w1i <- 1
+
+  c_ests <- filter(cov_ests, !(Name %in% c("edumths", "sexf", "marsin")))
+  xhat <- c_ests$Est
+  # Columns: tot, edulths, edueqhs, marmar, marwid, mardiv, sexm,
+  #          racew, raceb, raceh
+  # Rows: same dimension as length(xhat)
+  x_mat <- matrix(c(as.numeric(c_ests$Name == "tot"),
+                    as.numeric(c_ests$Name == "edulths"),
+                    as.numeric(c_ests$Name == "edueqhs"),
+                    as.numeric(c_ests$Name == "marmar"),
+                    as.numeric(c_ests$Name == "marwid"),
+                    as.numeric(c_ests$Name == "mardiv"),
+                    as.numeric(c_ests$Name == "sexm"),
+                    as.numeric(c_ests$Name == "racew"),
+                    as.numeric(c_ests$Name == "raceb"),
+                    as.numeric(c_ests$Name == "raceh")),
+                  ncol = 10)
+
+  vmat <- diag(c_ests$Var)
+  vinv <- diag(1 / c_ests$Var)
+  xgls <- drop(solve(t(x_mat) %*% vinv %*% x_mat) %*% 
+              (t(x_mat) %*% vinv %*% xhat))
+  T1 <- c(xgls, sum(gdip * qi))
+  dc_w <- solveGE(zmat, w1i, d_vec, T1, qi, entropy)
+
+  # Mean Estimation
+  N_pop <- filter(cov_ests, Data == "CMS", Name = "tot") %>% pull(Est)
+  Y_vec <- as.numeric(mcbs_all$CVS_ONEDOSE == "1")
+  theta <- sum(Y_vec * dc_w * w1i) / N_pop
+
+  z_dc <- sampX
+  gam_dc <- 
+    solve(t(z_dc) %*% diag(d_vec * gpinv * qi) %*% z_dc,
+          t(z_dc) %*% diag(d_vec * gpinv) %*% Y_vec)
+  coefs <- as.numeric(gam_dc)
+  u_mat <- sampX
+  eps <- (Y_vec - drop(u_mat %*% coefs))
+
+  # Variance Estimation
+  var_x <- solve(t(x_mat) %*% vinv %*% x_mat)
+
+  v1 <- matrix(coefs, nrow = 1) %*% var_x %*% matrix(coefs, ncol = 1)
+  v2 <- sum((1 - (1 / d_vec)) / (1 / d_vec)^2 * eps^2) / (N_pop)^2
+  v_hat <- v1 + v2 
+
+  return(list(theta = theta, v_hat = as.numeric(v_hat)))
+}
+
+
+
+
+
+```
+
+
+Next steps:
+* Use data integration model.

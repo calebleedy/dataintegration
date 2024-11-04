@@ -8,3 +8,4 @@ final/presentations/*
 !final/presentations/*.bib
 !final/presentations/*.pdf
 !final/presentations/*.qmd
+src/build/*.csv
