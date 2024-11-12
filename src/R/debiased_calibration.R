@@ -87,29 +87,38 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
 #' This is useful for when we do not have design weights for the entire
 #' population.
 #'
-#' @param alpha
-#' @param zmat
-#' @param w1i
-#' @param d2i
-#' @param T1
-#' @param qi
-#' @param entropy
-#' @param retw
+#' @param alpha A vector of length c.
+#' @param zmat A matrix of dimension n x c.
+#' @param w1i A vector of length n or a scaler value.
+#' @param d2i A vector of length n.
+#' @param T1 A vector of length c.
+#' @param qi A numeric value. Currently, qi must be 1.
+#' @param entropy A string indicating the entropy used. Currently on "EL" is
+#' accepted.
+#' @param retw A boolean value indicating if the function should return the
+#' estimated weights (TRUE) or if it should return the minimum value of the
+#' objective function (FALSE).
 #'
 #' @return If retw is TRUE, then the function will return the estimated weights.
 #' Otherwise, the function will return the value of $\sum_{i \in A} G(w_i) - N
 #' * alpha$. The second case if used for the optimization procedure.
 solveGE_alpha <- function(alpha, zmat, w1i, d2i, T1, qi, entropy, retw = FALSE) {
 
+  # The first element of T1 should be the population size N, or an estimate of
+  # it.
   N <- T1[1]
   T1_adj <- T1
   T1_adj[length(T1_adj)] <- alpha * N
+
+  # Estimate the weights given that T1 is correct.
   dc_w <- solveGE(zmat, w1i, d2i, T1_adj, qi, entropy)
 
   if (retw) {
     return(dc_w)
   }
 
+  # Return the minimum value of sum(G(w)) - K(alpha)N for use in an optimization
+  # routine.
   Ka_type <- "alpha"
   if (Ka_type == "alpha") {
     # HACK: G(x) = -log(x) for EL only

@@ -16,6 +16,9 @@ comments:
 
 # Summary
 
+NOTE: The results in this report are depricated. An updated version of two-phase
+debiased calibration is found in `proto-dctp.R`.
+
 This report simulates two-phase sampling with the debiased calibration of
 @kwon2024debiased. We check for the following:
 

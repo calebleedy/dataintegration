@@ -234,7 +234,6 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
   }
 
   j <- function(lam, zmat, w1i, d2i, T1, qi, entropy) {
-    end <- ncol(zmat)
     if (entropy == "EL") {
       res <- (-1) * t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
     } else if (entropy == "ET") {
@@ -361,15 +360,15 @@ dc_ms_ybar <-
   # Estimating Alpha
   alpha_init <- (-1) * nrow(p0_df) / N_obs
   a_res <- 
-    nlm(f = solveGE_alpha, p = alpha_init,
+    optim(par = alpha_init, fn = solveGE_alpha, 
         zmat = zmat, w1i = w1i, d2i = d_vec, T1 = T1, qi = qi, entropy = entropy)
 
-  if (a_res$code != 1) {
-    warning(paste0("a_res has code", a_res$code))
+  if (a_res$convergence != 0) {
+    warning(paste0("a_res has convergence", a_res$convergence))
   }
 
   dc_w <- 
-    solveGE_alpha(a_res$estimate, zmat, w1i, d_vec, T1, qi, entropy, retw = TRUE)
+    solveGE_alpha(a_res$par, zmat, w1i, d_vec, T1, qi, entropy, retw = TRUE)
 
   # Mean Estimation
   # Do we want N_obs? Or an estimated N_hat? 
@@ -414,12 +413,11 @@ clust <- makeCluster(min(detectCores() - 2, 100), outfile = "")
 registerDoParallel(clust)
 
 mc_res <- 
-  foreach(iter=1:B_sims,
-          .packages = c("dplyr", "nleqslv"),
-          .options.RNG = 1) %dorng% {
+  foreach(iter=1:B_sims, .packages = c("dplyr", "nleqslv"), .options.RNG = 1) %dopar% {
 
-    if (iter %% 100 == 0) {
+    if (iter %% 50 == 0) {
       print(paste0("Iter: ", iter))
+      # set.seed(iter)
     }
 
     samps <- gen_samps(pop_df, "poisson", "srs", "poisson")
@@ -429,7 +427,7 @@ mc_res <-
 
     ht <- ht_est(p0_df, N_obs)
     reg <- reg_est(p0_df, p1_df, N_obs)
-    ms_est <- dc_ms_ybar(p0_df, p1_df, p2_df, pop_df)
+    ms_est <- suppressWarnings(dc_ms_ybar(p0_df, p1_df, p2_df, pop_df))
 
     return(tibble(Est = c("HT", "NNReg", "MSEst"),
                   Theta = c(ht[[1]], reg[[1]], ms_est[[1]]), 
@@ -461,14 +459,7 @@ mc_res %>%
             RelBias = (EstVar - MCVar) / MCVar) %>%
   ungroup() %>%
   mutate(Ttest = abs(Bias) / sqrt(sdest^2 / B_sims)) %>%
-  select(-sdest) %>%
-  mutate(Ind = case_when(
-    Est == "MSReg" ~ 5,
-    Est == "MSEst" ~ 4,
-    Est == "MSPop" ~ 3,
-    Est == "NNReg" ~ 2,
-    Est == "HT" ~ 1)
-  ) 
+  select(-sdest) 
 
 %>%
   knitr::kable("latex", booktabs = TRUE, digits = 4) %>%

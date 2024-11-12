@@ -34,6 +34,7 @@ library(haven)
 library(stringr)
 library(purrr)
 library(nleqslv)
+library(doParallel)
 
 ```
 
@@ -191,7 +192,8 @@ We need to compute the uncertainty for the following variables: `DEM_EDU`,
 
 ```{r}
 #| label: acs uncertainty
-acs_cl <- read_csv("../build/cleaned_acs_data.csv")
+
+acs_cl <- read_csv("data/cleaned_acs_data.csv")
 acs_med <- filter(acs_cl, HINS3 == 1)
 
 # Transform categorical to logical vectors
@@ -270,6 +272,15 @@ mcbs_all <- mcbs_all %>%
          raceb = (DEM_RACE == "2"),
          raceh = (DEM_RACE == "3"))
 
+mcbs_all <- mcbs_all %>%
+  mutate(CVS_ONEDOSE = case_when(
+    CVS_ONEDOSE == "1" ~ 1,
+    CVS_ONEDOSE == "2" ~ 2,
+    is.na(CVS_ONEDOSE) & (CVS_TWODOSE %in% c("1", "2")) ~ as.numeric(CVS_TWODOSE),
+    CVS_ONEDOSE %in% c("R", "D") & !is.na(CVS_VCNUMS) ~ 1,
+    TRUE ~ 2
+  )) 
+
 ```
 
 # Data Integration
@@ -279,16 +290,17 @@ this result.
 
 ```{r}
 #| label: add CMS data
+
 cov_ests <- 
-  bind_rows(
+  # bind_rows(
   purrr::map_dfr(param_df$varname, function(vn) {
     out <- get_est_uncertainty(acs_med, vn)
     return(tibble(Data = "ACS", Name = vn, Est = out$est, Var = out$var))
-  }),
-  purrr::map_dfr(param_df$varname[-1], function(vn) {
-    out <- get_est_uncertainty(mcbs_all, vn, def_w = "PUFSWGT")
-    return(tibble(Data = "MCBS", Name = vn, Est = out$est, Var = out$var))
-  }))
+  })#,
+  # purrr::map_dfr(param_df$varname[-1], function(vn) {
+  #   out <- get_est_uncertainty(mcbs_all, vn, def_w = "PUFSWGT")
+  #   return(tibble(Data = "MCBS", Name = vn, Est = out$est, Var = out$var))
+  # }))
 
 mcbs_tot_est <- 
   get_est_uncertainty(mutate(mcbs_all, ones = 1), "ones", def_w = "PUFSWGT")
@@ -297,8 +309,10 @@ cov_ests <- cov_ests %>%
   add_row(Data = "CMS", Name = "tot", Est = 63892626, Var = 1) %>%
   add_row(Data = "CMS", Name = "sexm", Est = 29159084, Var = 1) %>%
   add_row(Data = "CMS", Name = "sexf", Est = 34733542, Var = 1) %>%
-  mutate(Name = ifelse(Name %in% c("HINS3", "ones"), "tot", Name)) %>%
-  add_row(Data = "MCBS", Name = "tot", Est = mcbs_tot_est$est, Var = mcbs_tot_est$var)
+  mutate(Name = ifelse(Name %in% c("HINS3", "ones"), "tot", Name)) 
+
+# %>%
+#  add_row(Data = "MCBS", Name = "tot", Est = mcbs_tot_est$est, Var = mcbs_tot_est$var)
   
 ```
 
@@ -318,7 +332,7 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
   f <- function(lam, zmat, w1i, d2i, T1, qi, entropy, returnw = FALSE) {
 
     if (entropy == "EL") {
-      w <- -d2i / drop(zmat %*% lam)
+      w <- (-d2i) / drop(zmat %*% lam)
     } else if (entropy == "ET") {
       w <- d2i * exp(drop(zmat %*% lam))
     } else {
@@ -328,15 +342,16 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
     if (returnw) {
       return(w)
     } else {
-      return(drop((w * w1i * qi) %*% zmat) - T1)
+      return(T1 - drop((w * w1i * qi) %*% zmat))
     }
   }
 
   j <- function(lam, zmat, w1i, d2i, T1, qi, entropy) {
     if (entropy == "EL") {
-      res <- t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
+      res <- (-1) * t(zmat) %*% diag((w1i * qi * d2i) / drop(zmat %*% lam)^2) %*% zmat
     } else if (entropy == "ET") {
-      res <- t(zmat) %*% diag((w1i * qi * d2i) * exp(drop(zmat %*% lam))) %*% zmat
+      res <- (-1) * t(zmat) %*% 
+        diag((w1i * qi * d2i) * exp(drop(zmat %*% lam))) %*% zmat
     }
 
     return(res)
@@ -350,7 +365,7 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
 
   resw <- f(res$x, zmat, w1i, d2i, T1, qi, entropy, returnw = TRUE)
 
-  if (!(res$termcd %in% c(1))) {
+  if (!(res$termcd %in% c(1, 2))) {
     return(NA)
   }
 
@@ -358,36 +373,58 @@ solveGE <- function(zmat, w1i, d2i, T1, qi, entropy) {
 
 }
 
-data_int_mcbsacs <- function(mcbs_all, cov_ests) {
+# The solveGE_alpha function estimates alpha and the weights.
+# This is useful for when we do not have design weights for the entire
+# population.
+solveGE_alpha <- function(alpha, zmat, w1i, d2i, T1, qi, entropy, retw = FALSE) {
+
+  N <- T1[1]
+  T1_adj <- T1
+  T1_adj[length(T1_adj)] <- alpha * N
+  dc_w <- solveGE(zmat, w1i, d2i, T1_adj, qi, entropy)
+
+  if (retw) {
+    return(dc_w)
+  }
+
+  Ka_type <- "alpha"
+  if (Ka_type == "alpha") {
+    # HACK: G(x) = -log(x) for EL only
+    G <- function(x) {-log(x)}
+    return(sum(G(dc_w)) - N * alpha)
+  }
+}
+
+data_int_mcbsacs <- function(mcbs_all, cov_ests, weight_v = "PUFSWGT") {
 
   qi = 1
   entropy = "EL"
+  N_pop <- filter(cov_ests, Data == "CMS", Name == "tot") %>% pull(Est)
 
   # Default: p0_df -> mcbs_all
   # d_vec <- 1 / p0_df$pi0
-  d_vec <- mcbs_all$PUFSWGT
+  d_vec <- mcbs_all[[weight_v]]
   if (entropy == "EL") {
     gdi <- -1 / d_vec
-    # FIXME: We need an estimate of gdip
-    gdip <- -1 / (1 / pop_df$pi0)
-    # END FIXME:
     gpinv <- d_vec^2
   } else if (entropy == "ET") {
     gdi <- log(d_vec)
-    gdip <- log(1 / pop_df$pi0)
     gpinv <- d_vec
   } else {
     stop("This type of entropy has not yet been implemented.")
   }
 
-  samp_X <- model.matrix(~edulths + edueqhs + 
-                         marmar + marwid + mardiv + 
-                         sexm + racew + raceb + raceh, data = mcbs_all)
+  samp_X <- model.matrix(~edulths + edueqhs + marmar + marwid + mardiv + sexm,
+                        data = mcbs_all)
   zmat <- cbind(samp_X, gdi)
   w1i <- 1
 
-  c_ests <- filter(cov_ests, !(Name %in% c("edumths", "sexf", "marsin")))
-  xhat <- c_ests$Est
+  c_ests <- 
+    filter(cov_ests, !(Name %in% c("edumths", "sexf", "marsin"))) %>%
+    filter(!(Name %in% c("racew", "raceb", "raceh")))
+
+  # We want the mean for X not the total
+  xhat <- c_ests$Est / N_pop
   # Columns: tot, edulths, edueqhs, marmar, marwid, mardiv, sexm,
   #          racew, raceb, raceh
   # Rows: same dimension as length(xhat)
@@ -397,31 +434,41 @@ data_int_mcbsacs <- function(mcbs_all, cov_ests) {
                     as.numeric(c_ests$Name == "marmar"),
                     as.numeric(c_ests$Name == "marwid"),
                     as.numeric(c_ests$Name == "mardiv"),
-                    as.numeric(c_ests$Name == "sexm"),
-                    as.numeric(c_ests$Name == "racew"),
-                    as.numeric(c_ests$Name == "raceb"),
-                    as.numeric(c_ests$Name == "raceh")),
-                  ncol = 10)
+                    as.numeric(c_ests$Name == "sexm")),
+                  ncol = length(unique(c_ests$Name)))
 
-  vmat <- diag(c_ests$Var)
-  vinv <- diag(1 / c_ests$Var)
+  # We want the variance of the mean not the variance of the total
+  vmat <- diag(c_ests$Var / N_pop^2)
+  vinv <- diag(N_pop^2 / c_ests$Var)
   xgls <- drop(solve(t(x_mat) %*% vinv %*% x_mat) %*% 
               (t(x_mat) %*% vinv %*% xhat))
-  T1 <- c(xgls, sum(gdip * qi))
-  dc_w <- solveGE(zmat, w1i, d_vec, T1, qi, entropy)
+  
+  # We want T1 to be the totals
+  T1 <- c(xgls * N_pop, NA)
+ 
+  # Estimating Alpha
+  alpha_init <- (-1) * nrow(mcbs_all) / N_pop
+  a_res <- 
+    optim(par = alpha_init, fn = solveGE_alpha, 
+        zmat = zmat, w1i = w1i, d2i = d_vec, T1 = T1, qi = qi, entropy = entropy)
+
+  if (a_res$convergence != 0) {
+    warning(paste0("a_res has convergence", a_res$convergence))
+  }
+
+  dc_w <- 
+    solveGE_alpha(a_res$par, zmat, w1i, d_vec, T1, qi, entropy, retw = TRUE)
 
   # Mean Estimation
-  N_pop <- filter(cov_ests, Data == "CMS", Name = "tot") %>% pull(Est)
-  Y_vec <- as.numeric(mcbs_all$CVS_ONEDOSE == "1")
+  Y_vec <- as.numeric(mcbs_all$CVS_ONEDOSE == 1)
   theta <- sum(Y_vec * dc_w * w1i) / N_pop
 
-  z_dc <- sampX
+  # FIXME: Do we want samp_X or zmat?
   gam_dc <- 
-    solve(t(z_dc) %*% diag(d_vec * gpinv * qi) %*% z_dc,
-          t(z_dc) %*% diag(d_vec * gpinv) %*% Y_vec)
+    solve(t(samp_X) %*% diag(d_vec * gpinv * qi) %*% samp_X,
+          t(samp_X) %*% diag(d_vec * gpinv) %*% Y_vec)
   coefs <- as.numeric(gam_dc)
-  u_mat <- sampX
-  eps <- (Y_vec - drop(u_mat %*% coefs))
+  eps <- (Y_vec - drop(samp_X %*% coefs))
 
   # Variance Estimation
   var_x <- solve(t(x_mat) %*% vinv %*% x_mat)
@@ -433,12 +480,102 @@ data_int_mcbsacs <- function(mcbs_all, cov_ests) {
   return(list(theta = theta, v_hat = as.numeric(v_hat)))
 }
 
+reg_est <- function(mcbs_all, cov_ests, weight_v = "PUFSWGT") {
 
+  N_pop <- filter(cov_ests, Data == "CMS", Name == "tot") %>% pull(Est)
+  Y_vec <- as.numeric(mcbs_all$CVS_ONEDOSE == 1)
+  mod_df <- mcbs_all %>%
+    mutate(Y = (CVS_ONEDOSE == 1))
 
+  mod <- lm(Y ~ sexm, data = mod_df, weights = mod_df[[weight_v]])
+  yhat <- predict(mod, mod_df) 
+
+  # TEST:
+  # mod_t <- lm(Y ~ edulths + edueqhs + marmar + marwid + mardiv + sexm,
+  #   data = mod_df, weights = mod_df[[weight_v]])
+  # yhat <- predict(mod_t, mod_df) 
+  # END TEST:
+  
+  # Regression Estimation
+  cms_tot <- filter(cov_ests, Data == "CMS", Name == "tot") %>% pull(Est)
+  cms_sexm <- filter(cov_ests, Data == "CMS", Name == "sexm") %>% pull(Est)
+  cms_mean <- cms_tot / N_pop
+  cms_meansexm <- cms_sexm / N_pop
+
+  err_term <- sum((mod_df$Y - yhat) * mod_df[[weight_v]]) / N_pop
+
+  theta <- 
+    cms_mean * mod$coefficients[1] + cms_meansexm * mod$coefficients[2] + err_term
+
+  # Variance Estimation
+  pihat <- 1 / mod_df[[weight_v]]
+  v_hat <- sum((1 - pihat) * (mod_df$Y - yhat)^2 * (1 / pihat)^2) / N_pop^2
+  
+  return(list(theta = theta, v_hat = v_hat))
+}
+
+ht_est <- function(mcbs_all, cov_ests, weight_v = "PUFSWGT") {
+
+  N_pop <- filter(cov_ests, Data == "CMS", Name == "tot") %>% pull(Est)
+  Y_vec <- as.numeric(mcbs_all$CVS_ONEDOSE == 1)
+  theta <- sum(Y_vec * mcbs_all[[weight_v]]) / N_pop
+  pihat <- 1 / mod_df[[weight_v]]
+  v_hat <- sum((1 - pihat) * (Y_vec  / pihat)^2) / N_pop^2
+
+  return(list(theta = theta, v_hat = v_hat))
+}
 
 
 ```
 
+# Assessing the Variance 
+
+```{r}
+#| label: variance analysis of mcbs
+
+res <- data_int_mcbsacs(mcbs_all, cov_ests, weight_v = "PUFSWGT") 
+ms <- reg_est(mcbs_all, cov_ests)
+ht <- ht_est(mcbs_all, cov_ests)
+
+cl <- makeCluster(min(detectCores() - 1, 100), outfile = "")
+registerDoParallel(cl)
+
+packs <- c("dplyr", "stringr", "purrr", "nleqslv")
+
+mc_res <- 
+  foreach(b = 1:100, .packages = packs,
+          .errorhandling = "remove", .inorder = FALSE) %dopar% {
+
+  if ((b %% 10) == 0) {
+    print(paste0("Iteration: ", b))
+  }
+
+  weight_v <- paste0("PUFS", str_sub(paste0("00", b), -3))
+  ms <- data_int_mcbsacs(mcbs_all, cov_ests, weight_v = weight_v) 
+  # ms <- reg_est(mcbs_all, cov_ests, weight_v = weight_v)
+
+  return(
+      tibble(Est = c("MSEst"),
+             Theta = c(ms$theta),
+             Var = c(ms$v_hat), 
+             Iter = b)
+  )
+
+  } %>% bind_rows()
+
+stopCluster(cl)
+
+# Weighted variance estimate
+var(mc_res$Theta)
+
+# Estimated variance estimate
+res$v_hat
+
+# Relative Bias
+(res$v_hat - var(mc_res$Theta)) / var(mc_res$Theta)
+
+```
 
 Next steps:
 * Use data integration model.
+* Check variance assessment using other weight models (PUFS001, etc.).
