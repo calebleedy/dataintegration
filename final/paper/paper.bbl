@@ -1,0 +1,93 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\astroncite{Bonanad et~al.}{2020}]{bonanad2020effect}
+Bonanad, C., Garcia-Blas, S., Tarazona-Santabalbina, F., Sanchis, J., Bertomeu-Gonzalez, V., Facila, L., Ariza, A., Nunez, J., and Cordero, A. (2020).
+\newblock The effect of age on mortality in patients with covid-19: a meta-analysis with 611,583 subjects.
+\newblock {\em Journal of the American Medical Directors Association}, 21(7):915--918.
+
+\bibitem[\protect\astroncite{CMS}{2021}]{cms2021mcbs}
+CMS (2021).
+\newblock Mcbs tutorial.
+
+\bibitem[\protect\astroncite{CMS}{2022}]{cms2021covid}
+CMS (2022).
+\newblock Mcbs advanced tutorial on the covid-19 supplement data.
+
+\bibitem[\protect\astroncite{Dagdoug et~al.}{2023}]{dagdoug2023model}
+Dagdoug, M., Goga, C., and Haziza, D. (2023).
+\newblock Model-assisted estimation through random forests in finite population sampling.
+\newblock {\em Journal of the American Statistical Association}, 118(542):1234--1251.
+
+\bibitem[\protect\astroncite{Deville and Sarndal}{1992}]{deville1992calibration}
+Deville, J.-C. and Sarndal, C.-E. (1992).
+\newblock Calibration estimators in survey sampling.
+\newblock {\em Journal of the American statistical Association}, 87(418):376--382.
+
+\bibitem[\protect\astroncite{Fay}{1992}]{fay1992inferences}
+Fay, R.~E. (1992).
+\newblock When are inferences from multiple imputation valid?.
+
+\bibitem[\protect\astroncite{Fuller}{2009}]{fuller2009sampling}
+Fuller, W.~A. (2009).
+\newblock {\em Sampling statistics}.
+\newblock John Wiley \& Sons.
+
+\bibitem[\protect\astroncite{Gneiting and Raftery}{2007}]{gneiting2007strictly}
+Gneiting, T. and Raftery, A.~E. (2007).
+\newblock Strictly proper scoring rules, prediction, and estimation.
+\newblock {\em Journal of the American statistical Association}, 102(477):359--378.
+
+\bibitem[\protect\astroncite{Hidiroglou}{2001}]{hidiroglou2001double}
+Hidiroglou, M. (2001).
+\newblock Double sampling.
+\newblock {\em Survey methodology}, 27(2):143--154.
+
+\bibitem[\protect\astroncite{Horvitz and Thompson}{1952}]{horvitz1952generalization}
+Horvitz, D.~G. and Thompson, D.~J. (1952).
+\newblock A generalization of sampling without replacement from a finite universe.
+\newblock {\em Journal of the American statistical Association}, 47(260):663--685.
+
+\bibitem[\protect\astroncite{Kim}{2024}]{kim2024statistics}
+Kim, J.~K. (2024).
+\newblock {\em Statistics in Survey Sampling}.
+\newblock arXiv.
+
+\bibitem[\protect\astroncite{Kish}{1965}]{kish1965survey}
+Kish, L. (1965).
+\newblock {\em Survey Sampling}.
+\newblock John Wiley \& Sons, Inc.
+
+\bibitem[\protect\astroncite{Kwon et~al.}{2024}]{kwon2024debiased}
+Kwon, Y., Kim, J.~K., and Qiu, Y. (2024).
+\newblock Debiased calibration estimation using generalized entropy in survey sampling.
+
+\bibitem[\protect\astroncite{Narain}{1951}]{narain1951sampling}
+Narain, R. (1951).
+\newblock On sampling without replacement with varying probabilities.
+\newblock {\em Journal of the Indian Society of Agricultural Statistics}, 3(2):169--175.
+
+\bibitem[\protect\astroncite{NORC}{2024}]{norc2020mcbs}
+NORC (2024).
+\newblock Medicare current beneficiary survey (mcbs) covid-19 supplements.
+
+\bibitem[\protect\astroncite{Randles}{1982}]{randles1982asymptotic}
+Randles, R.~H. (1982).
+\newblock On the asymptotic normality of statistics with estimated parameters.
+\newblock {\em The Annals of Statistics}, pages 462--474.
+
+\bibitem[\protect\astroncite{Shao and Steel}{1999}]{shao1999variance}
+Shao, J. and Steel, P. (1999).
+\newblock Variance estimation for survey data with composite imputation and nonnegligible sampling fractions.
+\newblock {\em Journal of the American Statistical Association}, 94(445):254--265.
+
+\bibitem[\protect\astroncite{Yang et~al.}{2023}]{yang2023elastic}
+Yang, S., Gao, C., Zeng, D., and Wang, X. (2023).
+\newblock Elastic integrative analysis of randomised trial and real-world data for treatment heterogeneity estimation.
+\newblock {\em Journal of the Royal Statistical Society Series B: Statistical Methodology}, 85(3):575--596.
+
+\bibitem[\protect\astroncite{Yang and Kim}{2020}]{yang2020statistical}
+Yang, S. and Kim, J.~K. (2020).
+\newblock Statistical data integration in survey sampling: A review.
+\newblock {\em Japanese Journal of Statistics and Data Science}, 3:625--650.
+
+\end{thebibliography}
