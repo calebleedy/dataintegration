@@ -9,43 +9,43 @@ Warning--empty journal in fay1992inferences
 Warning--empty journal in norc2020mcbs
 You've used 19 entries,
             1940 wiz_defined-function locations,
-            585 strings with 6403 characters,
-and the built_in function-call counts, 6982 in all, are:
-= -- 681
-> -- 242
+            587 strings with 6407 characters,
+and the built_in function-call counts, 6958 in all, are:
+= -- 684
+> -- 237
 < -- 16
-+ -- 82
-- -- 78
-* -- 611
-:= -- 1217
++ -- 78
+- -- 76
+* -- 610
+:= -- 1214
 add.period$ -- 52
 call.type$ -- 19
 change.case$ -- 131
 chr.to.int$ -- 19
 cite$ -- 23
 duplicate$ -- 267
-empty$ -- 501
-format.name$ -- 107
-if$ -- 1334
+empty$ -- 499
+format.name$ -- 105
+if$ -- 1329
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 21
+missing$ -- 20
 newline$ -- 93
 num.names$ -- 57
-pop$ -- 115
+pop$ -- 109
 preamble$ -- 1
-purify$ -- 134
+purify$ -- 133
 quote$ -- 0
-skip$ -- 213
+skip$ -- 214
 stack$ -- 0
-substring$ -- 520
+substring$ -- 519
 swap$ -- 42
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 108
+type$ -- 110
 warning$ -- 4
-while$ -- 61
+while$ -- 63
 width$ -- 0
-write$ -- 231
+write$ -- 232
 (There were 4 warnings)

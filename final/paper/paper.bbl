@@ -5,6 +5,16 @@ Bonanad, C., Garcia-Blas, S., Tarazona-Santabalbina, F., Sanchis, J., Bertomeu-G
 \newblock The effect of age on mortality in patients with covid-19: a meta-analysis with 611,583 subjects.
 \newblock {\em Journal of the American Medical Directors Association}, 21(7):915--918.
 
+\bibitem[\protect\astroncite{Breidt et~al.}{1996}]{breidt1996two}
+Breidt, F.~J., McVey, A., and Fuller, W.~A. (1996).
+\newblock Two-phase estimation by imputation.
+\newblock {\em Journal of the Indian Society of Agricultural Statistics}, 49:79--90.
+
+\bibitem[\protect\astroncite{Chen et~al.}{2022}]{chen2022nonparametric}
+Chen, S., Yang, S., and Kim, J.~K. (2022).
+\newblock Nonparametric mass imputation for data integration.
+\newblock {\em Journal of survey statistics and methodology}, 10(1):1--24.
+
 \bibitem[\protect\astroncite{CMS}{2021}]{cms2021mcbs}
 CMS (2021).
 \newblock Mcbs tutorial.
@@ -12,11 +22,6 @@ CMS (2021).
 \bibitem[\protect\astroncite{CMS}{2022}]{cms2021covid}
 CMS (2022).
 \newblock Mcbs advanced tutorial on the covid-19 supplement data.
-
-\bibitem[\protect\astroncite{Dagdoug et~al.}{2023}]{dagdoug2023model}
-Dagdoug, M., Goga, C., and Haziza, D. (2023).
-\newblock Model-assisted estimation through random forests in finite population sampling.
-\newblock {\em Journal of the American Statistical Association}, 118(542):1234--1251.
 
 \bibitem[\protect\astroncite{Deville and Sarndal}{1992}]{deville1992calibration}
 Deville, J.-C. and Sarndal, C.-E. (1992).
@@ -26,11 +31,6 @@ Deville, J.-C. and Sarndal, C.-E. (1992).
 \bibitem[\protect\astroncite{Fay}{1992}]{fay1992inferences}
 Fay, R.~E. (1992).
 \newblock When are inferences from multiple imputation valid?.
-
-\bibitem[\protect\astroncite{Fuller}{2009}]{fuller2009sampling}
-Fuller, W.~A. (2009).
-\newblock {\em Sampling statistics}.
-\newblock John Wiley \& Sons.
 
 \bibitem[\protect\astroncite{Gneiting and Raftery}{2007}]{gneiting2007strictly}
 Gneiting, T. and Raftery, A.~E. (2007).
@@ -42,15 +42,15 @@ Hidiroglou, M. (2001).
 \newblock Double sampling.
 \newblock {\em Survey methodology}, 27(2):143--154.
 
-\bibitem[\protect\astroncite{Horvitz and Thompson}{1952}]{horvitz1952generalization}
-Horvitz, D.~G. and Thompson, D.~J. (1952).
-\newblock A generalization of sampling without replacement from a finite universe.
-\newblock {\em Journal of the American statistical Association}, 47(260):663--685.
-
 \bibitem[\protect\astroncite{Kim}{2024}]{kim2024statistics}
 Kim, J.~K. (2024).
 \newblock {\em Statistics in Survey Sampling}.
 \newblock arXiv.
+
+\bibitem[\protect\astroncite{Kim and Rao}{2012}]{kim2012combining}
+Kim, J.~K. and Rao, J.~N. (2012).
+\newblock Combining data from two independent surveys: a model-assisted approach.
+\newblock {\em Biometrika}, 99(1):85--100.
 
 \bibitem[\protect\astroncite{Kish}{1965}]{kish1965survey}
 Kish, L. (1965).
@@ -61,10 +61,15 @@ Kish, L. (1965).
 Kwon, Y., Kim, J.~K., and Qiu, Y. (2024).
 \newblock Debiased calibration estimation using generalized entropy in survey sampling.
 
-\bibitem[\protect\astroncite{Narain}{1951}]{narain1951sampling}
-Narain, R. (1951).
-\newblock On sampling without replacement with varying probabilities.
-\newblock {\em Journal of the Indian Society of Agricultural Statistics}, 3(2):169--175.
+\bibitem[\protect\astroncite{Merkouris}{2004}]{merkouris2004combining}
+Merkouris, T. (2004).
+\newblock Combining independent regression estimators from multiple surveys.
+\newblock {\em Journal of the American Statistical Association}, 99(468):1131--1139.
+
+\bibitem[\protect\astroncite{Merkouris}{2010}]{merkouris2010combining}
+Merkouris, T. (2010).
+\newblock Combining information from multiple surveys by using regression for efficient small domain estimation.
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, 72(1):27--48.
 
 \bibitem[\protect\astroncite{NORC}{2024}]{norc2020mcbs}
 NORC (2024).
@@ -79,11 +84,6 @@ Randles, R.~H. (1982).
 Shao, J. and Steel, P. (1999).
 \newblock Variance estimation for survey data with composite imputation and nonnegligible sampling fractions.
 \newblock {\em Journal of the American Statistical Association}, 94(445):254--265.
-
-\bibitem[\protect\astroncite{Yang et~al.}{2023}]{yang2023elastic}
-Yang, S., Gao, C., Zeng, D., and Wang, X. (2023).
-\newblock Elastic integrative analysis of randomised trial and real-world data for treatment heterogeneity estimation.
-\newblock {\em Journal of the Royal Statistical Society Series B: Statistical Methodology}, 85(3):575--596.
 
 \bibitem[\protect\astroncite{Yang and Kim}{2020}]{yang2020statistical}
 Yang, S. and Kim, J.~K. (2020).
