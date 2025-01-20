@@ -86,6 +86,14 @@ controls obtained from the Center of Medicare and Medicaid Services as well as
 survey data from the U.S. Census' American Community Survey.
 \end{abstract}
 
+Updates:
+\begin{itemize}
+  \item Modified the end of paragraph two of the introduction and the beginning
+    of paragraph three of the introduction to mirror more of the content of the
+    rest of the paper.
+  \item Fixed spacing issues with the beginning of paragraphs.
+  \item Added Table~\ref{tab:msexample}
+\end{itemize}
 \newpage
 
 \section{Introduction}
@@ -103,7 +111,7 @@ a probability sample by itself, we can incorporate information from other
 probability samples in order to have an analysis with higher statistical power.
 
 The goal of statistical data integration is to combine information from one
-survey with the variable of interest to another survey that only contains some
+survey with the variable of interest to another survey with
 shared covariates. 
 This integration usually involves one of two contexts: incorporating item
 level responses or using summary statistics. These mirror the micro and macro
@@ -113,49 +121,64 @@ individual item level responses, the traditional approach is to build a
 predictive model of the variable of interest from the covariates shared between
 the two surveys and predict the missing outcome variable in the survey without
 the variable of interest. An early use of mass imputation is found in
-\cite{breidt1996two} where they used mass imputation to improve estimation in
-the NRI survey. \cite{kim2012combining} used a parametric model to develop a
-novel resampling technique to construct confidence intervals of population level
-characteristics. \cite{chen2022nonparametric} use a nonparametric model to
-estimate population characteristics. In the macro approach, one uses summary
-statistics from other studies to adjust the current estimation. This is commonly
-done using generalized least squares (GLS). 
-\cite{hidiroglou2001double} applied the GLS technique to non-nested two-phase
-samples. \cite{merkouris2004combining} used GLS with multiple surveys and showed
-an optimality result. This was later extended to area level domains in 
-\cite{merkouris2010combining}.
+\cite{breidt1996two} where they use mass imputation to improve estimation in
+the National Resources Inventory survey. Later, \cite{kim2012combining} use a
+parametric model to develop a novel resampling technique to construct confidence
+intervals of population level characteristics. \cite{chen2022nonparametric} use
+a nonparametric model to estimate population characteristics. In the macro
+approach, one uses summary statistics from other studies to adjust the current
+estimation. This is commonly done using generalized least squares (GLS).
+\cite{hidiroglou2001double} apply the GLS technique to non-nested two-phase
+samples. \cite{merkouris2004combining} use GLS with multiple surveys and showed
+an optimality result. This was later extended to area level domains in
+\cite{merkouris2010combining}. The main idea of the GLS approach is to construct
+a regression estimator for two-phase samples. In Section 2 of the paper, we
+explain the basic approach of regression estimation and show how it can be
+generalized to a calibration estimator.
 
-In this paper, we incorporate summary statistics of other surveys by
+This paper, however, generalizes the two-phase regression estimator using the
+debiased calibration technique of \cite{kwon2024debiased}.
+We incorporate summary statistics of other surveys by
 using a generalized two-phase sample similar to the GLS method. The first phase
 sample consists of data
 from multiple sources, and the second phase sample contains the existing
 data. Unlike previous data integration methods, however, we also include a
-pre-chosen function of the second phase design weights like
-\cite{kwon2024debiased}. This allows us to develop theory showing that our
+pre-chosen function of the second phase design weights, which allows us to
+develop theory showing that our
 estimates are asymptotically design unbiased and that we have valid confidence
 intervals. Moreover, we can show that this technique outperforms traditional
 regression methods in finite samples.
 
-This paper is organized as follows. Section 2 describes the basic setup of data
-integration using summary statistics. Section 3 details the generalized
-two-phase sampling framework and provides theory for our estimator being design
+\textcolor{red}{(I am not sure whether the current introduction provides a good
+  guide for the main contents of the paper. The introduction does not match
+  well with the main contents of the paper.)
+}
+
+\textcolor{red}{CL: I have modified the last two paragraphs to help tie into the
+main work of the paper.}
+
+This paper is organized as follows. 
+Section 2 describes the existing methods to combine probability samples using
+regression estimators or calibration.
+Section 3 details the generalized
+two-phase sampling framework and provides theory for our estimator to be design
 unbiased and the variance estimation to be valid. In Section 4, we extend this
-framework first to non-nested two-phase sampling and second to the multiple
+framework first to non-nested two-phase sampling and second to multiple
 samples. Section 5 provides several simulation studies which show that our
-method works, and Section 6 applies the method the Medicare Current Beneficiary
-Survey. 
+method works, and Section 6 applies the method to the Medicare Current
+Beneficiary Survey. 
 
 \newpage 
 
 \section{Basic Setup}
 
-Consider a finite population, $U$, of size $N$ 
+Consider a finite population, $U = \{1, \dots, N\}$, of size $N$ 
 with measurement  $(\bx_i, y_i)$, where $\bx_i$ is the realization of the
 auxiliary variables and $y_i$ is the realization of the study variable of
 interest for element  $i$ in the finite population. The auxiliary variables are
 cheap to measure but the measurement for the study variable is expensive.
 Two-phase sampling is a popular method for cost effective sampling.
-In the two-phase sampling, the first phase sample $A_1$  is selected from the
+In two-phase sampling, the first phase sample $A_1$  is selected from the
 target population to obtain the measurement of $\bx_i$ in the sample. The
 sampling design for the first-phase sample can be denoted by $P(A_1)$. After
 that, based on the observed auxiliary information in the first-phase  sample,
@@ -164,9 +187,9 @@ sample to observe $y_i$. The sampling design for the second-phase sample is
 denoted as $P( A_2 \mid A_1)$.  
 The
 goal of two-phase sampling is to construct an estimator of $Y_N =  \sum_{i=1}^N y_i$ 
-that uses both the observed information in the Phase 2 sample and also the extra
-auxiliary information from $\bf X$ in the Phase 1 sample. How to combine
-information efficiently is an important problem in two-phase sampling. 
+that uses both the observed information in the Phase 2 sample and also the 
+auxiliary information from $\bf X \in \R^p$ in the Phase 1 sample. How to
+combine information efficiently is an important problem in two-phase sampling. 
 
 Let $\pi_{1i} = \sum_{A_1: i \in A_1} \Pr(A_1)$ be the first-order inclusion
 probability for the first-phase sample and let $\pi_{2i | 1} = \sum_{A_2: i \in
@@ -186,35 +209,37 @@ information efficiently and it can be expressed as
 \sum_{i \in A_2} \frac{1}{\pi_{1i}\pi_{2i|1}} \left(y_i - \bf x_i^\top  \hat{\bm \beta_q}\right)
 \end{equation} 
 where $q_i = q(\bf x_i)$  is a function of $\bf x_i$ and  
+
 $$
 \hat{\bm \beta_q} = \left(\sum_{i \in A_2} 
  \frac{1}{\pi_{1i} q_i } \bf x_i \bf x_i^\top \right)^{-1} 
 \sum_{i \in A_2} \frac{1}{\pi_{1i} q_i} \bf x_i y_i .
 $$ 
+
 Regarding the choice of $q_i$, one can consider a linear regression model 
 \begin{equation}
 y_i = \bx_i^\top \bm \beta + e_i 
+\label{regression}
 \end{equation}
 where $e_i \sim \left(0, \sigma^2 c_i \right)$, where $c_i=c( \bx_i)$ is a known
-function. In this case,   $q_i=c_i$ is a reasonable choice. 
-
-
-One way to understand the regression estimator is to use the following decomposition: 
+function. In this case,  $q_i = c_i$ is a reasonable choice. 
+One way to understand the two-phase regression estimator is to use the following
+decomposition: 
 
 $$ 
 \hat Y_{\rm reg, tp} 
-= \underbrace{\sum_{i \in A_1} \frac{\bf x_i \hat{\bm \beta_q}}{\pi_{1i}}}_{
+= \underbrace{\sum_{i \in A_1} \frac{\bf x_i^\top \hat{\bm \beta_q}}{\pi_{1i}}}_{
   \text{ Prediction  }} + \underbrace{\sum_{i \in A_2}
-\frac{1}{\pi_{1i}\pi_{2i|1}} (y_i - \bf x_i \hat{\bm \beta_q})}_{
+\frac{1}{\pi_{1i}\pi_{2i|1}} (y_i - \bf x_i^\top \hat{\bm \beta_q})}_{
 \text{Bias correction}}.
 $$
 The prediction term is obtained by finding the best linear unbiased predictor
 under the working superpopulation model. The bias correction term 
 makes the two-phase regression estimator asymptotically design unbiased
 regardless of the underlying the superpopulation model. 
-Note that the two-phase regression estimator in (\ref{eq:1})  can be
+Note that the two-phase regression estimator in Equation~\ref{eq:1} can be
 expressed as  $\hat Y_{\rm reg, tp} =
-\sum_{i \in A_2} \hat w_{2i} y_i / \pi_{1i}$ where 
+\sum_{i \in A_2} \pi_{1i}^{-1} \hat w_{2i} y_i$ where 
 
 $$
 \hat w_{2} = \argmin_{w_2} \sum_{i \in A_2} (w_{2i} - \pi_{2i|1}^{-1})^2 q_i
@@ -222,21 +247,18 @@ $$
 \bf x_i / \pi_{1i}.
 $$
 
-This means that $\hat Y_{reg, tp}$ is also a calibration estimator. The idea
+This means that $\hat Y_{\rm reg, tp}$ is also a calibration estimator. The idea
 that regression estimation is a form of calibration was noted by
 \cite{deville1992calibration} and extended by them to consider loss functions
-other than just squared loss. Their generalized loss function minimizes
+other than squared loss. Their generalized loss function minimizes
 $\sum_i G(w_i, d_i)q_i$ for weights $w_i$ and design-weights $d_i$ where
 $G(\cdot)$ is a non-negative, strictly convex function with respect to $w$,
 defined on an interval containing $d_i$, with $g(w_i, d_i) = \partial G /
-\partial w$ continuous.\footnote{The \cite{deville1992calibration} paper
+\partial w$ being continuous.\footnote{The \cite{deville1992calibration} paper
 considers regression estimators for a single phase setup, which we apply to our
 two-phase example.} This
 generalization includes empirical likelihood estimation, and maximum entropy
-estimation among others. The variance estimation is based on a linearization
-that shows that minimizing the generalized loss function subject to the
-calibration constraints is asymptotically equivalent to a regression estimator.
-
+estimation among others \citep{schennach2007point}. 
 
 The \cite{deville1992calibration} method incorporates the design weights into
 the loss function, which is the part minimizing the variance. We would rather
@@ -256,54 +278,39 @@ two-phase sampling so that we construct asymptotically valid confidence
 intervals when using estimated finite population totals derived from the Phase 1
 sample.
 
-To construct asymptotically unbiased estimate of the variance we assume that the
-sampling designs for $A_1$ and $A_2$ are measurable and we define the following
-joint inclusion probabilities:
-
-$\Pr(i \in A_1, j \in A_1) = \pi_{1ij}, \text{ and }
-\Pr(i \in A_2, j \in A_2 \mid i \in A_1, j \in A_1) = \pi_{2ij|1}.$
-
 \section{Main Proposal}
 
 We follow the approach of \cite{kwon2024debiased} for the debiased calibration
 method.  Let $G: \mathcal{V} \to \R$ be the generalized entropy function that is
 strictly convex and differentiable. We consider maximizing 
-
 \begin{equation}\label{eq:primalloss}
-  H(w) = - \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i}) q_i
+  H(w_2) = - \sum_{i \in A_2} \frac{1}{\pi_{1i}} G(w_{2i}) q_i
 \end{equation}
-
 subject to the following constraints:
-
 \begin{equation}\label{eq:calconst1}
   \sum_{i \in A_2} \frac{\bf x_i w_{2i}}{\pi_{1i}} = 
 \sum_{i \in A_1} \frac{\bf x_i}{\pi_{1i}}
 \end{equation}
-
 and 
-
 \begin{equation}\label{eq:calconst2}
   \sum_{i \in A_2} \frac{g(\pi_{2i|1}^{-1})w_{2i}q_i}{\pi_{1i}} = 
   \sum_{i \in A_1} \frac{g(\pi_{2i|1}^{-1})q_i}{\pi_{1i}}, 
 \end{equation}
 where $g(w) = \partial G / \partial w$. 
 
-The first constraint is the existing calibration constraint and the second
+The first constraint is the usual calibration constraint motivated from the
+regression model in (\ref{regression}) and the second
 ensures that design consistency is achieved. 
 The original method of \cite{kwon2024debiased} only considers known finite
 population quantities on the right hand side of \eqref{eq:calconst1}.
-
 By writing $w_{1i} = \pi_{1i}^{-1}$, the the goal is to solve
-
 \begin{equation}\label{eq:primal}
   \hat w_2  = \argmin_{w_{2}} \sum_{i \in A_2} w_{1i} G(w_{2i}) q_i 
   \text{ such that}
   \sum_{i \in A_2} w_{1i} w_{2i} \bf z_i q_i = \sum_{i \in A_1} w_{1i} \bf z_i q_i
 \end{equation}
-
 where  $\bf z_i = (\bf x_i / q_i, g(\pi_{2i|1}^{-1}))$. The resulting 
 estimator of $Y_N$ is 
-
 \begin{equation}\label{eq:tpest}
 \hat Y_{\rm DCE} = \sum_{i \in A_2} w_{1i} \hat w_{2i} y_i.
 \end{equation}
@@ -313,61 +320,51 @@ estimator of $Y_N$ is
 We can understand the estimated weights, $\hat w_{2i}$ from
 Equation~\ref{eq:primal} using the method of Lagrange multipliers. We need to
 minimize the Lagrangian function
-
 \begin{equation}\label{eq:legragedc1}
   L(w_{2i}, \bm \lambda) = \sum_{i \in A_2} w_{1i} G(w_{2i}) q_i 
-  + \bm \lambda \left( \sum_{i \in A_1} w_{1i} \bf z_i q_i -
+  + \bm \lambda^\top \left( \sum_{i \in A_1} w_{1i} \bf z_i q_i -
     \sum_{i \in A_2} w_{1i} w_{2i} \bf z_i q_i\right)
 \end{equation}
-
 where $\bm \lambda$ is a vector of Lagrange multipliers.
 Differentiating with respect to $w_{2i}$ and setting this expression equal to
-zero, yields the fact that $\hat w_{2i}$ satisfies 
-
-$$ \hat w_{2i} = g^{-1}(\hat{\bm \lambda}^T \bf z_i) $$
-
-where $\hat{\bm \lambda}$ is the solution to
-
+zero, we can obtain 
+$$ \hat w_{2i} = g^{-1}(\hat{\bm \lambda}^\top \bf z_i) $$
+where $g(w) = \partial G / \partial w$ and 
+$\hat{\bm \lambda}$ is the solution to
 \begin{equation}\label{eq:lamdc1}
   \left( \sum_{i \in A_1} w_{1i} \bf z_i q_i -
   \sum_{i \in A_2} w_{1i} w_{2i}(\hat{\bm \lambda}) \bf z_i q_i\right) = 0.
 \end{equation}
-
-The first result we show is that the construction of the weights in
+The following theorem shows that the construction of the weights in
 Equation~\ref{eq:primal} leads to a design consistent estimator 
 $\hat Y_{\rm DCE}$ in Equation~\ref{eq:tpest}.
 
 \begin{theorem}[Design Consistency]\label{thm:dc1}
   Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$. 
-  Under some regularity conditions,
-
+  Under the regularity conditions stated in the appendix
   $$
-  \hat Y_{\rm DCE} = \hat Y_\ell(\hat{\bm{\lambda}}, \bm \phi^*) + O_p(N / n_2)
+  \hat Y_{\rm DCE} = \hat Y_\ell(\bm{\lambda}^*, \bm \phi^*) + O_p(N / n_2)
   $$
-
   where
-
   $$
-  \hat Y_{\ell}(\hat{\bm \lambda}, \bm \phi^*) = 
-  \sum_{i \in A_2} w_{1i} \hat w_{2i} y_i
+  \hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) = 
+  \sum_{i \in A_2} w_{1i} \pi_{2i|1}^{-1} y_i
   + \left(\sum_{i \in A_1} w_{1i} \bf z_i q_i - 
-    \sum_{i \in A_2} w_{1i} \hat w_{2i} \bf{z}_i q_i\right)\bm \phi^*,
+  \sum_{i \in A_2} w_{1i} \pi_{2i|1}^{-1} \bf{z}_i q_i\right)\bm \phi^*,
   $$
-
   and
-
   $$
   \bm \phi^* = 
-  \left[\sum_{i \in U} \frac{\pi_{2i|1}\bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
+  \left[\sum_{i \in U} \frac{\pi_{2i|1}\bf z_i \bf z_i^\top q_i}{g'(d_{2i|1})}\right]^{-1}
   \sum_{i \in U} \frac{\pi_{2i|1}\bf z_i y_i}{g'(d_{2i|1})}.
   $$
 
 %   \begin{align*}
 %   \hat Y_{\ell}(\bm \lambda^*, \bm \phi^*) 
 %   &= \hat{Y}_{\rm DCE} + \left(\sum_{i \in A_1} w_{1i} \bf x_i  -
-%     \sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1} \bf x_i  \right)^T \bm \phi_1^* \\
+%     \sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1} \bf x_i  \right)^\top \bm \phi_1^* \\
 %   &\quad+ \left(\sum_{i \in A_1} w_{1i} g_i  -
-%  \sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1}g_i  \right)^T \phi_2^*  
+%  \sum_{i \in A_2} w_{1i} \pi_{2i \mid 1}^{-1}g_i  \right)^\top \phi_2^*  
 %  \end{align*} 
 %\textcolor{red}{(You introduced $\hat{Y}_{\ell}$ twice!)}
 %  and  
@@ -379,8 +376,8 @@ $\hat Y_{\rm DCE}$ in Equation~\ref{eq:tpest}.
 %  \end{pmatrix}
 %  = \left[ \sum_{i \in U} \frac{\pi_{2i \mid 1} }{ g'(d_{2i|1}) q_i} 
 %  \begin{pmatrix}
-%  \bx_i \bx_i^T &   \bx_i g_i   \\
-%  g_i  \bx_i^T   & g_i^2     
+%  \bx_i \bx_i^\top &   \bx_i g_i   \\
+%  g_i  \bx_i^\top   & g_i^2     
 %  \end{pmatrix} \right]^{-1}
 %  \sum_{i \in U} \frac{\pi_{2i|1}}{ g'(d_{2i | 1}) q_i} 
 %  \begin{pmatrix}
@@ -391,20 +388,83 @@ $\hat Y_{\rm DCE}$ in Equation~\ref{eq:tpest}.
 % with $g_i = g( \pi_{2i |1}^{-1}) q_i$.
 \end{theorem}
 
-See the appendix for the proof of Theorem 1. Notice that this theorem implies
-that $\hat Y_{\ell}(\hat{\bm \lambda}, \bm \phi^*)$ and $\hat Y_{\rm DCE}$ have
-the same asymptotic expectation and variance, which means that we can estimate
-the variance of $\hat Y_{\ell}(\hat{\bm \lambda}, \bm \phi^*)$ to get an
-estimate of the variance of $\hat Y_{\rm DCE}$. To estimate $\bm \phi^*$, we can
-use
-
-$$
+See the appendix for the proof of Theorem~\ref{thm:dc1}. Notice that this
+theorem implies
+that $\hat Y_{\ell}(\bm \lambda^*, \bm \phi^*)$ and $\hat Y_{\rm DCE}$ have
+the same asymptotic expectation and variance, 
+which means that we can estimate
+the variance of $\hat Y_{\ell}(\bm \lambda^*, \bm \phi^*)$ to get an
+estimate of the variance of $\hat Y_{\rm DCE}$. The basic idea of 
+Theorem~\ref{thm:dc1} is that asymptotically the two-phase debiased calibration
+method is equivalent to a regression estimator. By constraints 
+(\ref{eq:calconst1}) and (\ref{eq:calconst2}), 
+$\hat Y_{\ell}(\bm \lambda^*, \bm \phi^*)$ is design consistent, and the
+variance is asymptotically equivalent to the two-phase regression estimator. 
+We can estimate $\bm \phi^*$ with
+\begin{equation}
 \hat{\bm \phi} = 
 \left[\sum_{i \in A_2} 
-w_{1i}\frac{\bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}\right]^{-1}
+w_{1i}\frac{\bf z_i \bf z_i^\top q_i}{g'(d_{2i|1})}\right]^{-1}
 \sum_{i \in A_2} w_{1i}\frac{\bf z_i y_i}{g'(d_{2i|1})}.
-$$
+\label{eq:8}
+\end{equation}
+Therefore, the proposed calibration estimator in (\ref{eq:primal}) is
+asymptotically equivalent to the two-phase regression estimator given by 
+  $$
+  \hat Y_{\rm tp, reg}  = 
+  \sum_{i \in A_2} w_{1i} \pi_{2i|1}^{-1} y_i
+  + \left(\sum_{i \in A_1} w_{1i} \bf z_i q_i - 
+  \sum_{i \in A_2} w_{1i} \pi_{2i|1}^{-1} \bf{z}_i q_i\right)\hat{\bm \phi},
+  $$
+where $\hat{\bm \phi}$ is defined in (\ref{eq:8}). 
 
+
+For specific sample designs, we can construct the optimal entropy function
+$G(\cdot)$. From Theorem~\ref{thm:dc1}, the choice of entropy function affects
+the variance of the debiased calibration estimator through the form of $g'(d_{2i|1})$
+in $\bm \phi^*$. Consider a class of generalized regression estimators,
+$$
+\mathbf{B} = 
+\left\{\sum_{i \in A_1} w_{1i} \bf{z}_i^\top \bm \gamma + 
+\sum_{i \in A_2} \frac{w_{1i}}{\pi_{2i|1}}(y_i - \bf{z}_i^\top \bm \gamma):
+\bm \gamma \in \R^{p+1}\right\}
+$$
+Then the design optimal estimator is 
+$$
+\hat \theta_{\ell, \rm{opt}} = 
+\sum_{i \in A_1} w_{1i} \bf{z}_i^\top \bm \phi_{\rm opt} + 
+\frac{w_{1i}}{\pi_{2i|1}}\sum_{i \in A_2} (y_i - \bf{z}_i^\top \bm \phi_{\rm opt}):
+$$
+where 
+$$
+\bm \phi_{\rm opt} = 
+\Var\left(\sum_{i \in A_2} d_{2i|1} \bf{z}_i\right)^{-1} 
+\Cov\left(\sum_{i \in A_2} d_{2i|1} \bf{z}_i, \sum_{i \in A_2}, d_{2i|1} y_i \right).
+$$
+We assume that both $A_1$ and $A_2$ are Poisson samples. Then,
+$$
+\bm \phi_{\rm opt} = 
+\left\{
+\sum_{i \in U} \left(d_{2i|1} - 1 + d_{2i|1}(d_{1i} - 1)\right) \bf{z_i}\bf{z_i}^\top
+\right\}^{-1}
+\sum_{i \in U} \left(d_{2i|1} - 1 + d_{2i|1}(d_{1i} - 1)\right) \bf{z_i} y_i.
+$$
+To find the optimal entropy function, we solve the differential equation
+$$
+\frac{1}{d_{2i|1} g'(d_{2i|1})} = d_{2i|1} - 1 + d_{2i|1}(d_{1i} - 1).
+$$
+Using the fact that $(y(xy-1))^{-1} = -y^{-1} + x(xy-1)^{-1}$, the optimal
+entropy function is 
+$$
+G(w_{2i|1}) = - \log(w_{2i|1}) + \log(w_{2i|1}w_{1i} - 1).
+$$
+To construct an asymptotically unbiased estimate of the variance we assume that
+the sampling designs for $A_1$ and $A_2$ are measurable and we define the
+following joint inclusion probabilities:
+$$
+\Pr(i \in A_1, j \in A_1) = \pi_{1ij}, \text{ and }
+\Pr(i \in A_2, j \in A_2 \mid i \in A_1, j \in A_1) = \pi_{2ij|1}.
+$$
 The next theorem discusses how to compute an estimate for the variance of 
 $\hat Y_{\rm DCE}$. For the proof see the appendix.
 
@@ -413,7 +473,6 @@ $\hat Y_{\rm DCE}$. For the proof see the appendix.
   Define $\hat \eta_i = \bf z_i q_i \hat{\bm \phi} + 
   \frac{\delta_i}{\pi_{2i|1}}(y_i - \bf z_i q_i \hat{\bm \phi})$.
   We can construct an unbiased estimate the variance of $\hat Y_{\rm DCE}$ with
-
   $$
   \hat V_{\rm DCE} 
   = \sum_{i \in A_1} \sum_{j \in A_1} \frac{\Delta_{1ij}}{\pi_{1ij}} 
@@ -422,10 +481,8 @@ $\hat Y_{\rm DCE}$. For the proof see the appendix.
   \frac{(y_i - \bf z_i q_i \hat{\bm \phi})}{\pi_{2i|1}}
   \frac{(y_j - \bf z_j q_j \hat{\bm \phi})}{\pi_{2j|1}}
   $$
-
   where $\Delta_{1ij} = \pi_{1ij} - \pi_{1i}\pi_{1j}$ and 
   $\Delta_{2ij|1} = \pi_{2ij|1} - \pi_{2i|1}\pi_{2j|1}$.
-
 \end{theorem}
 
 \section{Extensions}
@@ -433,7 +490,7 @@ $\hat Y_{\rm DCE}$. For the proof see the appendix.
 \subsection{Non-nested Two-Phase Sampling}
 
 Now we consider the sampling mechanism known as non-nested two-phase sampling 
-(\cite{hidiroglou2001double}). In the last section, we considered two-phase sampling
+\citep{hidiroglou2001double}. In the last section, we considered two-phase sampling
 in which the Phase 2 sample was a subset of the Phase 1 sample. With non-nested
 two-phase sampling the Phase 2 sample is independent of the Phase 1 sample. 
 Like traditional two-phase sampling, we consider the Phase 1 sample, $A_1$, to
@@ -444,29 +501,24 @@ Whereas the classical two-phase estimator uses a single Horvitz-Thompson
 estimator of the Phase 1 sample to construct estimates for calibration totals,
 in the non-nested two-phase sample we have two independent Horvitz-Thompson
 estimators of the total of $\bf X_N$,
-
 $$\hat{\bf X}_1 = \sum_{i \in A_1}^{n_1} d_{1i} \bf x_i \text{ and } 
 \hat{\bf X}_2 = \sum_{i \in A_2}^{n_2} d_{2i} \bf x_i $$
-
 where $d_{1i} = \pi_{1i}^{-1}$, $d_{2i} = \pi_{2i}^{-1}$, 
 $\pi_{1i} = \Pr(i \in A_1)$ and $\pi_{2i} = \Pr(i \in A_2)$. 
 We can combine these estimates using the effective sample size 
-(\cite{kish1965survey}) to get
+\citep{kish1965survey} to get
 $\hat{\bf X}_c = (n_{1, \rm{eff}} \hat{\bf X}_1 + n_{2, \rm{eff}}\hat{\bf X}_2) / 
 (n_{1, \rm{eff}} + n_{2, \rm{eff}})$ where $n_{1, \rm{eff}}$ and 
 $n_{2, \rm{eff}}$ are the effective sample size for $A_1$ and $A_2$ respectively.
 Then we can define a regression estimator as
-
 $$
-\hat Y_{\rm NN, reg} = \hat Y_2 + (\hat{\bf X}_c - \hat{\bf X}_2)^T \hat{\bm \beta_q} = 
-\hat Y_2 + (\hat{\bf X}_1 - \hat{\bf X}_2)^T W\hat{\bm \beta_q}
+\hat Y_{\rm NN, reg} = \hat Y_2 + (\hat{\bf X}_c - \hat{\bf X}_2)^\top \hat{\bm \beta_q} = 
+\hat Y_2 + (\hat{\bf X}_1 - \hat{\bf X}_2)^\top W\hat{\bm \beta_q}
 $$
-
 where, $W = n_{1, \rm{eff}} / (n_{1, \rm{eff}} + n_{2, \rm{eff}})$, and
-
 $$
 \hat{\bm \beta_q} = 
-\left(\sum_{i \in A_2} \frac{\bf x_i \bf x_i^T}{q_i}\right)^{-1} 
+\left(\sum_{i \in A_2} \frac{\bf x_i \bf x_i^\top}{q_i}\right)^{-1} 
 \sum_{i \in A_2} \frac{\bf x_i y_i}{q_i} \text{ and }
 \hat Y_2 = \sum_{i \in A_2} d_{2i} y_i.
 $$
@@ -478,25 +530,20 @@ of $\bf X_N$. While the inverse variance weighted estimate is optimal
 to combine independent samples for a linear estimate, using the effective sample
 size approximates this procedure without requiring the actual variance of an
 estimator to be known. Since the samples $A_1$ and $A_2$ are independent, 
-
 $$
 V(\hat Y_{\rm NN, reg}) = 
-V\left(\sum_{i \in A_2} \frac{1}{\pi_{2i}}(y_i - \bf x_i^TW\bm \beta^*_q)\right)
-+ (\bm \beta^*_q)^T W^T V(\hat{\bf X}_1) W \bm \beta_q^*
+V\left(\sum_{i \in A_2} \frac{1}{\pi_{2i}}(y_i - \bf x_i^\top W\bm \beta^*_q)\right)
++ (\bm \beta^*_q)^\top W^\top V(\hat{\bf X}_1) W \bm \beta_q^*
 $$
-
 where $\bm \beta_q^*$ is the probability limit of $\hat{\bm \beta_q}$. Like the
-two-phase sample this regression estimator can be viewed as the solution to the
+two-phase sample, this regression estimator can be viewed as the solution to the
 following calibration equation 
-
 \begin{equation}\label{eq:nncal}
   \hat w_2 = \argmin_{w_2} \sum_{i \in A_2} (w_{2i} - d_{2i})^2 q_i 
   \text{ such that } \sum_{i \in A_2} w_{2i} \bf x_i = \hat{\bf X}_c
 \end{equation}
-
 and $\hat Y_{\rm NN, reg} = \sum_{i \in A_2} \hat w_{2i} y_i$ where $\hat
 w_{2i}$ is the solution to Equation~\ref{eq:nncal}.
-
 We can extend the debiased calibration estimator of \cite{kwon2024debiased} to
 the non-nested two-phase sampling case where we use a combined estimate
 $\hat{\bm X_c}$ as the calibration totals instead of using the true totals from
@@ -507,14 +554,12 @@ the finite population.
 The methodology for the non-nested two-phase sample is very similar to the setup
 described as part of Topic 1. Given a strictly convex differentiable function,
 $G: \mathcal{V} \to \mathbb{R}$, the goal is to solve
-
 \begin{equation}\label{eq:nnopt}
 \hat w_2 = \argmin_{w_2} \sum_{i \in A_2} G\left(w_{2i}\right) q_i 
 \text{ such that } 
 \sum_{i \in A_2} w_{2i} \bf x_i = \hat{\bf X}_{c} \text{ and } 
 \sum_{i \in A_2} w_{2i} g(d_{2i}) q_i = \sum_{i \in U} g(d_{2i}) q_i
 \end{equation}
-
 for $g(x) = G'(x)$ and a known choice of $q_i \in \mathbb{R}$. 
 The difference
 between solving Equation~\ref{eq:nnopt} and Equation~\ref{eq:primal} is that the
@@ -522,7 +567,6 @@ estimator $\hat{\bf X}_c$ is estimated from the combined sample $A_c = A_1 \cup
 A_2$. Before using $\hat{\bf X}_c$ in the debiased calibration estimator, we
 need to estimate it from the non-nested samples. We can get multiple estimates
 of $\bf X_N$, 
-
 $$
 \hat{\bf X}_1 = \sum_{i \in A_1} d_{1i} \bf x_i \text{ and }
 \hat{\bf X}_2 = \sum_{i \in A_2} d_{2i} \bf x_i.
@@ -530,42 +574,32 @@ $$
 
 Let $n_{1, \rm{eff}}$ and $n_{2, \rm{eff}}$ be the effective samples sizes for
 $A_1$ and $A_2$ respectively. Then the optimal combined estimate is 
-
 $$
 \hat{\bf X}_c = (n_{1, \rm{eff}} \hat{\bf X}_1 + n_{2, \rm{eff}}\hat{\bf X}_2) / 
 (n_{1, \rm{eff}} + n_{2, \rm{eff}})
 $$
-
 We can construct a non-nested two-phase estimator $\hat Y_{\rm NNE}$ for $Y_N$ where
 $\hat Y_{\rm NNE} = \sum_{i \in A_2} \hat w_{2i} y_i$ and $\hat w_{2i}$ solves
 Equation~\ref{eq:nnopt}. Like the classical two-phase approach, to solve this
 setup we minimize the Lagrangian,
-
 \begin{equation}\label{eq:legragedc2}
   L(w_{2i}, \bm \lambda) = \sum_{i \in A_2} G(w_{2i}) q_i + 
-  \bm \lambda \left( \hat{\bf T} - \sum_{i \in A_2} w_{2i} \bf z_i q_i\right).
+  \bm \lambda^\top \left( \hat{\bf T} - \sum_{i \in A_2} w_{2i} \bf z_i q_i\right).
 \end{equation}
-
 where $\bm \lambda$ are the Lagrange multipliers, with 
-
 $$\hat{\bf T} = 
 \begin{bmatrix}
 \hat{\bf X}_c \\ \sum_{i \in U} g(d_{2i}) q_i
 \end{bmatrix}.
 $$
-
 Differentiating with respect to $w_{2i}$ and setting this expression equal to
-zero, yields the fact that $\hat w_{2i}$ satisfies 
-
-$$ \hat w_{2i}(\hat{\bm \lambda}) = g^{-1}(\hat{\bm \lambda^T} \bf z_i) $$
-
+zero yields the fact that $\hat w_{2i}$ satisfies 
+$$ \hat w_{2i}(\hat{\bm \lambda}) = g^{-1}(\hat{\bm \lambda}^\top \bf z_i) $$
 where $\hat{\bm \lambda}$ is the solution to
-
 \begin{equation}\label{eq:lamdc2}
   \left( \hat{\bf T} - \sum_{i \in A_2} w_{2i}(\hat{\bm \lambda}) \bf z_i
   q_i\right) = 0.
 \end{equation}
-
 Like the previous section we first prove that the estimator is design consistent.
 Then we provide a result showing how to estimate the variance.
 
@@ -574,15 +608,12 @@ Then we provide a result showing how to estimate the variance.
   under some regularity conditions, 
   $\hat Y_{\rm NNE} = \hat Y_{\ell, \rm NNE}(\bm \lambda^*,
   \bm \phi^*) + O_p(Nn_2^{-1})$ where
-
   $$
-  \hat Y_{\ell, \rm NNE}(\bm \lambda^*, \bm \phi^*) = \sum_{i \in A_2} \hat w_{2i}(
-  \bm \lambda^*) y_i + \left(\hat{\bf T} - \sum_{i \in A_2} \hat w_{2i}(
-  \bm \lambda^*) \bf z_i q_i\right) \bm \phi^*
+  \hat Y_{\ell, \rm NNE}(\bm \lambda^*, \bm \phi^*) = 
+  \sum_{i \in A_2} \pi_{2i}^{-1} y_i + 
+  \left(\hat{\bf T} - \sum_{i \in A_2} \pi_{2i}^{-1} \bf z_i q_i\right)^\top \bm \phi^*
   $$
-
   and 
-
   $$
   \bm \phi^* =
   \left(\sum_{i \in U} \frac{\pi_{2i} q_i}{g'(d_{2i})} 
@@ -602,7 +633,6 @@ estimated from both samples using $\hat{\bf X}_c$ instead of
 $\hat{\bf X}_{HT}$ from the Phase 1 sample. 
 Since $\hat Y_{\rm NNE} = \sum_{i \in A_2} \hat w_{2i}(\hat{\bm \lambda})y_i$
 where $\hat{\bm \lambda}$ solves
-
 \begin{equation}
   \sum_{i \in A_2} \hat w_{2i}(\bm \lambda) q_i
   \underbrace{
@@ -610,16 +640,12 @@ where $\hat{\bm \lambda}$ solves
     \bf x_i / q_i \\ g(d_i)
 \end{bmatrix}}_{\bf z_i} = \bf T
 \end{equation}
-
 we have 
-
-$$\hat Y_{\ell, \rm NNE} (\hat{\bm \lambda}, \bm \phi) = \sum_{i \in A_2} \hat
+$$\hat Y_{\rm NNE} (\hat{\bm \lambda}, \bm \phi) = \sum_{i \in A_2} \hat
 w_{2i}(\hat{\bm \lambda})y_i + \left(\bf T - \sum_{i \in A_2} \hat
-w_{2i}(\hat{\bm \lambda}) \bf z_i q_i\right) \bm \phi.$$
-
+w_{2i}(\hat{\bm \lambda}) \bf z_i q_i\right)^\top \bm \phi.$$
 If we choose $\bm \phi^*$ such that $E\left[\frac{\partial}{\partial \bm \lambda} 
-  \hat Y_{\ell, NNE}(\bm \lambda^*, \bm \phi^*)\right] = 0$, then
-
+  \hat Y_{\ell, \rm NNE}(\bm \lambda^*, \bm \phi^*)\right] = 0$, then
 $$\bm \phi^* =
 \begin{bmatrix}
   \bm \phi^*_1 \\ \bm \phi^*_2
@@ -633,40 +659,32 @@ $$\bm \phi^* =
 \sum_{i \in U} \frac{\pi_{2i} y_i}{g'(d_{2i})} 
 \begin{bmatrix} \bf x_i / q_i \\ g(d_i) \end{bmatrix}.
 $$
-
 Hence, by a Taylor expansion around $\hat{\bm \lambda}$,
-
 $$\hat Y_{\rm NNE}(\hat{\bm \lambda}) = \hat Y_{\ell, \rm NNE}(\bm \lambda^*, 
 \bm \phi^*) + O_p(Nn_2^{-1}).$$
-
 The next theorem shows how to estimate the variance of $\hat Y_{\rm NNE}$.
 The proof of this result is in the appendix.
 
 \begin{theorem}[Variance Estimation]\label{thm:nnve}
   The variance of $\hat Y_{\rm NNE}$ is 
-
   \begin{align*}
-    \Var(\hat Y_{\rm NNE}(\hat \lambda))
-    &= (\bm \phi_1^*)^T \Var(\hat{\bf X}_c) \bm \phi_1^* + 
+    \Var(\hat Y_{\rm NNE}(\hat{\bm \lambda}))
+    &= (\bm \phi_1^*)^\top \Var(\hat{\bf X}_c) \bm \phi_1^* + 
     \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} 
       (y_i - \bf z_i \bm \phi^* q_i)(y_j - \bf z_j \bm \phi^* q_j)\\
     &\qquad + (1 - W)\bm \phi_1^* \sum_{i \in U} \sum_{j \in U} \Delta_{2ij}
     d_{2i} \bf x_i d_{2j}(y_j - \bf z_j \bm \phi^*_1 q_j)\\
   \end{align*}
-
   We can estimate the variance using
-
   \begin{align*}
     \hat V_{\rm NNE} 
-    &= (\hat{\bm \phi_1})^T \Var(\hat{\bf X}_c) \hat{\bm \phi_1} + 
+    &= (\hat{\bm \phi_1})^\top \Var(\hat{\bf X}_c) \hat{\bm \phi_1} + 
     \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}\pi_{2i}\pi_{2j}} 
     (y_i - \bf z_i \hat{\bm \phi} q_i)(y_j - \bf z_j \hat{\bm \phi} q_j) \\
     &\qquad + (1 - W)\hat{\bm \phi_1} \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}}
     \frac{\bf x_i}{\pi_{2i}} \frac{(y_j - \bf z_j \hat{\bm \phi_1} q_j)}{\pi_{2j}}
   \end{align*}
-
   where 
-  
   $$\hat{\bm \phi} =
   \begin{bmatrix}
     \hat{\bm \phi_1} \\ \hat \phi_2
@@ -694,75 +712,84 @@ where $Y$ is observed only in $A_0$ but $\bf X$ is observed in all of the
 samples with variables $\bf X^{(0)}$ observed in $A_0$ and variables $\bf X^{(m)}$
 observed in $A_m$ for each $m = 1, \dots, M$. Like the non-nested case, we
 assume that each survey is sampled independently from the same population
-sampling frame.
+sampling frame. Some basic examples of data structures that would benefit from
+the multi-source two-phase sampling can be found in Table~\ref{tab:msexample}.
 
-The traditional multi-source approach (\cite{kim2024statistics}) is to use
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{lrrrrrr}
+    \toprule 
+           & \multicolumn{3}{c}{Example 1} & \multicolumn{3}{c}{Example 2} \\
+           \cmidrule(r){2-4}  
+           \cmidrule(r){5-7}
+    Sample & $X_1$ & $X_2$ & $Y$ & $X_1$ & $X_2$ & $Y$ \\
+    \midrule
+    $A_0$ & \checkmark & \checkmark & \checkmark & \checkmark & & \checkmark \\
+    $A_1$ & \checkmark & &  & \checkmark & \checkmark & \\
+    $A_2$ & & \checkmark &  & & \checkmark & \\
+    \bottomrule
+  \end{tabular}
+  \caption{This tables shows two examples configuations of multi-source sampling.
+  In each example, $A_0$ contains the variable of interest $Y$. For Example 1,
+  the covariates in $A_1$ and $A_2$ are both contained in $A_0$. In Example 2,
+  sample $A_2$ improves the estimation of $Y$ via improving the estimation of
+  $X_1$ in $A_1$.}
+  \label{tab:msexample}
+\end{table}
+
+The traditional multi-source approach \citep{kim2024statistics} is to use
 GLS to obtain an optimal estimator of $\bf X_N$ from the
 samples $A_1, \dots, A_M$. Then we can incorporate this information in the
 estimation of $\theta$ by using the following estimate 
-
 $$\hat \theta = \sum_{i \in A_0} \hat w_i y_i$$
-
 where 
-
 \begin{equation}\label{eq:mstps}
 \hat w = \argmin_w \sum_{i \in A_0} G(w_i)q_i \text{ such that } 
 \sum_{i \in A_0} w_i \bf x_i = \hat{\bf X}_{\rm{GLS}}^{(0)}
 \end{equation}
-
 where $\hat{\bf X}_{\rm{GLS}}^{(0)}$ is the GLS estimate of $\bf X$ for all of
-the $X$-variables measured in sample $A_0$, and $G$ is a generalized entropy
+the $X$-variables measured in sample $A_0$, and $G(\cdot)$ is a generalized entropy
 function. 
 In order to have a design consistent estimator that incorporates information from
 samples $A_0, A_1, \dots, A_M$, we want to add the debiasing constraint, 
-
 \begin{equation}\label{eq:msdebconstr}
 \sum_{i \in A_0} w_{i} g(d_i) q_i = \sum_{i \in U} g(d_i) q_i
 \end{equation}
-
 where $g(x) = \partial G(x) / \partial x$ and $d_i$ are the design weights for
 sample $A_0$. This yields the optimization problem:
-
 \begin{equation}\label{eq:dc3}
   \hat w_0 = \argmin_{w_0} \sum_{i \in A_0} G(w_{0i}) q_i \text{ such that }
   \widehat{\bf{T}} = \sum_{i \in A_0} w_{0i} \bf z_i.
 \end{equation}
-
 where $\widehat{\bf{T}} = (\widehat{\bf X}_{\rm{GLS}}^{(0)},
-\sum_{i \in U} g(d_i) q_i)^T$,
-and $\bf z_i = ((\bf x_i^{(0)})^T, g(d_i)q_i)^T$. Then
+\sum_{i \in U} g(d_i) q_i)^\top$,
+and $\bf z_i = ((\bf x_i^{(0)})^\top, g(d_i)q_i)^\top$. Then
 the estimator is $\hat Y_{\rm MS} = \sum_{i \in A_0} \hat w_{0i} y_i$ and we can
 construct this estimate minimizing the Lagrangian:
-
 $$
-L(w_{0}, \bm \lambda) = \sum_{i \in A_0} G(w_{0i}) q_i + {\bm \lambda}^T
+L(w_{0}, \bm \lambda) = \sum_{i \in A_0} G(w_{0i}) q_i + {\bm \lambda}^\top
 \left(\widehat{\bf{T}} - \sum_{i \in A_0} w_{0i} \bf z_i\right)
 $$
-
 where $\bm \lambda$ are the Lagrange multipliers from Equation~\ref{eq:dc3}.
 We now show that $\hat Y_{\rm MS}$ is design consistent.
 
 \begin{theorem}[Design Consistency]
   Let $\bm \lambda^*$ be the probability limit of $\hat{\bm \lambda}$.
   Under regularity conditions,
-
   $$
   \hat Y_{\rm MS} = \hat Y_{\ell, \rm MS}(\bm \lambda^*, \bm \phi^*) + O_p(N / n_0)
   $$
-
   where
-
   $$
-  \hat Y_{\ell, \rm MS}(\bm \lambda^*, \bm \phi^*) = \sum_{i \in A_0} \hat w_{0i} y_i + \left(
-    \widehat{\bf T} - \sum_{i \in A_0} \hat w_{0i}(\bm \lambda^*) \bf z_i q_i
-  \right)\bm \phi^*
+  \hat Y_{\ell, \rm MS}(\bm \lambda^*, \bm \phi^*) = 
+  \sum_{i \in A_0} d_{0i} y_i + \left(
+    \widehat{\bf T} - \sum_{i \in A_0} d_{0i} \bf z_i q_i
+  \right)^\top \bm \phi^*
   $$
-
   and 
-
   $$
   \bm \phi^* = 
-  \left[\sum_{i \in U} \frac{\pi_{0i} \bf z_i \bf z_i^T q_i}{g'(d_{0i})}\right]^{-1}
+  \left[\sum_{i \in U} \frac{\pi_{0i} \bf z_i \bf z_i^\top q_i}{g'(d_{0i})}\right]^{-1}
   \sum_{i \in U} \frac{\pi_{0i} \bf z_i y_i}{g'(d_{0i})}.
   $$
 \end{theorem}
@@ -774,23 +801,20 @@ $\hat Y_{\rm MS}$.
 
 \begin{theorem}[Variance Estimation]
   Under regularity conditions,
-
   $$
   \begin{aligned}
     V(\hat Y_{\rm MS}) 
-    &= (\bm \phi^{*})^T\Var(\hat{\bf X}_{\rm GLS}^{(0)}) (\bm \phi^{*}) + 
+    &= (\bm \phi^{*})^\top \Var(\hat{\bf X}_{\rm GLS}^{(0)}) (\bm \phi^{*}) + 
       \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{0ij}}{\pi_{0i}\pi_{0j}}
       (y_i - \bf z_i\bm \phi^{*}q_i)
       (y_j - \bf z_j\bm \phi^{*}q_j). 
   \end{aligned}
   $$
-
   We can estimate the variance with
-
   $$
   \begin{aligned}
     \hat V(\hat Y_{\rm MS}) 
-    &= (\hat{\bm \phi})^T \hat \Var(\hat{\bf X}_{\rm GLS}^{(0)}) (\hat{\bm \phi})
+    &= (\hat{\bm \phi})^\top \hat \Var(\hat{\bf X}_{\rm GLS}^{(0)}) (\hat{\bm \phi})
     + \sum_{i \in A_0} \sum_{j \in A_0} \frac{\Delta_{0ij}}{\pi_{0ij}\pi_{0i}\pi_{0j}}
       (y_i - \bf z_i \hat{\bm \phi}q_i)
       (y_j - \bf z_j \hat{\bm \phi}q_j). 
@@ -808,7 +832,6 @@ holds because each sample $A_m$ is independent from the other $A_{m'}$.
 
 We run a simulation testing the main proposed method. In this approach we have the
 following simulation setup:
-
 $$
 \begin{aligned}
 X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
@@ -820,7 +843,6 @@ Y_{i} &= 3 X_{1i} + 2 X_{2i} + \delta 0.5 X_{3i} + \varepsilon_i \\
 \pi_{2i|1} &= \max(\min(\Phi_3(x_{3i} - 1), 0.7), 0.02).
 \end{aligned}
 $$
-
 where $\Phi_3$ is the CDF of a t-distribution with 3 degrees of freedom.
 This is a two-phase extension of the setup in \cite{kwon2024debiased}. We
 consider a finite population of size $N = 10,000$ with the Phase 1 sampling
@@ -830,7 +852,7 @@ $n_1 = 1200$ and the Phase 2 sample has an expected size of
 $E[n_2] \approx 2588$. In the Phase 1 sample, we observe 
 $(X_1, X_2)$ while in the Phase 2 sample we observe $(X_1, X_2, Y)$. 
 The parameter $\delta \in \{0, 1\}$ controls the effect of model misspecification
-in the simulation. Let $\bf x_i = (1, x_{1i}, x_{2i})^T$. We compare the
+in the simulation. Let $\bf x_i = (1, x_{1i}, x_{2i})^\top$. We compare the
 proposed method for the parameter $\bar Y_N$ with four approaches:
 
 \begin{itemize}
@@ -935,7 +957,6 @@ Table~\ref{tab:tpdc0-mean} and Table~\ref{tab:tpdc1-mean}.
 
 We run a simulation testing the non-nested extension. This is very similar to
 Simulation 1. We have the following simulation setup:
-
 $$
 \begin{aligned}
 X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
@@ -947,14 +968,13 @@ Y_{i} &= 3 X_{1i} + 2 X_{2i} + \delta X_{3i} \varepsilon_i \\
 \pi_{2i} &= \max(\min(\Phi_3(X_{3i} - 2.5), 0.9), 0.01).
 \end{aligned}
 $$
-
 where $\Phi_3$ is the CDF of a t-distribution with 3 degrees of freedom.
 We consider a finite population of size $N = 10,000$ with the Phase 1 
 sampling being a simple random sample (SRS) of size $n_1 = 1000$. The Phase 2
 sample is a Poisson sample with an expected sample size of about 300.
 In the Phase 1 sample, we observe 
 $(X_1, X_2)$ while in the Phase 2 sample we observe $(X_1, X_2, Y)$. 
-If $\delta = 0$ then there is no model misspecification. However, if $\delta =
+If $\delta = 0$, then there is no model misspecification. However, if $\delta =
 1$, then there is some model misspecification. We estimate
 the parameter $\bar Y_N$ with four approaches:
 
@@ -966,10 +986,10 @@ the parameter $\bar Y_N$ with four approaches:
 \sum_{i \in A_2} d_{2i} y_i$, $\hat{\bf X}_c = W \hat{\bf X}_{1, \rm HT} + (1 -
 W)\hat{\bf X}_{2, \rm HT}$, $W = n_{1,\rm{eff}} / (n_{1,\rm{eff}} + n_{2, \rm{eff}})$,
 $\hat{\bf X}_{1, \rm HT} = \sum_{i \in A_1} d_{1i} \bf x_{i}$, $\hat{\bf X}_{2,
-    \rm HT} = \sum_{i \in A_2} d_{2i} \bf x_{i}$, $\bf x_i = (1, x_{1i}, x_{2i})^T$
+    \rm HT} = \sum_{i \in A_2} d_{2i} \bf x_{i}$, $\bf x_i = (1, x_{1i}, x_{2i})^\top$
     and 
 
-    $$ \hat{\bm \beta_2} = \left(\sum_{i \in A_2} \bf x_i \bf x_i^T\right)^{-1}
+    $$ \hat{\bm \beta_2} = \left(\sum_{i \in A_2} \bf x_i \bf x_i^\top\right)^{-1}
     \sum_{i \in A_2} \bf x_i y_i.$$
 
     Then $\hat{\bar Y}_{\rm NN, reg} = \hat Y_{\rm NN, reg} / N$.
@@ -1026,8 +1046,7 @@ Table~\ref{tab:nndc0-mean} and Table~\ref{tab:nndc1-mean}.
 \subsection{Simulation Study 3}
 
 This simulation study tests the multi-source extension.
-We have the following superpopulation model with $N = 10000$ elements:
-
+We have the following superpopulation model with $N = 10,000$ elements:
 $$
 \begin{aligned}
 X_{1i} &\stackrel{ind}{\sim} N(2, 1) \\
@@ -1041,11 +1060,9 @@ Y_{i} &= 3 X_{1i} + 2 X_{2i} + \delta Z_{i} + \varepsilon_i \\
 \pi_{2i} &= \Phi(X_{2i} - 2) \\
 \end{aligned}
 $$
-
 Like the previous simulation studies, when $\delta = 1$, there is model
 misspecification for the outcome model because we observe the following columns
-in each sample
-
+in each sample:
 \begin{table}[ht!]
   \centering
   \begin{tabular}{lrrrr}
@@ -1063,7 +1080,6 @@ For the sampling mechanism both $A_0$ and $A_2$ are selected using a Poisson
 sample with response probabilities $\pi_{0i}$ and $\pi_{1i}$ respectively. The
 sample $A_1$ is a simple random sample with $n_1 = 2000$. We compare four
 different estimators for $\theta = E[Y]$.
-
 \begin{itemize}
   \item[1.] Horvitz-Thompson estimator (HT): $\hat Y = N^{-1} \sum_{i \in A_0}
     \frac{y_i}{\pi_{0i}}$,
@@ -1075,7 +1091,6 @@ different estimators for $\theta = E[Y]$.
   \item[4.] Multi-Source population (EstPop): This is the proposed estimator with
     using the true value of $T_1$ from the population.
 \end{itemize}
-
 The simulation results are displayed in Table~\ref{tab:msdc0-mean} and
 Table~\ref{tab:msdc1-mean}.
 
@@ -1101,7 +1116,7 @@ Table~\ref{tab:msdc1-mean}.
 \label{tab:msdc1-mean}
 \end{table}
 
-As expected EstPop has the lowest RMSE because it also uses the population
+As expected, EstPop has the lowest RMSE because it also uses the population
 totals. The Est estimator outperforms
 NNReg because it also uses information from $A_2$, even though it implicitly
 uses a regression estimator with $X_3$ as a covariate, which is unnecessary.
@@ -1112,7 +1127,7 @@ We apply our method to Medicare Current Beneficiary Survey (MCBS). The MCBS
 is an ongoing representative national survey of the population of people on
 Medicare in the United States, and in 2020, NORC started issuing an MCBS
 supplement to identify the impact of COVID-19 on the Medicare population
-\cite{norc2020mcbs}. This analysis looks at whether
+\citep{norc2020mcbs}. This analysis looks at whether
 respondents had obtained at least one dose of a COVID-19 vaccine.
 
 Assessing the vaccine rate of Medicare patients is important from a public
@@ -1120,35 +1135,35 @@ health perspective. Older people\footnote{Medicare is available to people ages
 65 years and older and select designated populations between the ages of 18 and
 65.}
 are known to have a higher all-cause mortality from
-COVID-19 (\cite{bonanad2020effect}). Thus, understanding how older people get
-vaccinated can help save lives and reduce medical costs.
+COVID-19 \citep{bonanad2020effect}. Thus, understanding what causes older people
+to get vaccinated can help save lives and reduce medical costs.
 
 The MCBS is a rotating panel survey in which participants are interviewed up to
-three times within a four-year period (\cite{cms2021mcbs}). The participants
+three times within a four-year period \citep{cms2021mcbs}. The participants
 are selected from Medicare enrollment data and enter a cohort in the fall round
 of the survey. They then respond to the winter, summer,
 and fall rounds of the survey for three consecutive years before exiting the
-survey in the winter round of year four (\cite{cms2021mcbs}). Each year a new
+survey in the winter round of year four \citep{cms2021mcbs}. Each year a new
 cohort is added. Participants are selected based on a three-stage cluster sample
 design. The first stage of the sample consists of major metropolitan areas and
-groups of rural counties (\cite{cms2021mcbs}). The second stage are census
+groups of rural counties \citep{cms2021mcbs}. The second stage are census
 tracts within the primary sampling units. Finally, Medicare beneficiaries are
 selected using a stratified systematic sample with random starts 
-(\cite{cms2021mcbs}). Medicare beneficiaries are selected from strata based on
+\citep{cms2021mcbs}. Medicare beneficiaries are selected from strata based on
 age and whether the beneficiary is Hispanic. Strata with Hispanic beneficiaries
 and strata with beneficiaries over the age of 85 and under the age of 65 are
 oversampled.
 The COVID supplement was added to the traditional MCBS survey in March of
 2020 to assess the impact of COVID on the Medicare
-population (\cite{cms2021covid}). These questions about vaccines were added to
+population \citep{cms2021covid}. These questions about vaccines were added to
 participants who were enrolled in the Summer 2021 cohort.
 
 We combine the 2021 Summer MCBS survey with data from the 2021 American
 Community Survey (ACS)
 issued by the U.S. Census Bureau along with administrative data about people on
 Medicare from the Center of Medicare and Medicaid Services (CMS). Like the MCBS
-survey, the ACS data contains information about the overall percentage of
-people's sex, race and ethnicity, education, and marital status for people on
+survey, the ACS data contains information about the overall distribution of
+sex, race and ethnicity, education, and marital status for people on
 Medicare. We combine this information with official totals of people on Medicare
 by sex from the CMS. A complete display of the data available can be seen in
 Table~\ref{tab:mcbscols}.
@@ -1194,27 +1209,26 @@ ACS variables with the map found in Table~\ref{tab:acsvars}.
 While the MCBS data is largely free of missing values, there are a small number
 that need to be imputed for the $Y$ variable about whether someone received at
 least one COVID vaccination dose. This MCBS data was updated to include
-information about if a participant had received a second vaccine dose and then
-later to include how many total vaccine doses patients had received. If the
-participant had received at least one more dose and their answer was missing (because
-they refused to answer, did not know, or was just missing) the missing value was
-imputed to say that they yes, they had received a COVID vaccine dose. Otherwise,
-the missing value was imputed to say no, the participant had not received a
-COVID vaccine dose.
+information about whether a participant had received a second vaccine dose. 
+Later, the survey included the total vaccine doses patients had received. If the
+participant had received at least one more dose and their answer was missing
+(because they refused to answer, did not know, or was missing) the missing value
+was imputed to say that they yes, they had received a COVID vaccine dose.
+Otherwise, the missing value was imputed to say no, the participant had not
+received a COVID vaccine dose.
 
 We analyze the data with three approaches: a Horvitz-Thompson method, a
 regression algorithm, and our preposed multi-source two-phase sampling technique. 
-The Horvitz-Thompson estimator uses the design weights, the MCBS observation if
-an individual received a COVID-19 vaccine dose, and the population total from
-the CMS about the total number of people on Medicare in 2021. The regression
-estimator uses all of this and a population level total for the number of males.
-Our multi-source algorithm also includes information from the ACS about
-education and marital status. Due to the fact that we do not observe the
-probability that an individual will be selected into the MCBS survey within the
-population of all Medicare patients, we have to estimate the term 
-$\sum_{i \in U} g(d_i)$ from Equation~\ref{eq:msdebconstr}. This technique is
-adopted from \cite{kwon2024debiased} and described in more details in the
-appendix.
+The Horvitz-Thompson estimator uses the design weights, the MCBS observation
+whether an individual received a COVID-19 vaccine dose, and the population total
+from the CMS data about the total number of people on Medicare in 2021. The
+regression estimator uses all of this and a population level total for the
+number of males. Our multi-source algorithm also includes information from the
+ACS about education and marital status. Due to the fact that we do not observe
+the probability that an individual will be selected into the MCBS survey within
+the population of all Medicare patients, we have to estimate the term $\sum_{i
+\in U} g(d_i)$ from Equation~\ref{eq:msdebconstr}. This technique is adopted
+from \cite{kwon2024debiased} and described in more details in the appendix.
 The results of the real data analysis are found in Table~\ref{tab:mcbsres}.
 
 \begin{table}[ht!]
@@ -1240,75 +1254,102 @@ The results of the real data analysis are found in Table~\ref{tab:mcbsres}.
 Overall, using debiased calibration for generalized two-phase sampling seems to
 be a promising approach for combining multiple samples efficiently. Not only can
 this method be used to combine surveys focusing on the same population frame,
-but because it only does not require individual responses levels from the
-supplemental surveys, this method can be used to construct domain level
+but because it does not require individual responses levels from the
+supplemental surveys, this method can also be used to construct domain level
 estimates as exemplified in the real data analysis of Medicare patients.
 
 \bibliographystyle{apa}
 \bibliography{references.bib}
 
 \newpage
+\appendix
 
-\section*{Appendix A: Proof of Theorem 1}
+\section{Appendix: Regularity Conditions}
+
+We need the following regularity conditions to prove Theorem 1.
+
+\begin{itemize}
+  \item[A1]: $\mathcal{V} \in \R$ is open,
+  \item[A2]: $G(w)$ is strictly convex and twice continuously differentiable on
+    $\mathcal{V}$ with a bounded second derivative,
+  \item[A3]: There exist positives constants $c_1, c_2 \in \mathcal{V}$ such
+    that $c_1 < \pi_{2i|1} < c_2$ for all $\pi_i$,
+  \item[A4]: For $\Delta_{2ij|1} = \pi_{2ij|1} - \pi_{2i|1}\pi_{2j|1}$,
+    $$
+    \limsup_{N \to \infty} N \max_{i, j \in U, i \neq j} |\Delta_{2ij|1}| <
+    \infty,
+    $$
+  \item[A5]: The matrix $\bm \Sigma_{\bf z} := 
+    \lim_{N \to \infty} N^{-1} \sum_{i \in U} {\bf z}_i {\bf z}_i^\top$ exists
+    and is positive definite, 
+  \item[A6]: The average fourth moment of $({\bf x}_i^\top, y_i)^\top$ is finite
+    such that 
+    $$
+    \limsup_{N \to \infty} N^{-1} \sum_{i = 1}^N ({\bf x}_i^\top, y_i)^\top < \infty,
+    $$
+  \item[A7]: $||\hat{\bm \lambda} - \bm \lambda^*|| = O_p(n_2^{-1/2})$
+\end{itemize}
+
+Assumption A1 is needed for the differentiability of $G(w)$ in A2.
+Assumption A2 guarentees a unique solution for $\hat{\bm \lambda}$ and ensures
+that $g(w)$ is differentiable. The boundedness part of the assumption ensures
+that $\frac{\partial}{\partial \bm \lambda} g^{-1}(\bm \lambda^\top {\bf z})$ is
+also bounded. Conditions A3 and A4 are standard conditions which control the
+first-order and second-order inclusion probability for the second phase sample.
+These conditions are met by many traditional survey designs. Assumptions A5 and
+A6 are technical conditions and common in the survey literature. Assumption A7
+is added to simplify the proof. We could remove this condition and follow the
+approach of Theorem 1 in \cite{kwon2024debiased}.
+
+\subsection{Proof of Theorem 1}
 
 In this proof, we derive the solution to Equation~\ref{eq:primal} and show
 that it is asymptotically equivalent to a regression estimator. Using the
 method of Lagrange multipliers, to solve Equation~\eqref{eq:primal} we need to
 minimize the Lagrangian in Equation~\eqref{eq:legragedc1}. 
 The first order conditions show that at the solution,
-
 $$
 \frac{\partial \mathcal{L}}{\partial w_{2i}}: g(w_{2i}) w_{1i}q_i -
-w_{1i} \hat{\bm \lambda}^T \bf z_i q_i = 0.
+w_{1i} \hat{\bm \lambda}^\top \bf z_i q_i = 0.
 $$
-
 Hence, $\hat w_{2i}(\hat{\bm \lambda}) = 
-g^{-1}(\hat{\bm \lambda}^T \bf z_i)$ where
+g^{-1}(\hat{\bm \lambda}^\top \bf z_i)$ where
 $\hat{\bm \lambda}$ is determined by Equation~\eqref{eq:lamdc1}. When the
 sample size gets large, we have $\hat w_{2i}(\hat{\bm \lambda}) \to
 d_{2i|1}$ in probability because both terms in Equation~\eqref{eq:lamdc1} must
 become equal by the Central Limit Theorem. Hence,
 $\hat{\bm \lambda} \to \bm \lambda^*$ in probability and 
-$\bm \lambda^* = (\bf 0^T, 1)^T$. 
+$\bm \lambda^* = (\bf 0^\top, 1)^\top$. 
 Using the linearization technique of
 \cite{randles1982asymptotic}, we can construct a regression estimator, 
-
 $$
 \hat Y_\ell(\hat{\bm \lambda}, \bm \phi) = 
 \sum_{i \in A_2} w_{1i} \hat w_{2i} y_i + 
 \left(\sum_{i \in A_1} w_{1i} \bm z_i q_i - \sum_{i \in A_2} w_{1i} 
 \hat w_{2i} \bf z_i q_i\right)\bm \phi.
 $$
-
 Notice that $\hat Y_\ell(\hat{\bm \lambda}, \bm \phi) = \sum_{i \in A_2} w_{1i}
 \hat w_{2i} y_i$ for all $\bm \phi$. We choose $\bm \phi^*$ such that
-
 $$
 E\left[\frac{\partial}{\partial \bm \lambda} \hat Y_\ell(\bm \lambda^*,
 \bm \phi^*)\right]=0.
 $$
-
 Using the fact that $g^{-1}(\bm \lambda^* \bf z_i) = g^{-1}(g(d_{2i|1})) = d_{2i|1}$
 and $(g^{-1})'(x) = 1 / g'(g^{-1}(x))$, we have
-
 \begin{align*}
   \bm \phi^*
-  &= E\left[\sum_{i \in A_2} \frac{w_{1i}\bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}
+  &= E\left[\sum_{i \in A_2} \frac{w_{1i}\bf z_i \bf z_i^\top q_i}{g'(d_{2i|1})}
   \right]^{-1}
   E\left[\sum_{i \in A_2} \frac{w_{1i}\bf z_i y_i}{g'(d_{2i|1})}\right]\\
-  &= \left[\sum_{i \in U} \frac{\pi_{2i|1} \bf z_i \bf z_i^T q_i}{g'(d_{2i|1})}
+  &= \left[\sum_{i \in U} \frac{\pi_{2i|1} \bf z_i \bf z_i^\top q_i}{g'(d_{2i|1})}
   \right]^{-1}
   \left[\sum_{i \in U} \frac{\pi_{2i|1} \bf z_i y_i}{g'(d_{2i|1})}\right]\\
 \end{align*}
-
 Thus, the linearization estimator is
-
 $$\hat Y_\ell(\bm \lambda^*, \bm \phi^*) = 
 \sum_{i \in A_1} w_{1i} q_i \bf z_i \bm \phi^* +
 \sum_{i \in A_2} w_{1i} d_{2i|1} (y_i - q_i \bf z_i \bm \phi^*).$$
-
 By construction using a Taylor expansion yields,
-
 \begin{align*}
   \hat Y_{DCE}(\hat{\bm \lambda}) 
   &= \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + 
@@ -1318,7 +1359,6 @@ By construction using a Taylor expansion yields,
   (\hat{\bm \lambda} - \bm \lambda^*)^2\\
   &= \hat Y_\ell(\bm \lambda^*, \bm \phi^*) + O(N)O_p(n_2^{-1}).
 \end{align*}
-
 The final equality comes from the fact that 
 $E\left[\frac{\partial}{\partial \bm \lambda}
 \hat Y_\ell(\bm \lambda^*, \bm \phi^*)\right] = 0$,
@@ -1326,28 +1366,23 @@ $\frac{\partial}{\partial \bm \lambda^2} \hat w_{2i}(\bm \lambda^*)$ is
 bounded and $||\hat{\bm \lambda} - \bm \lambda^*|| = O_p(n_2^{-1/2})$, which
 proves our result.
 
-\section*{Appendix B: Proof of Theorem 2}
+\subsection{Proof of Theorem 2}
 
 \begin{proof}
   By Theorem~\ref{thm:dc1}, $\hat Y_{\rm DCE}$ is asymptotically equivalent to
   $\hat Y_{\ell}$. Notice that we can define
-
   $$
   \eta_i^* = 
   \bf z_i q_i \bm \phi^* + \frac{\delta_i}{\pi_{2i|1}}(y_i - \bf z_i q_i \bm \phi^*)
   $$
-
   where $\delta_i$ is one if $i \in A_2$ and zero otherwise. Then,
-
   $$
   \hat Y_{\ell} = \sum_{i \in A_1} w_{1i} \eta_i^*.
   $$
-
-  Then using the reverse framework of \cite{fay1992inferences} and 
+  Using the reverse framework of \cite{fay1992inferences} and 
   \cite{shao1999variance}, and noting that 
   $\Delta_{1ij} = \pi_{1ij} - \pi_{1i}\pi_{1j}$ and 
   $\Delta_{2ij|1} = \pi_{2ij|1} - \pi_{2i|1}\pi_{2j|1}$,
-
   \begin{align*}
     \Var(\hat Y_{\ell, \rm{DCE}}) 
     &= \Var\left(\sum_{i \in A_1} w_{1i} \eta_i^*\right) \\
@@ -1357,9 +1392,7 @@ proves our result.
     + E\left[\sum_{i \in U} \sum_{j \in U} \Delta_{1ij} w_{1i} \eta_i^* w_{1j}
       \eta_j^*\right]\\
   \end{align*}
-
   This means that we can estimate the variance of $\hat Y_{\rm DCE}$ with
-
   $$
   \hat V_{\rm DCE} 
   = \sum_{i \in A_1} \sum_{j \in A_1} \frac{\Delta_{1ij}}{\pi_{1ij}} 
@@ -1368,50 +1401,44 @@ proves our result.
   \frac{(y_i - \bf z_i q_i \hat{\bm \phi})}{\pi_{2i|1}}
   \frac{(y_j - \bf z_j q_j \hat{\bm \phi})}{\pi_{2j|1}}.
   $$
-
 \end{proof}
 
-\section*{Appendix C: Proof of Theorem 4}
+\subsection{Proof of Theorem 4}
 
 \begin{proof}
   From Theorem~\ref{thm:dc2}, we know that $\hat Y_{\rm NNE}(\hat \lambda) = 
   \hat Y_{\ell, \rm NNE}(\bm \lambda^*, \bm \phi^*) + O_p(Nn_2^{-1})$. Hence, the
   variance of $\hat Y_{\rm NNE}(\hat{\bm \lambda})$ is 
-
   \begin{align*}
     \Var(\hat Y_{\rm NNE}(\hat{\bm \lambda})) 
     &\doteq \Var(\hat Y_{\ell, \rm NNE}(\bm \lambda^*, \bm \phi^*)) \\ 
     &= \Var\left(\sum_{i \in A_2} \hat w_{2i}(\bm \lambda^*) y_i + 
       \left(\bf T - \sum_{i \in A_2} \hat w_{2i}(\bm \lambda^*) \bf z_i
     q_i\right)\bm \phi^*\right)\\
-    &= (\bm \phi_1^*)^T \Var(\hat{\bf X}_c) \bm \phi_1^* + 
+    &= (\bm \phi_1^*)^\top \Var(\hat{\bf X}_c) \bm \phi_1^* + 
     \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} 
     (y_i - \bf z_i \bm \phi^* q_i)(y_j - \bf z_j \bm \phi^* q_j)\\
     &\qquad+ 2 \Cov\left(\hat{\bf X}_c \bm \phi_1^*, \sum_{i \in A_2} 
       \frac{(y_i - \bf z_i \bm \phi^* q_i)}{\pi_{2i}}\right) \\
-    &= (\bm \phi_1^*)^T \Var(\hat{\bf X}_c) \bm \phi_1^* + 
+    &= (\bm \phi_1^*)^\top \Var(\hat{\bf X}_c) \bm \phi_1^* + 
     \sum_{i \in U} \sum_{j \in U} \frac{\Delta_{2ij}}{\pi_{2i}\pi_{2j}} 
     (y_i - \bf z_i \bm \phi^* q_i)(y_j - \bf z_j \bm \phi^* q_j)\\
     &\qquad + (1 - W)\bm \phi_1^* \sum_{i \in U} \sum_{j \in U} \Delta_{2ij} 
     \frac{\bf{x}_i}{\pi_{2i}} \frac{(y_j - \bf z_j \bm \phi^*_1 q_j)}{\pi_{2j}}\\
   \end{align*}
-
 where the last equality comes from the fact that $\hat{\bf X}_c = W\hat{\bf
 X}_1 + (1 - W) \hat{\bf X}_2$. To have an unbiased estimator of the variance
   we can use:
-
   \begin{align*}
     \hat V_{\rm NNE} 
-    &= (\hat{\bm \phi_1})^T \Var(\hat{\bf X_c}) \hat{\bm \phi_1} + 
+    &= (\hat{\bm \phi_1})^\top \Var(\hat{\bf X_c}) \hat{\bm \phi_1} + 
     \sum_{i \in A_2} \sum_{j \in A_2} \frac{\Delta_{2ij}}{\pi_{2ij}\pi_{2i}\pi_{2j}} 
     (y_i - \bf z_i \hat{\bm \phi} q_i)(y_j - \bf z_j \hat{\bm \phi} q_j) \\
     &\qquad + (1 - W)\hat{\bm \phi}_1 \sum_{i \in A_2} \sum_{j \in A_2} 
     \frac{\Delta_{2ij}}{\pi_{2ij}} \frac{\bf{x}_i}{\pi_{2i}} 
     \frac{(y_j - \bf z_j \hat{\bm \phi_1} q_j)}{\pi_{2j}}
   \end{align*}
-
   where 
-  
   $$\hat{\bm \phi} =
   \begin{bmatrix}
     \hat{\bm \phi_1} \\ \hat \phi_2
@@ -1428,23 +1455,19 @@ X}_1 + (1 - W) \hat{\bf X}_2$. To have an unbiased estimator of the variance
 
 \end{proof}
 
-\section*{Appendix D: Estimating the Population Weights}
+\section{Estimating the Population Weights}
 
 In Equation~\ref{eq:primal}, Equation~\ref{eq:nnopt}, and
 Equation~\ref{eq:msdebconstr}, we see the need for knowing $\sum_{i \in U}
 g(d_i)$. (In the case of Equation~\ref{eq:primal}, we only need $\sum_{i \in
 A_1} g(d_{2i|1})$.) However, this quantity is not always known. When it is
 unknown, we need to estimate it.
-
 We follow the approach of \cite{kwon2024debiased}. Define 
-
 $$N \alpha = \sum_{i \in U} g(d_i).$$
-
 Assuming $N$ is known (or that we can estimate it), we need to estimate
 $\alpha$. Since our estimating equation is convex for any fixed $\alpha$, we
 adopt a two-step procedure for which we estimate $\alpha$ and $\bf w$. In this
 approach we have the following loss function for the case of non-nested sampling:
-
 \begin{align*}
   (\hat \alpha, \hat w_2) 
   &= 
@@ -1452,7 +1475,6 @@ approach we have the following loss function for the case of non-nested sampling
   &\text{ such that } \sum_{i \in A_2} w_{2i} \bf x_i = \hat{\bf X}_c,
   \text{ and } \sum_{i \in A_2} w_{2i} g(d_{2i}) = N\alpha.
 \end{align*}
-
 The choice of $K(\alpha)$ is up to the analyst. We consider $K(\alpha) =
 \alpha$.
 

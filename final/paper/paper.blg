@@ -7,45 +7,45 @@ Warning--empty journal in cms2021mcbs
 Warning--empty journal in cms2021covid
 Warning--empty journal in fay1992inferences
 Warning--empty journal in norc2020mcbs
-You've used 19 entries,
+You've used 20 entries,
             1940 wiz_defined-function locations,
-            587 strings with 6407 characters,
-and the built_in function-call counts, 6958 in all, are:
-= -- 684
-> -- 237
-< -- 16
-+ -- 78
-- -- 76
-* -- 610
-:= -- 1214
-add.period$ -- 52
-call.type$ -- 19
-change.case$ -- 131
-chr.to.int$ -- 19
-cite$ -- 23
-duplicate$ -- 267
-empty$ -- 499
-format.name$ -- 105
-if$ -- 1329
+            592 strings with 6518 characters,
+and the built_in function-call counts, 7319 in all, are:
+= -- 722
+> -- 244
+< -- 17
++ -- 80
+- -- 78
+* -- 640
+:= -- 1276
+add.period$ -- 55
+call.type$ -- 20
+change.case$ -- 137
+chr.to.int$ -- 20
+cite$ -- 24
+duplicate$ -- 281
+empty$ -- 528
+format.name$ -- 108
+if$ -- 1399
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 20
-newline$ -- 93
-num.names$ -- 57
-pop$ -- 109
+missing$ -- 21
+newline$ -- 98
+num.names$ -- 60
+pop$ -- 112
 preamble$ -- 1
-purify$ -- 133
+purify$ -- 139
 quote$ -- 0
-skip$ -- 214
+skip$ -- 225
 stack$ -- 0
-substring$ -- 519
-swap$ -- 42
+substring$ -- 556
+swap$ -- 44
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 110
+type$ -- 116
 warning$ -- 4
-while$ -- 63
+while$ -- 67
 width$ -- 0
-write$ -- 232
+write$ -- 245
 (There were 4 warnings)

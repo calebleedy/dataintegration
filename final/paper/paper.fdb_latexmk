@@ -1,14 +1,16 @@
 # Fdb version 4
-["bibtex paper"] 1736268450.15681 "paper.aux" "paper.bbl" "paper" 1736268502.61976 0
+["bibtex paper"] 1737401046.8969 "paper.aux" "paper.bbl" "paper" 1737401065.39026 0
   "./apa.bst" 1731439736.01544 23582 e3c8338eb1efb7432441aa8861285f53 ""
-  "./references.bib" 1736180773.61845 15686 cd8a95ae1bac6b5fc3f9fe1f08bcaee3 ""
-  "paper.aux" 1736268502.27556 11372 d8555b2c064267db2509ba5c7a7a4139 "pdflatex"
+  "./references.bib" 1736458184.94172 15912 405f74bed80559788e6d0be08aac6d29 ""
+  "paper.aux" 1737401065.0097 13028 08ad0cc5a0b6009cec9e0c1417b5548c "pdflatex"
   (generated)
   "paper.bbl"
   "paper.blg"
   (rewritten before read)
-["pdflatex"] 1736268501.45022 "paper.tex" "paper.pdf" "paper" 1736268502.61995 0
+["pdflatex"] 1737401064.29365 "paper.tex" "paper.pdf" "paper" 1737401065.39048 0
+  "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1727349926 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1727349926 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm" 1727349926 1536 74b7293ec3713bb7fdca8dd1bd1f469c ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1727349926 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1727349926 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm" 1727349926 1120 7f9f170e8aa57527ad6c49feafd45d54 ""
@@ -80,6 +82,7 @@
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb" 1727349926 35479 892d27442ef9ef29ce1ee57aa0e8a665 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb" 1727349926 31764 459c573c03a4949a528c2cc7f557e217 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1727349926 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
+  "/usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb" 1727349926 136101 f533469f523533d38317ab5729d00c8a ""
   "/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1727349926 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "/usr/share/texmf-dist/tex/generic/atbegshi/atbegshi.sty" 1727349926 24708 5584a51a7101caf7e6bbf1fc27d8f7b1 ""
   "/usr/share/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty" 1727349926 40635 c40361e206be584d448876bba8a64a3b ""
@@ -159,10 +162,10 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1727349926 41588 b43d3e860a4f94167ee1e725ff526a72 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1733513070.43202 5345629 2cd06faacdaa948745ca87df6cf49cca ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1733513053 7143288 e8ff0bc823b27d0cbc5f2016d255447d ""
-  "paper.aux" 1736268502.27556 11372 d8555b2c064267db2509ba5c7a7a4139 "pdflatex"
-  "paper.bbl" 1736268450.25913 4248 506b4524374a76b2740f0a32c15c69ca "bibtex paper"
-  "paper.out" 1736268502.27556 1820 b5fc65c57a021883073ee3b0a0fdcf72 "pdflatex"
-  "paper.tex" 1736268500.13557 60553 96184ff9e8be86ae5aa0ae1c9f15ac6e ""
+  "paper.aux" 1737401065.0097 13028 08ad0cc5a0b6009cec9e0c1417b5548c "pdflatex"
+  "paper.bbl" 1737401047.03296 4471 32bb9aee0428d0c431d22c1cd99045dc "bibtex paper"
+  "paper.out" 1737401065.0097 2719 76fc753177f34f1320acb4b0e50ed3ba "pdflatex"
+  "paper.tex" 1737401063.4497 66590 9dcc3b512af452cc1448f91ce748a336 ""
   "tables/multisourced0.tex" 1731436691.25905 427 17c325c5a32d54076a0429c953a93410 ""
   "tables/multisourced1.tex" 1731436691.29238 425 511ed6cbdc9eecc2585c9bd23df5ce7f ""
   "tables/nonnestedtpd0.tex" 1731436681.36575 417 36b06321b19ec3e649ff36405f8272fe ""

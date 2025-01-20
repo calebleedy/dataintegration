@@ -80,6 +80,11 @@ Randles, R.~H. (1982).
 \newblock On the asymptotic normality of statistics with estimated parameters.
 \newblock {\em The Annals of Statistics}, pages 462--474.
 
+\bibitem[\protect\astroncite{Schennach}{2007}]{schennach2007point}
+Schennach, S.~M. (2007).
+\newblock Point estimation with exponentially tilted empirical likelihood.
+\newblock {\em The Annals of Statistics}, 35:634--672.
+
 \bibitem[\protect\astroncite{Shao and Steel}{1999}]{shao1999variance}
 Shao, J. and Steel, P. (1999).
 \newblock Variance estimation for survey data with composite imputation and nonnegligible sampling fractions.
