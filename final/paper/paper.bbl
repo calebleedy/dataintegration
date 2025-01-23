@@ -42,6 +42,11 @@ Hidiroglou, M. (2001).
 \newblock Double sampling.
 \newblock {\em Survey methodology}, 27(2):143--154.
 
+\bibitem[\protect\astroncite{Imai and Ratkovic}{2014}]{imai2014covariate}
+Imai, K. and Ratkovic, M. (2014).
+\newblock Covariate balancing propensity score.
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, 76(1):243--263.
+
 \bibitem[\protect\astroncite{Kim}{2024}]{kim2024statistics}
 Kim, J.~K. (2024).
 \newblock {\em Statistics in Survey Sampling}.

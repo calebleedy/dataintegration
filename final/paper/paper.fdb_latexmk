@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex paper"] 1737401046.8969 "paper.aux" "paper.bbl" "paper" 1737401065.39026 0
+["bibtex paper"] 1737653894.05924 "paper.aux" "paper.bbl" "paper" 1737668426.62735 0
   "./apa.bst" 1731439736.01544 23582 e3c8338eb1efb7432441aa8861285f53 ""
-  "./references.bib" 1736458184.94172 15912 405f74bed80559788e6d0be08aac6d29 ""
-  "paper.aux" 1737401065.0097 13028 08ad0cc5a0b6009cec9e0c1417b5548c "pdflatex"
+  "./references.bib" 1737580657.87184 16222 ca34d0e91051104f41da383a88d7bed1 ""
+  "paper.aux" 1737668426.42819 13291 6a7accc33dd394a2b2a185f9d99b2917 "pdflatex"
   (generated)
   "paper.bbl"
   "paper.blg"
   (rewritten before read)
-["pdflatex"] 1737401064.29365 "paper.tex" "paper.pdf" "paper" 1737401065.39048 0
+["pdflatex"] 1737668425.90885 "paper.tex" "paper.pdf" "paper" 1737668426.62749 0
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1727349926 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1727349926 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm" 1727349926 1536 74b7293ec3713bb7fdca8dd1bd1f469c ""
@@ -162,10 +162,10 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1727349926 41588 b43d3e860a4f94167ee1e725ff526a72 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1733513070.43202 5345629 2cd06faacdaa948745ca87df6cf49cca ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1733513053 7143288 e8ff0bc823b27d0cbc5f2016d255447d ""
-  "paper.aux" 1737401065.0097 13028 08ad0cc5a0b6009cec9e0c1417b5548c "pdflatex"
-  "paper.bbl" 1737401047.03296 4471 32bb9aee0428d0c431d22c1cd99045dc "bibtex paper"
-  "paper.out" 1737401065.0097 2719 76fc753177f34f1320acb4b0e50ed3ba "pdflatex"
-  "paper.tex" 1737401063.4497 66590 9dcc3b512af452cc1448f91ce748a336 ""
+  "paper.aux" 1737668426.42819 13291 6a7accc33dd394a2b2a185f9d99b2917 "pdflatex"
+  "paper.bbl" 1737653894.15793 4738 18ed543001d13e5c25049732bdadbd32 "bibtex paper"
+  "paper.out" 1737668426.42819 2719 76fc753177f34f1320acb4b0e50ed3ba "pdflatex"
+  "paper.tex" 1737668424.41825 68345 e47536aafab6a2f6ab78070d3e4671d0 ""
   "tables/multisourced0.tex" 1731436691.25905 427 17c325c5a32d54076a0429c953a93410 ""
   "tables/multisourced1.tex" 1731436691.29238 425 511ed6cbdc9eecc2585c9bd23df5ce7f ""
   "tables/nonnestedtpd0.tex" 1731436681.36575 417 36b06321b19ec3e649ff36405f8272fe ""
